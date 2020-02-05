@@ -257,25 +257,45 @@ int (*a)(int) : 指向一个函数的指针，该函数有一个整数参数，�
 
 - 在64位操作系统上，NSInteger 等价于 long，即64位
 
-### NSMutableDictionary 中使用setValueForKey 和 setObjectForKey有什么区别
+### OC中集合的注意事项和相互之间的区别
 
-- 根据官方文档说明：一般情况下，如果给NSMutableDictionary 发送`setValue` 仍然是调用了 `setObject`方法，如果参数 value 为 nil，则会调用`removeObject` 移除这个键值对
-- `setObjectForKey` 是 NSMutableDictionary特有的，value 不能为nil，否则会崩溃
-- `setValueForKey` 是KVC的方法，key 必须是字符串类型，setObject 的 key 可以是任意类型
+- **NSArray**
+  - **NSArray** 初始化后元素就不可再增删
+  - **NSMuatbleArray** 初始化后可以随时添加或删除元素对象
+  - **NSPointerArray**  与 `NSMuatbleArray` 相似，区别是可以指定对元素的强/弱引用。也就是说 `NSPointArray` 内部元素为对象 或 `nil`
+  - `indexOfObject` 与 `indexOfObjectIdenticalTo` 的区别
+    - 两个方法都是来判断某一对象是否是 `Array` 集合内元素，如果是则返回该对象在集合内的索引
+    - 两个方法的区别就在于两个 API 判定的依据：**`indexOfObject` 会使用 `isEqualTo` 方法将 `Object` 与集合元素进行比较。而 `indexOfObjectIdenticalTo` 则会比较 `Object` 与集合元素的指针是否相同**
+- **NSDictionary**
+  - **NSDictionary**  初始化后就不可再增删键值对
+  - **NSMutableDictionary** 初始化后可以随时添加或删除键值对
+  - **NSMapTable** 类似 `NSMutableDictionary` 可以指定对 `value` 的强/弱引用。也就是说 `NSMapTable` 内部元素的 `value` 值可以为 `nil`
+  - 当某个键值对添加到 `Dictionary` 时，`Dictionary` 会对 `key` 进行深拷贝，而对 `value` 进行浅拷贝，已经添加到集合内部的键值对，key 值将不可更改
+  - 作为 `key` 的对象都需要满足哪些条件呢
+    - `key` 必须遵循 `NSCopying` 协议，因为当元素渐入字典后，会对 `key` 进行深拷贝
+    - `key` 必须实现 `hash` 与 `isEqual` 方法。（便于快速获取元素并保证 `key` 的唯一性）
+- **NSSet**
+  - **NSSet** 初始化后就不可再增删元素
+  - **NSMuatbleSet** 初始化后可随时增删元素
+  - **NSCountedSet** 每个元素都带有一个计数，添加元素，计数为一。重复添加某个元素则计数加一；移除元素计数减一，计数为零则移除
+  - **NSHashTable** 和 **NSMutableSet** 类似，区别是可指定对元素的强/弱引用，内部元素可以为 `nil`
+  - **NSIndexSet**`IndexSet` 保存的 `Array` 子集，存储元素为 `Array` 的 `index` 索引，存储形式为索引范围
+- NSMutableDictionary 中使用setValueForKey 和 setObjectForKey有什么区别
+  - 根据官方文档说明：一般情况下，如果给NSMutableDictionary 发送`setValue` 仍然是调用了 `setObject`方法，如果参数 value 为 nil，则会调用`removeObject` 移除这个键值对
+  - `setObjectForKey` 是 NSMutableDictionary特有的，value 不能为nil，否则会崩溃
+  - `setValueForKey` 是KVC的方法，key 必须是字符串类型，setObject 的 key 可以是任意类型
 
-### NSCache 和NSDictionary 区别
+- NSCache 和NSDictionary 区别
+  - NSCache可以提供自动删减缓存功能，而且保证线程安全，与字典不同，不会拷贝键
+  - NSCache采用LRU规则，可以设置缓存上限，限制对象个数和总缓存开销。定义了删除缓存对象的时机。这个机制只对NSCache起到指导作用，不会一定执行
+  - NSPurgeableData搭配NSCache使用，可以自动清除数据
+  - 只有耗时计算的数据才值得放入缓存
 
-- NSCache可以提供自动删减缓存功能，而且保证线程安全，与字典不同，不会拷贝键
-- NSCache采用LRU规则，可以设置缓存上限，限制对象个数和总缓存开销。定义了删除缓存对象的时机。这个机制只对NSCache起到指导作用，不会一定执行
-- NSPurgeableData搭配NSCache使用，可以自动清除数据
-- 只有耗时计算的数据才值得放入缓存
-
-### NSArray 和 NSSet区别
-
-- NSSet和NSArray功能性质一样，用于存储对象，属于集合。
-- NSSet属于 “无序集合”，采用hash算法计算存储位置，造就了它查询速度比较快，保证了元素的唯一性，在内存中存储方式是不连续的
-- NSArray是 “有序集合” 它内存中存储位置是连续的
-- NSSet，NSArray都是类，只能添加对象，如果需要加入基本数据类型（int，float，BOOL，double等），需要将数据封装成NSNumber类型
+- NSArray 和 NSSet区别
+  - NSSet和NSArray功能性质一样，用于存储对象，属于集合。
+  - NSSet属于 “无序集合”，采用hash算法计算存储位置，造就了它查询速度比较快，保证了元素的唯一性，在内存中存储方式是不连续的
+  - NSArray是 “有序集合” 它内存中存储位置是连续的
+  - NSSet，NSArray都是类，只能添加对象，如果需要加入基本数据类型（int，float，BOOL，double等），需要将数据封装成NSNumber类型
 
 ### isEqual、isEqualToString、==区别
 
@@ -325,7 +345,7 @@ int (*a)(int) : 指向一个函数的指针，该函数有一个整数参数，�
 - `@synthesize` 如果你没有手动实现 `getter/setter` 方法，那么编译器会自动为你加上这两个方法
 - `@dynamic` 告诉编译器属性的 `getter/setter`方法由用户自己实现，不自动生成(当然对于 readonly 的属性只需提供 getter 即可)
 
-#### 实现description方法能取到什么效果
+### 实现description方法能取到什么效果
 
 - 当使用log打印该对象或断点po对象时，可以详细的知道该对象的信息，方便代码调试
 

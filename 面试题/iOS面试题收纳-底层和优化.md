@@ -585,7 +585,8 @@ self.block = ^{
 
 #### block内一定要使用weakSelf来解决循环运用？
 
-- 不一定。**self不直接或间接的持有block，同步执行的block是不会存在循环引用的，所以也不需要使用weakSelf**
+- 不一定。**self不直接或间接的持有block是不会存在循环引用的，所以也不需要使用weakSelf**
+- 比如系统的dispatch里面的block，self并没有持有它，所以不会造成循环引用。NSArray的enumerateObjectsUsingBlock是同步block并且Array实例没有持有这个block，所以也不会造成循环引用
 
 
 #### 函数指针和 Block区别
