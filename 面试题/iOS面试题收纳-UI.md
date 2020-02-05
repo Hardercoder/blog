@@ -144,9 +144,10 @@
 
 #### CALayer 和 UIView
 
-- UIView 和 CALayer都是 UI 操作的对象
-- UIView是 CALayer用于交互的对象，UIView是CALayer的delegate，UIView是UIResponder的子类，其中提供了很多CALayer所没有的交互接口，**主要负责处理用户触发的各种操作**
-- CALayer主要负责绘制，在图像和动画上渲染性能更好
+- UIView 和 CALayer 都是 UI 操作的对象。两者都是 NSObject 的子类，发生在 UIView 上的操作本质上也发生在对应的 CALayer 上
+- UIView 是 CALayer 用于交互的抽象。UIView 是 UIResponder 的子类（ UIResponder 是 NSObject 的子类），提供了很多 CALayer 所没有的交互上的接口，主要负责处理用户触发的种种操作
+- CALayer 在图像和动画渲染上性能更好。这是因为 UIView 有冗余的交互接口，而且相比 CALayer 还有层级之分。CALayer 在无需处理交互时进行渲染可以节省大量时间
+- CALayer的动画要通过逻辑树、动画树和显示树来实现
 
 #### UIView 的frame、bounds、center
 
@@ -256,9 +257,9 @@
 
 #### setNeedsLayout、layoutIfNeeded、layoutSubViews区别
 
-- layoutIfNeeded 一旦被调用，主线程会立即强制重新布局。它会从当前视图开始，一直到完成所有子视图的布局
-- layoutSubViews 用来自定义视图尺寸，它是系统自动调用的，开发者不能手动调用。可以重写该方法让系统在调整布局时候按照我们希望的方式进行布局。这个方法在旋转屏幕，滑动或者触摸屏幕，修改子视图时候被触发
-- setNeedsLayout 和  layoutIfNeeded相似，唯一不同的是它不会立即强制视图重新布局，而是在下一个布局周期才会触发更新。他主要用于多个视图布局先后更新的场景
+- layoutIfNeeded：方法调用后，在主线程对当前视图及其所有子视图立即强制更新布局
+- layoutSubviews：方法只能重写，我们不能主动调用，在屏幕旋转、滑动或触摸界面、子视图修改时被系统自动调用，用来调整自定义视图的布局
+- setNeedsLayout：方法与layoutIfNeeded相似，不同的是方法被调用后不会立即强制更新布局，而是在下一个布局周期进行更新。
 
 
 #### 渲染以及图像显示原理过程
@@ -290,7 +291,7 @@
 - 懒加载 也叫做 `延迟加载`，他的核心思想就是把对象的实例化尽量延迟，在需要使用的时候才会初始化，这样做的好处可以减轻大量对象实例化对资源的消耗
 - 另外懒加载把对象的实例化代码抽取出来、独立出来，提高了代码的可读性，以便代码更好的被组织
 
-#### 什么是响应者链
+#### 什么是响应者链(事件传递响应链)
 
 - 响应者链是用于确定`事件响应`的一种机制，事件主要是指触摸事件(touch Event)，该机制与UIKit中的UIResponder类密切相关，响应触摸事件的必须是继承自UIResponder的类，最常用的比如UIView 、UIViewController、UIWindow
 - 一个事件响应者的完成主要分为2个过程
@@ -312,7 +313,7 @@
 
 - **响应链传递**
   - 找到命中者任务并未完成，因为命中者不一定是事件的响应者。所谓响应就是开发中为事件绑定一个触发函数，事件发生后，执行响应函数里的代码
-  - 找到命中视图后，事件会从此视图开始沿着响应链nextResponder传递，直到找到处理事件的响应视图，如果没有处理的事件会被丢弃
+  - 找到命中视图后，事件会从此视图开始沿着响应链nextResponder传递，直到找到处理事件的响应视图，如果没有处理的事件会被丢弃（UIControl子类不适用）
   - 如果视图有父视图则nextResponder指向父视图，如果是根视图则指向控制器，最终指向AppDelegate，它们都是通过重写nextResponder来实现
   - 自下往上查找
 
@@ -321,6 +322,8 @@
   - userInteractionEnabled=NO
   - hidden=YES
   - 子视图超出父视图的部分
+  
+- UIControl的子类和UIGestureRecognizer优先级较高，会打断响应链
 
 #### 什么是隐式动画和显示动画
 
@@ -371,6 +374,10 @@
   3. CAAnimationGroup——动画组，是CAAnimation的子类，可以保存一组动画对象，将CAAnimationGroup对象加入层后，组中所有动画对象可以同时并发运行
   4. 转场动画——CATransition，是CAAnimation的子类，用于做转场动画，能够为层提供移出屏幕和移入屏幕的动画效果
   ```
+
+#### 使用drawRect有什么影响？
+
+- 处理touch事件时会调用setNeedsDisplay进行强制重绘，带来额外的CPU和内存开销
 
 #### UIScrollView 原理
 
