@@ -583,6 +583,11 @@ self.block = ^{
     外部使用了weakSelf，里面使用strongSelf却不会造成循环，究其原因就是因为weakSelf是block截获的属性，而strongSelf是一个局部变量会在“函数”执行完释放
 ```
 
+#### block内一定要使用weakSelf来解决循环运用？
+
+- 不一定。**self不直接或间接的持有block，同步执行的block是不会存在循环引用的，所以也不需要使用weakSelf**
+
+
 #### 函数指针和 Block区别
 
 - 相同点:
