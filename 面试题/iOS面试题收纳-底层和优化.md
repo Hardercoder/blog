@@ -121,6 +121,33 @@ objc_disposeClassPair函数用于销毁一个类，不过需要注意的是，�
 - 当方法返回值为结构体的时候,给nil发消息返回0,结构体中的各个参数也是0
 - 当方法返回值为指针类型的时候, 给nil发消息返回0
 
+#### 写出调用以下方法的几种方式
+
+```objective-c
+- (void)fun:(NSString*)name {
+    NSLog(@"name === %@",name);
+}
+```
+
+```objective-c
+// 直接调用
+[self fun:@"name"];
+// 使用performselector
+[self performSelector:@selector(fun:) withObject:@"funname"];
+// 使用NSInvocation调用
+SEL funSel = @selector(fun:);
+NSMethodSignature * sign = [self methodSignatureForSelector:funSel];
+NSInvocation * invocation = [NSInvocation invocationWithMethodSignature:sign];
+[invocation setTarget:self];
+[invocation setSelector:funSel];
+//index 0是self, 1是Selector，所以这里从2开始
+NSString * s = @"invocationname";
+[invocation setArgument:&(s) atIndex:2];
+[invocation invoke];
+// 使用runtime发送消息给对象
+((void (*)(id, SEL, NSString*))objc_msgSend)(self, @selector(fun:), @"name2");
+```
+
 ## KVO
 
 #### iOS用什么方式实现对一个对象的KVO？（KVO的本质是什么？）
