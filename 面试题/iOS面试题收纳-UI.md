@@ -142,6 +142,22 @@
   -[E_VC dealloc]
   ```
 
+#### 一个view已经初始化完毕，view上面添加了n个button，除用view的tag之外，还可以采用什么办法来找到自己想要的button来修改button的值
+
+有2种方法解决：
+
+- 第一种：如果是点击某个按钮后，才会刷新它的值，其它不用修改，那么不用引用任何按钮，直接在回调时，就已经将接收响应的按钮给传过来了，直接通过它修改即可。
+- 第二种：点击某个按钮后，所有与之同类型的按钮都要修改值，那么可以通过在创建按钮时将按钮存入到数组中，在需要的时候遍历查找。
+
+#### view的touch事件有哪些？
+
+```objectivec
+  - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
+  - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
+  - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event; 
+  - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event;
+```
+
 #### CALayer 和 UIView
 
 - UIView 和 CALayer 都是 UI 操作的对象。两者都是 NSObject 的子类，发生在 UIView 上的操作本质上也发生在对应的 CALayer 上

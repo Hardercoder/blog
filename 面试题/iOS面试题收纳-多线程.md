@@ -68,10 +68,10 @@
 
 GCD的队列可以分为2大类型
 
-- 并发队列（`Concurrent Dispatch Queue`）
+- 并行队列（`Concurrent Dispatch Queue`），比如全局队列
   - 可以让多个任务并发（同时）执行（自动开启多个线程同时执行任务）
   - 并发功能只有在异步（`dispatch_async`）函数下才有效
-- 串行队列（`Serial Dispatch Queue`）也包括主队列
+- 串行队列（`Serial Dispatch Queue`），比如主队列
   - 让任务一个接着一个地执行（一个任务执行完毕后，再执行下一个任务）,按照FIFO顺序执行.
 
 #### 什么是同步和异步任务派发(synchronous和asynchronous)
@@ -479,3 +479,8 @@ queue1.suspended = YES;
 - 为什么AF3.0中需要设置self.operationQueue.maxConcurrentOperationCount = 1;而AF2.0却不需要？
   - AF3.0的operationQueue是用来接收NSURLSessionDelegate回调的，鉴于一些多线程数据访问的安全性考虑，设置了maxConcurrentOperationCount = 1来达到串行回调的效果
   -  AF2.0的operationQueue是用来添加operation并进行并发请求的，所以不要设置为1
+
+#### pthread、NSThread、GCD、NSOperationQueue(一图展示)
+
+![](./reviewimgs/objc_multithread.png)
+
