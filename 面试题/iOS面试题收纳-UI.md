@@ -167,8 +167,8 @@
 
 #### UIView 的frame、bounds、center
 
-- frame：描述当前界面元素在其父界面元素中的位置和大小
-- bounds：描述当前界面元素在其自身坐标系统中的位置和大小
+- frame：描述当前界面元素在其父界面元素中的位置和大小(参照点是父view的坐标系统)
+- bounds：描述当前界面元素在其自身坐标系统中的位置和大小(参照点是本身坐标系统)
 - center：描述当前界面元素的中心点在其父界面元素中的位置
 
 #### CALayer的frame、bounds、anchorPoint、position
@@ -195,6 +195,29 @@
 - 第三方 UITableView+FDTemplateLayoutCell(计算布局高度缓存的)
 
 - 手动计算每个控件的高度并相加，最后缓存高度
+
+#### 如何让TableView 刷新完成后再执行操作
+
+- `[tableView reloadData]`并不会等待tableview更新结束后才执行后续代码，而是立即执行后续代码，然后异步地去计算scrollView的高度，获取cell等等
+
+- 可以通过以下方法在reloaddata执行完毕再执行操作
+
+  1. **通过layoutIfNeeded方法，强制重绘并等待完成。**
+
+     ```objective-c
+     [self.tableView reloadData];  
+     [self.tableView layoutIfNeeded];  
+     //刷新完成，执行后续需要执行的代码
+     ```
+
+  2. **reloadData方法会在主线程执行，通过GCD，使后续操作排队在reloadData后面执行。**
+
+     ```objective-c
+     [self.tableView reloadData];  
+     dispatch_async(dispatch_get_main_queue(), ^{  
+         //刷新完成，执行后续代码
+     });
+     ```
 
 #### AutoLayout 中的优先级是什么
 
