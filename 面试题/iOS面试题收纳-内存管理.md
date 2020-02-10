@@ -33,17 +33,33 @@
 - 在iOS中，使用引用计数来管理OC对象的内存，主要有`自动内存管理、手动内存管理、自动释放池`三种方式
   - 一个新创建的OC对象引用计数默认是1，当引用计数减为0时OC对象就会被销毁，释放其占用的内存空间
   - MRC下调用`retain`会让OC对象的引用计数+1，调用`release`会让OC对象的引用计数-1
-
 - 内存管理的经验总结
+  
   - 当调用alloc、new、copy、mutableCopy方法获得一个对象，在不需要这个对象时，要调用release或者autorelease来释放它
-  - 想拥有某个对象，就让它的引用计数+1；不想再拥有某个对象，就让它的引用计数-1
+  - 如果调用的方法以 `alloc`、`new`、`copy`、`mutableCopy` 为前缀，则持有该对象，调用其他的方法不持有该对象，而是将其注册到 `autoreleasepool`
+  
+- 想拥有某个对象，就让它的引用计数+1；不想再拥有某个对象，就让它的引用计数-1
 
-- 可以通过以下私有函数来查看自动释放池的情况
-  - `extern void _objc_autoreleasePoolPrint(void)`
+- 介绍两个有用的方法
+
+  - `extern uintptr_t _objc_rootRetainCount(id obj)`方法，作用是返回obj的引用计数
+  - `extern void _objc_autoreleasePoolPrint(void)`方法，作用是打印当前的自动释放池对象
 
 #### ARC 都帮我们做了什么？
 
 - LLVM + Runtime 会为我们代码自动插入retain和release以及 autorelease等代码，不需要我们手动管理
+
+#### iOS中ARC内部原理
+
+ARC会自动插入`retain`和`release`语句。ARC编译器有两部分，分别是前端编译器和优化器。
+
+- 前端编译器
+
+  前端编译器会为“拥有的”每一个对象插入相应的`release`语句。如果对象的所有权修饰符是`__strong`，那么它就是被拥有的。如果在某个方法内创建了一个对象，前端编译器会在方法末尾自动插入`release`语句以销毁它。而类拥有的对象（实例变量/属性）会在`dealloc`方法内被释放。事实上，你并不需要写`dealloc`方法或调用父类的`dealloc`方法，ARC会自动帮你完成一切。此外，由编译器生成的代码甚至会比你自己写的`release`语句的性能还要好，因为编辑器可以作出一些假设。在ARC中，没有类可以覆盖`release`方法，也没有调用它的必要。ARC会通过直接使用`objc_release`来优化调用过程。而对于`retain`也是同样的方法。ARC会调用`objc_retain`来取代保留消息。
+
+- ARC优化器
+
+  虽然前端编译器听起来很厉害的样子，但代码中有时仍会出现几个对`retain`和`release`的重复调用。ARC优化器负责移除多余的`retain`和`release`语句，确保生成的代码运行速度高于手动引用计数的代码
 
 #### weak指针的实现原理
 
@@ -250,3 +266,8 @@
 #### 内存泄漏可能会出现的几种原因
 
 第三方框架不当使用，block、delegate、NSTimer的循环引用，非OC对象内存处理，地图类处理，大次数循环内存暴涨
+
+
+
+[理解ARC实现原理](https://juejin.im/post/5ce2b7386fb9a07eff005b4c)
+

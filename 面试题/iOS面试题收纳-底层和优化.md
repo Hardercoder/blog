@@ -380,6 +380,65 @@ struct category_t {
   | OBJC_ASSOCIATION_COPY              | copy, atomic      |
   
 
+#### 如何给Category添加 weak 属性
+
+- 我们知道runtime的objc_AssociationPolicy没有开放weak解决方案，但是object对象是可以有weak属性的。这就为我们提供了一个思路去用runtime实现一个weak属性
+
+- 实现思路：我们通过**存取一个strong对象(这个对象间接持有weak属性)**就可以了。这样依然有一个问题：weak真正的对象被释放后，这个属性并不为nil。以下提供两个方案
+
+  ```objective-c
+  // 方案一
+  // 定义一个包装类，将weak属性包装起来
+  @interface WeakProWrapper : NSObject
+  @property (nonatomic, weak) id proWeak;
+  @end
+  @implementation WeakProWrapper
+  @end
+  
+  /*
+  - (NSString *)myWeakPro {
+      WeakProWrapper *wrapper = objc_getAssociatedObject(self, @selector(myWeakPro));
+      return wrapper.proWeak;
+  }
+  
+  - (void)setMyWeakPro:(NSString *)myWeakPro {
+      WeakProWrapper *wrapper = nil;
+      if (myWeakPro) {
+          wrapper = [[WeakProWrapper alloc] init];
+          wrapper.proWeak = myWeakPro;
+      }
+      objc_setAssociatedObject(self, @selector(myWeakPro), wrapper, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+  }
+  */
+  ```
+
+  ```objective-c
+  // 方案二 使用block捕获机制。其实和方案一一个道理
+  typedef id WeakId;
+  typedef WeakId(^WeakReference)(void);
+  
+  WeakReference PackWeakReference(id ref) {
+      __weak __typeof(WeakId) weakRef = ref;
+      return ^{
+          return weakRef;
+      };
+  }
+  
+  WeakId UnPackWeakReference(WeakReference closure) {
+      return closure ? closure() : nil;
+  }
+  
+  /*
+  - (NSString *)myWeakPro {
+      return UnPackWeakReference(objc_getAssociatedObject(self, @selector(myWeakPro)));
+  }
+  
+  - (void)setMyWeakPro:(NSString *)myWeakPro {
+      objc_setAssociatedObject(self, @selector(myWeakPro), PackWeakReference(myWeakPro), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+  }
+  */
+  ```
+
 ## Block
 
 #### block的原理是怎样的？本质是什么
@@ -751,7 +810,6 @@ self.block = ^{
 - 每条线程都有唯一的一个与之对应的RunLoop对象
 - RunLoop保存在一个全局的Dictionary里，线程作为key，RunLoop作为value
 - 线程刚创建时并没有RunLoop对象，RunLoop会在第一次获取它时创建
-- RunLoop会在线程结束时销毁
 - 主线程的RunLoop已经自动获取（创建），子线程默认没有开启RunLoop
 
 #### timer 与 runloop 的关系
@@ -785,6 +843,29 @@ self.block = ^{
   - UIInitializationRunLoopMode: 在刚启动 App 时第进入的第一个 Mode，启动完成后就不再使用，会切换到kCFRunLoopDefaultMode
   - GSEventReceiveRunLoopMode: 接受系统事件的内部 Mode，通常用不
   - kCFRunLoopCommonModes: 这是一个占位用的Mode，作为标记kCFRunLoopDefaultMode和UITrackingRunLoopMode用，并不是一种真正的Mode 
+
+#### 在子线程中怎么开启和关闭runloop
+
+- 想要子线程的runloop开启，mode里必须有timer/source中的至少一个
+
+- 子线程开启runloop：
+
+  ```objective-c
+  // runloop会一直运行下去，在此期间会处理来自输入源的数据，并且会在NSDefaultRunLoopMode模式下重复调用runMode:beforeDate:方法
+  - (void)run;
+  // 可以设置超时时间，在超时时间到达之前，runloop会一直运行，在此期间runloop会处理来自输入源的数据，并且也会在NSDefaultRunLoopMode模式下重复调用runMode:beforeDate:方法
+  - (void)runUntilDate:(NSDate *)limitDate；
+  // runloop会运行一次，超时时间到达或者第一个input source被处理，则runloop就会退出
+  - (void)runMode:(NSString *)mode beforeDate:(NSDate *)limitDate;
+  ```
+
+- 子线程关闭runloop：
+
+  ```objective-c
+  // 如果不想退出runloop可以使用第一种方式启动runloop；
+  // 使用第二种方式启动runloop，可以通过设置超时时间来退出；
+  // 使用第三种方式启动runloop，可以通过设置超时时间或者使用CFRunLoopStop方法来退出
+  ```
 
 #### `AutoreleasePool` 和 `RunLoop` 有什么联系？
 
