@@ -1,0 +1,11 @@
+language: objective-c
+xcode_project: objc4-756.2/objc4-756.2/objc.xcodeproj
+xcode_scheme: objc
+osx_image: xcode10.1
+
+script:
+- set -o pipefail
+- xcodebuild clean build -project "$TRAVIS_XCODE_PROJECT" -scheme "$TRAVIS_XCODE_SCHEME" -destination "arch=x86_64" CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""
+
+after_success:
+- bash <(curl -s https://codecov.io/bash)
