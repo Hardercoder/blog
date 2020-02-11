@@ -48,6 +48,10 @@
 #### ARC 都帮我们做了什么？
 
 - LLVM + Runtime 会为我们代码自动插入retain和release以及 autorelease等代码，不需要我们手动管理
+- 切换到ARC之后，每个指向OC对象的指针，都被赋上了所有权修饰符。一共有`__strong`、`__weak`、`__unsafe_unretained`和`__autoreleasing`这样四种所有权修饰符
+- 当一个对象被赋值给一个使用`__autoreleasing`修饰符修饰的指针时，相当于这个对象在MRC下被发送了`autorelease`消息，也就是说它被注册到了autorelease pool中
+- 全局变量和实例变量是无法用`__autoreleasing`来修饰的，不然编译器会报错
+- 局部变量用`__autoreleasing`修饰后，其指向的对象，在当前autorelease pool结束之前不会被回收
 
 #### iOS中ARC内部原理
 

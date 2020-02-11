@@ -39,7 +39,7 @@
 - 协议规定了一系列的行为(方法)和数据(属性)，主要用在代理模式中
 - OC中协议默认是`@required`必须实现的，使用`@optional`修饰后变为可选择实现
 
-#### Xcode里的-ObjC,-all_load和-force_load的作用
+### Xcode里的-ObjC,-all_load和-force_load的作用
 
 - 链接器：一个程序从简单易读的代码到可执行文件往往要经历以下步骤
 
