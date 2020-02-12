@@ -134,3 +134,153 @@
 }
 ```
 
+#### 已知单向链表，其中每个节点有一个int类型的data字段(0~9)和一个next指针，按照如下的方式连接3->5->2表示352，请写出两个链表做加法
+
+```objective-c
+// 定义链表节点
+@interface Node : NSObject
+@property (nonatomic, assign) int data;
+@property (nonatomic, strong) Node *next;
+@end
+@implementation Node
+- (NSString *)description {
+    NSMutableString *str = [NSMutableString string];
+    Node *node = self;
+    while (node) {
+        [str appendFormat:@"%d",node.data];
+        node = node.next;
+    }
+    return [str copy];
+}
+@end
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // 构建链表1
+    Node *node1 = [[Node alloc] init];
+    node1.data = 3;
+    
+    Node *tmp = node1;
+    NSArray *nums = @[@(7),@(8),@(2)];
+    for (NSNumber *num in nums) {
+        Node *nextNode = [[Node alloc] init];
+        nextNode.data = [num intValue];
+        tmp.next = nextNode;
+        
+        tmp = nextNode;
+    }
+    // 构建链表2
+    Node *node2 = [[Node alloc] init];
+    node2.data = 0;
+    
+    tmp = node2;
+    nums = @[@(6),@(1),@(5),@(8),@(0)];
+    for (NSNumber *num in nums) {
+        Node *nextNode = [[Node alloc] init];
+        nextNode.data = [num intValue];
+        tmp.next = nextNode;
+        
+        tmp = nextNode;
+    }
+    // 调用链表加法算法
+    [self nodeAdd:node1 node2:node2];
+}
+
+- (Node*)nodeAdd:(Node*)node1 node2:(Node*)node2 {
+    // 3->5->1 要算加法，肯定要倒序链表
+    NSMutableArray *rNode1 = [NSMutableArray arrayWithCapacity:20];
+    Node *tmp = node1;
+    // 反转node1
+    while (tmp != nil) {
+        [rNode1 addObject:tmp];
+        tmp = tmp.next;
+    }
+    // 反转node2
+    NSMutableArray *rNode2 = [NSMutableArray arrayWithCapacity:20];
+    tmp = node2;
+    while (tmp != nil) {
+        [rNode2 addObject:tmp];
+        tmp = tmp.next;
+    }
+    
+    NSEnumerator *rNode1E = [rNode1 reverseObjectEnumerator];
+    NSEnumerator *rNode2E = [rNode2 reverseObjectEnumerator];
+    // 进行计算
+    NSMutableArray *calculateNodes = [NSMutableArray arrayWithCapacity:MAX(rNode1.count, rNode2.count)];
+    Node *calculate1 = rNode1E.nextObject;
+    Node *calculate2 = rNode2E.nextObject;
+    
+    // 进位标识
+    int flag = 0;
+    while (calculate1 != nil && calculate2 != nil) {
+        int num = calculate1.data + calculate2.data + flag;
+        if (num >= 10) {
+            flag = 1;
+            num -= 10;
+        }
+        else {
+            flag = 0;
+        }
+        
+        Node *tmp = [[Node alloc] init];
+        tmp.data = num;
+        [calculateNodes addObject:tmp];
+        
+        calculate1 = rNode1E.nextObject;
+        calculate2 = rNode2E.nextObject;
+    }
+    
+    while (calculate1 != nil) {
+        int num = calculate1.data + flag;
+        if (num >= 10) {
+            flag = 1;
+            num -= 10;
+        }
+        else {
+            flag = 0;
+        }
+        
+        Node *tmp = [[Node alloc] init];
+        tmp.data = num;
+        [calculateNodes addObject:tmp];
+        
+        calculate1 = rNode1E.nextObject;
+    }
+    
+    while (calculate2 != nil) {
+        int num = calculate2.data + flag;
+        if (num >= 10) {
+            flag = 1;
+            num -= 10;
+        }
+        else {
+            flag = 0;
+        }
+        
+        Node *tmp = [[Node alloc] init];
+        tmp.data = num;
+        [calculateNodes addObject:tmp];
+        
+        calculate2 = rNode2E.nextObject;
+    }
+    
+    //反转所得结果
+    NSEnumerator *node3E = [calculateNodes reverseObjectEnumerator];
+    tmp = node3E.nextObject;
+    Node *node3 = nil;
+    
+    while (tmp != nil) {
+        if (node3 == nil && tmp.data > 0) {
+            node3 = tmp;
+        }
+        Node *m = node3E.nextObject;
+        tmp.next = m;
+        tmp = m;
+    }
+#if DEBUG
+    NSLog(@"\n%@\n+\n%@\n=\n%@",node1,node2,node3);
+#endif
+    return node3;
+}
+```
+
