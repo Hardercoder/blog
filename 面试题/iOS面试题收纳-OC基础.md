@@ -94,11 +94,39 @@ Id 声明的对象具有运行时的特性，即可以指向任意类型的oc对
 
 ### NSNotification、Block、Delegate和KVO的区别
 
-- 代理是一种回调机制，且是一对一的关系，通知是一对多的关系，一个对向所有的观察者提供变更通知
-- 效率：Delegate比NSNOtification高
-- Delegate和Block一般是一对一的通信
+- Block和Delegate属于代理模式，是一对一的关系，Notification和KVO是观察者，是一对多的关系
+- 代理模式相对观察者模式效率比较高
+- notification通过维护一个array，实现一对多消息的转发
+- delegate需要两者之间必须建立联系，不然没法调用代理的方法；notification不需要两者之间有联系
 - Delegate需要定义协议方法，代理对象实现协议方法，并且需要建立代理关系才可以实现通信
-- Block：Block更加简洁，不需要定义繁琐的协议方法，但通信事件比较多的话，建议使用Delegate
+- Block更加简洁，不需要定义繁琐的协议方法，但通信事件比较多的话，建议使用Delegate
+
+### 什么是Block以及怎么使用block反向传值
+
+- 闭包（block）：闭包就是获取其它函数局部变量的匿名函数，本质是一个OC对象
+
+- ```objectivec
+  // 在控制器间传值可以使用代理或者block，使用block相对来说简洁。
+  //在前一个控制器的touchesBegan:方法内实现如下代码。 
+  // OneViewController.m 
+  TwoViewController *twoVC = [[TwoViewController alloc] init];
+  twoVC.valueBlcok = ^(NSString *str) { NSLog(@"OneViewController拿到值：%@", str); }
+  [self presentViewController:twoVC animated:YES completion:nil]; 
+  // TwoViewController.h   （在.h文件中声明一个block属性） 
+  @property (nonatomic ,strong) void(^valueBlcok)(NSString *str); 
+  // TwoViewController.m   （在.m文件中实现方法） 
+  - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event { 
+    // 传值:调用block 
+    if (_valueBlcok) {_valueBlcok(@"123456");}
+  }
+  ```
+
+- 使用block的注意点
+  - 在block内部使用外部指针且会造成循环引用情况下，需要用__week修饰外部指针：
+     __weak typeof(self) weakSelf = self;
+  - 在block内部如果调用了延时函数还使用弱指针会取不到该指针，因为已经被销毁了，需要在block内部再将弱指针重新强引用一下。
+     __strong typeof(self) strongSelf = weakSelf;__
+  - __如果需要在block内部改变外部栈区变量的话，需要在用__block修饰外部变量
 
 ### Notification 和KVO区别
 
@@ -161,6 +189,10 @@ Id 声明的对象具有运行时的特性，即可以指向任意类型的oc对
 - `id`可以作为方法的返回以及参数类型，也可以用来定义变量，**编译器不检查id类型**
 - `instancetype` 只能作为函数或者方法的返回值
 - instancetype对比id的好处就是：**能精确的限制返回值的具体类型**
+
+### id 声明的对象有什么特性
+
+id 声明的对象具有运行时的特性，即可以指向任意类型的Objcetive-C的对象
 
 ### NSObject、id的区别
 
@@ -241,11 +273,53 @@ Id 声明的对象具有运行时的特性，即可以指向任意类型的oc对
 - isEqual:首先检查指针的等同性，然后是类的等同性，最后对对象的属性和变量检查，比较成功返回true，两个对象如果isEqual比较成功会有相同的hash值，但是如果两个两个对象的hash值相等，不一定比较成功
 - isEqualToString：字符串比较，只比较字符串本身的内容是否一致，不比较内存地址
 
+### isKindOfClass、isMemberOfClass、selector作用分别是什么
+
+- isKindOfClass：作用是某个对象属于某个类型或者继承自某类型
+- isMemberOfClass：某个对象确切属于某个类型
+- selector：通过方法名，获取在内存中的函数的入口地址
+
 ### isMemberOfClass 和 isKindOfClass 联系与区别
 
 - 联系：两者都能检测一个对象是否是某个类的成员
-- 区别：`isKindOfClass` 不仅用来确定一个对象是否是一个类的成员,也可以用来确定一个对象是否派生自该类的类的成员 ,而`isMemberOfClass` 只能做到第一点。
+- 区别：`isKindOfClass` 不仅用来确定一个对象是否是一个类的成员，也可以用来确定一个对象是否派生自该类的类的成员 ，而`isMemberOfClass` 只能做到第一点
 - 举例：如 `ClassA`派 生 自`NSObject` 类 , `ClassA *a = [ClassA alloc] init]`;,`[a isKindOfClass:[NSObject class]]` 可以检查出 a 是否是 `NSObject`派生类 的成员,但 `isMemberOfClass` 做不到
+
+### 方法和选择器有何不同
+
+selector是一个方法的名字，方法是一个组合体，包含了名字和实现
+
+### isa指针问题
+
+- isa是一个Class 类型的指针。每个实例对象有个isa的指针，他指向对象的类，而Class里也有个isa的指针,，指向meteClass(元类)
+- 元类保存了类方法的列表。当类方法被调用时，先会从isa指向查找类方法的实现，如果没有，元类会向他父类查找该方法。同时注意的是:元类(meteClass)也是类，它也是对象
+- 元类也有isa指针，它的isa指针最终指向的是一个根元类(root meteClass)。根元类的isa指针指向NSObject，这样形成了一个封闭的内循环
+
+### 如何访问并修改一个类的私有属性
+
+- 一种是通过KVC访问并修改
+
+- 通过runtime访问并修改
+
+### 下面的代码输出什么
+
+```objectivec
+@implementation Son : Father
+- (id)init {
+if (self = [super init]) {
+NSLog(@"%@", NSStringFromClass([self class])); // Son
+NSLog(@"%@", NSStringFromClass([super class])); // Son
+}
+return self;
+}
+@end
+/*解析：
+self 是类的隐藏参数，指向当前调用方法的这个类的实例
+super是一个Magic Keyword，它本质是一个编译器标示符，和self是指向的同一个消息接收者
+不同的是：super会告诉编译器，调用class这个方法时，要去父类的方法，而不是本类里的
+上面的例子不管调用[self class]还是[super class]，接受消息的对象都是当前 Son *obj 这个对象
+*/
+```
 
 ### new关键字作用是什么
 
@@ -255,12 +329,17 @@ Id 声明的对象具有运行时的特性，即可以指向任意类型的oc对
 
 - 返回所申请空间的首地址
 
+### 常见的 Objective-C 的数据类型有那些，和C的基本数据类型有什么区别？
+
+- Objective-C的数据类型有NSString，NSNumber，NSArray，NSMutableArray，NSData等等，这些都是class，创建后便是对象，而C语言的基本数据类型int，只是一定字节的内存空间，用于存放数值
+- NSInteger是基本数据类型，并不是NSNumber的子类，当然也不是NSObject的子类。NSInteger是基本数据类型Int或者Long的别名(NSInteger的定义typedef long NSInteger)，它的区别在于，NSInteger会根据系统是32位还是64位来决定是本身是int还是long。
+
 ### OC实例变量的修饰符及作用范围
 
 - `@private`，本类可以访问，子类和其他类不可以访问
 - `@protected（默认修饰符）`，本类和子类可以访问，其他类不可以访问
 - `@package`，对于framework内部相当于`@protected`，对于framework外部相当于`@private`
-- `@puplic` ，本类、子类、其他类都可以访问
+- `@public` ，本类、子类、其他类都可以访问
 
 ### @proprety的本质和作用
 
@@ -278,7 +357,7 @@ Id 声明的对象具有运行时的特性，即可以指向任意类型的oc对
   - 建议使用 `nonatomic`，可以提高访问的性能
 - 读写权限`readonly`,`readwrite`
 - 指定读写方法`getter`,`setter`
-- 持有方式`strong`,`assign`,`weak`,`copy`,`unsafe_unretained`
+- 内存管理语义`strong`,`assign`,`weak`,`copy`,`unsafe_unretained`
 - 是否可以为空`nullable`,`nonnull`,`null_resettable`,`null_unspecified`
 - 类属性`class`
 
@@ -331,7 +410,10 @@ Id 声明的对象具有运行时的特性，即可以指向任意类型的oc对
 
 ### 怎么用 copy 关键字
 
-- `NSString、NSArray、NSDictionary 等等经常使用 copy` 关键字，是因为他们有对应的可变类型：`NSMutableString、NSMutableArray、NSMutableDictionary`，为确保对象中的属性值不会无意间变动，应该在设置新属性值时拷贝一份，保护其封装性
+- `NSString、NSArray、NSDictionary 等等经常使用 copy` 关键字，是因为他们有对应的可变类型：`NSMutableString、NSMutableArray、NSMutableDictionary`，他们之间可能进行赋值操作（就是把可变的赋值给不可变的），为确保对象中的属性值不会无意间变动，应该在设置新属性值时拷贝一份，保护其封装性
+  - 因为父类指针可以指向子类对象，使用 copy 的目的是为了让本对象的属性不受外界影响，使用 copy 无论给我传入是一个可变对象还是不可对象，我本身持有的就是一个不可变的副本
+  - 如果我们使用是 strong ,那么这个属性就有可能指向一个可变对象,如果这个可变对象在外部被修改了,那么会影响该属性
+  - 总之使用copy的目的是，防止把可变类型的对象赋值给不可变类型的对象时，可变类型对象的值发送变化会无意间篡改不可变类型对象原来的值
 - `block` 也经常使用 `copy` 关键字，方法内部的 `block` 默认是在栈区的，使用 `copy` 可以把它放到堆区
 - 在ARC下对于 `block` 使用 `copy` 还是 `strong` 效果是一样的，但是在MRC下，block不会被编译器`copy`到堆区，综合建议写上 `copy`，因为这样显示告知调用者“编译器会自动对 `block` 进行 `copy` 操作
 
@@ -349,6 +431,11 @@ Id 声明的对象具有运行时的特性，即可以指向任意类型的oc对
       _name = [name copy];
   }
   ```
+
+### 这个写法会出什么问题：`@property (nonatomic, copy) NSMutableArray *arr`；
+
+- 问题：添加,删除,修改数组内的元素的时候,程序会因为找不到对应的方法而崩溃
+- 原因：是因为 copy 就是复制一个不可变 NSArray 的对象，不能对 NSArray 对象进行添加/修改
 
 ### 在某个方法中 self.name = _name，name = _name 它 们有区别吗,为什么?
 
@@ -411,7 +498,7 @@ Id 声明的对象具有运行时的特性，即可以指向任意类型的oc对
 
 - KVO中`谁要监听谁注册`，然后对响应进行处理，使得观察者与被观察者完全解耦。KVO只检测类中的属性，并且属性名都是通过NSString来查找，编译器不会检错和补全，全部取决于自己
 
-### 手写单例
+### 给出一个单例的代码实现
 
 - 这里给出一个优雅的实现单例的宏定义
 
@@ -436,6 +523,26 @@ Id 声明的对象具有运行时的特性，即可以指向任意类型的oc对
   }
   ```
 
+### 写一个完整的代理，包括声明、实现
+
+```objectivec
+// 创建 
+@protocol MyDelagate 
+@required -(void)eat:(NSString *)foodName; 
+@optional -(void)run;
+@end 
+  
+//  声明 .h
+@interface person: NSObject<MyDelagate>
+@end 
+//  实现 .m 
+@implementation person 
+- (void)eat:(NSString *)foodName { NSLog(@"吃:%@!", foodName);} 
+- (void)run { NSLog(@"run!");
+}
+@end
+```
+
 ### 浅复制和深复制的区别
 
 - 浅复制：只复制指向对象的指针，而不复制引用对象本身 
@@ -448,11 +555,6 @@ Id 声明的对象具有运行时的特性，即可以指向任意类型的oc对
 | :--------: | :--------: | :----------: |
 | 不可变类型 |   浅拷贝   |  单层深拷贝  |
 |  可变类型  | 单层深拷贝 |  单层深拷贝  |
-
-### 如下代码,会有什么问题吗
-
-- `@property (copy, nonatomic) NSMutableArray * array`
-- 使用 copy 修饰，会生成不可变数组，在添加删除数组元素时候会崩溃
 
 ### 列举出延迟调用的几种方法
 
@@ -478,6 +580,10 @@ Id 声明的对象具有运行时的特性，即可以指向任意类型的oc对
 ### 声明一个函数,传入值是一个输入输出参数都是 int的 block 函数
 
 - `- (void)test_Function:(int(^)(int num)) block{}`
+
+### Objective-C 中创建线程的方法是什么？如果在主线程中执行代码，方法是什么？如果想延时执行代码、方法又是什么
+
+线程创建有三种方法：使用NSThread创建、使用GCD的dispatch、使用子类化的NSOperation,然后将其加入NSOperationQueue;在主线程执行代码，方法是performSelectorOnMainThread，如果想延时执行代码可以用performSelector:onThread:withObject:waitUntilDone:
 
 ### 类别的作用，继承和类别在实现中有何区别?
 
@@ -522,6 +628,21 @@ void UncaughtExceptionHandler(NSException *exception){
     }
 }
 ```
+
+### BAD_ACCESS在什么情况下出现
+
+这种问题在开发时经常遇到。原因是访问了野指针，比如访问已经释放对象的成员变量或者发消息、死循环等
+
+### 什么是 Method Swizzle（黑魔法），什么情况下会使用
+
+- 在没有一个类的实现源码的情况下，想改变其中一个方法的实现，除了继承它重写、和借助类别重名方法暴力抢先之外，还有更加灵活的方法 Method Swizzle
+- Method Swizzle 指的是改变一个已存在的选择器对应的实现的过程。OC中方法的调用能够在运行时通过改变，通过改变类的调度表中选择器到最终函数间的映射关系
+- 在OC中调用一个方法，其实是向一个对象发送消息，查找消息的唯一依据是selector的名字。利用OC的动态特性，可以实现在运行时偷换selector对应的方法实现
+- 每个类都有一个方法列表，存放着selector的名字和方法实现的映射关系。IMP有点类似函数指针，指向具体的方法实现
+- 我们可以利用 method_exchangeImplementations 来交换2个方法中的IMP
+- 我们可以利用 class_replaceMethod 来修改类
+- 我们可以利用 method_setImplementation 来直接设置某个方法的IMP
+- 归根结底，都是偷换了selector的IMP
 
 ### 编译过程做了哪些事情
 
@@ -602,10 +723,12 @@ bitcode系统会对编译后的二进制文件进行二次优化, 使用最新�
   - 苹果禁止任何读写沙盒以外的文件，禁止应用程序将内容写到沙盒以外的文件夹中；
 
   - 沙盒目录里有三个文件夹：
-    - Documents——存储应用程序的数据文件，存储用户数据或其他定期备份的信息；
-    - Library下有两个文件夹，Caches存储应用程序再次启动所需的信息，
-    - Preferences包含应用程序的偏好设置文件，不可在这更改偏好设置；
-    - temp存放临时文件即应用程序再次启动不需要的文件。
+    - Documents：存储应用程序的数据文件，存储用户数据或其他定期备份的信息；会被ITunes备份
+    - Library下有两个文件夹，
+      - Caches用于存放应用程序专用的支持文件，保存应用程序再次启动过程中需要的信息
+      - Preferences包含应用程序的偏好设置文件，不可在这更改偏好设置；NSUserDefault就是操作的这部分
+    - Library下可创建子文件夹。可以用来放置您希望被备份但不希望被用户看到的数据。该路径下的文件夹，除Caches以外，都会被iTunes备份
+    - tmp存放临时文件即应用程序再次启动不需要的文件，不会被ITunes备份
 
 - 获取沙盒根目录的方法，有几种方法：用NSHomeDirectory获取
 
