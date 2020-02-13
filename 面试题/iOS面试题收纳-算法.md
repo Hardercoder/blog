@@ -284,3 +284,151 @@
 }
 ```
 
+#### 写一个算法获取十进制数进行二进制表示后1的个数
+
+```objective-c
+- (NSUInteger)countOfBinary1In:(NSInteger)num {
+    //（最优）采用位运算（x&（x-1），每次将给定的数的最右边的1变位0）
+    // 采用给定的数与给定的数-1逻辑与操作，把给定的数的最后边的1变成0，操作一次，count自增一次，知道给定的数的1全部变为0，退出循环
+    NSUInteger count = 0;
+    
+    NSInteger mNum = num;
+    while (mNum != 0) {
+        mNum = mNum & (mNum - 1);
+        count++;
+    }
+#if DEBUG
+    NSString *tmp = [NSString stringWithFormat:@"%ld",num];
+    NSString *binaryStr = [self convertBinarySystemFromDecimalSystem:tmp];
+    NSLog(@"%@ 二进制%@ 有%ld个1", tmp, binaryStr, count);
+#endif
+    return count;
+}
+
+#pragma mark 二进制转十进制
+- (NSString *)convertDecimalSystemFromBinarySystem:(NSString *)binary {
+    NSInteger  ll = 0 ;
+    NSInteger  temp = 0 ;
+    for (NSInteger i = 0; i < binary.length; i ++){
+        temp = [[binary substringWithRange:NSMakeRange(i, 1)] intValue];
+        temp = temp * powf(2, binary.length - i - 1);
+        ll += temp;
+    }
+    return [NSString stringWithFormat:@"%ld",ll];
+}
+
+#pragma mark 十进制转二进制
+- (NSString *)convertBinarySystemFromDecimalSystem:(NSString *)decimal {
+    NSInteger num = [decimal intValue];
+    if (num < 0) {
+        num = num + NSIntegerMax;
+    }
+    
+    NSInteger remainder = 0;      //余数
+    NSInteger divisor = 0;        //除数
+    
+    NSMutableString * prepare = [NSMutableString string];
+    
+    while (true){
+        remainder = num % 2;
+        divisor = num / 2;
+        num = divisor;
+        [prepare appendFormat:@"%ld",remainder];
+        
+        if (divisor == 0) {
+            break;
+        }
+    }
+    
+    NSMutableString * result = [NSMutableString string];
+    for (NSInteger i = prepare.length - 1; i >= 0; i --) {
+        [result appendFormat:@"%@", [prepare substringWithRange:NSMakeRange(i , 1)]];
+    }
+    return result;
+}
+```
+
+#### 寻找一个字符串中不包含相同字符的最长子串的长度
+
+```objective-c
+// 滑动窗口方法
+- (void)maxNoRepeatStrLengthFor:(NSString*)str {
+    NSMutableSet * set = [[NSMutableSet alloc] init];
+    int ans = 0;// 两个临近的相同字符的间距
+    int i = 0; //前序走的index
+    int j = 0; // 后序走的index
+    
+    NSUInteger length = str.length;
+    while (j < length) {
+        NSString *subStrAtJ = [str substringWithRange:NSMakeRange(j,1)];
+        if (![set containsObject:subStrAtJ]) {
+            [set addObject:subStrAtJ];
+            j += 1;
+            
+            // 判断两个相同字符的差距是不是和之前的更大
+            if (j - i > ans) {
+                ans = j - i;
+            }
+        }
+        else {
+            [set removeObject:[str substringWithRange:NSMakeRange(i, 1)]];
+            i += 1;
+        }
+        
+        NSLog(@"111111111=== i %d j %d",i,j);
+    }
+    NSLog(@"%d", ans);
+}
+// 优化的滑动窗口
+- (void)maxNoRepeatStrLengthFor1:(NSString*)str {
+    NSUInteger length = str.length;
+    // str : index
+    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:length];
+    
+    int ans = 0;// 两个临近的相同字符的间距
+    int i = 0; //前序走的index
+    int j = 0; // 后序走的index
+    
+    while (j < length) {
+        NSString *subStrAtJ = [str substringWithRange:NSMakeRange(j,1)];
+        if ([dict.allKeys containsObject:subStrAtJ]) {
+            //应该保证滑动窗口的起始位置依次向前，不能倒退
+            i = MAX(i, [dict[subStrAtJ] intValue] + 1);//max的作用 ：考虑字符串abba这个例子
+        }
+        NSLog(@"2222222=== i %d j %d",i,j);
+        
+        dict[subStrAtJ] = @(j);
+        j += 1;
+        ans = MAX(ans, j - i);
+    }
+    NSLog(@"%d", ans);
+}
+
+// 优化的滑动窗口
+- (void)maxNoRepeatStrLengthFor2:(NSString*)str {
+    if (str == nil || str.length == 1) {
+        return;
+    }
+    
+    NSUInteger length = str.length;
+    
+    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:length];
+    int ans = 0;// 两个临近的相同字符的间距
+    
+    int i = 0; //前序走的index
+    int j = 0; // 后序走的index
+    for (j = 0; j < length; j++) {
+        NSString *subStrAtJ = [str substringWithRange:NSMakeRange(j,1)];
+        if ([dict.allKeys containsObject:subStrAtJ]) {
+            i = MAX(i,[dict[subStrAtJ] intValue] + 1);
+        }
+        dict[subStrAtJ] = @(j);
+        if (j - i > ans) {
+            ans = j - i;
+        }
+        NSLog(@"33333=== i %d j %d",i,j);
+    }
+    NSLog(@"%d", ans > 0 ? ans + 1 : 0);
+}
+```
+
