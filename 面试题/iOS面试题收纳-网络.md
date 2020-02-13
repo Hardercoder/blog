@@ -35,18 +35,28 @@
 
 - `传输数据的大小：`
   
-- GET提交时，传输数据就会受到URL长度限制，POST由于不是通过URL传值，理论上书不受限
+  - GET提交时，传输数据就会受到URL长度限制，POST由于不是通过URL传值，理论上书不受限
   
 - `安全性：`
   - POST的安全性要比GET的安全性高
   - 通过GET提交数据，用户名和密码将明文出现在URL上，比如登陆界面有可能被浏览器缓存
   - HTTPS：安全超文本传输协议（`Secure Hypertext Transfer Protocol`），它是一个安全通信通道，基于HTTP开发，用于客户计算机和服务器之间交换信息，使用安全套结字层（`SSI`）进行信息交换，即HTTP的安全版
 
-#### 一次完整的HTTP请求过程?当我们在浏览器的地址栏输入 '[http://www.baidu.com](https://links.jianshu.com/go?to=http%3A%2F%2Fwww.baidu.com) ，然后回车，回车这一瞬间到看到页面到底发生了什么呢？
+#### 当我们在浏览器的地址栏输入 '[http://www.baidu.com](https://links.jianshu.com/go?to=http%3A%2F%2Fwww.baidu.com) ，然后回车，回车这一瞬间到看到页面到底发生了什么呢？
 
 ```rust
 域名解析 --> 发起TCP的3次握手 --> 建立TCP连接后发起http请求 --> 服务器响应http请求，浏览器得到html代码 --> 浏览器解析html代码，并请求html代码中的资源（如js、css、图片等） --> 浏览器对页面进行渲染呈现给用户
 ```
+
+#### HTTP post的body体使用form-urlencoded和multipart/form-data的区别
+
+- application/x-www-form-urlencoded
+
+  窗体数据被编码为key/value键值对，这是标准且默认的编码格式。当action为get时候，客户端把form数据转换成一个字符串追加到url后面，用?分割。当action为post时候，浏览器把form数据封装到http body中，然后发送到server
+
+- multipart/form-data
+   multipart表示的意思是单个消息头包含多个消息体的解决方案。multipart媒体类型对发送非文本的各媒体类型是有用的。一般多用于文件上传。
+   multipart/form-data只是multipart的一种。目前常用的有以下这些类型：related,alternative,mixed(注：任何一种执行时无法识别的multipart子类型都被视为子类型"mixed")
 
 #### 请求报文简要说明
 
@@ -168,7 +178,7 @@ HTTPS（全称：Hyper Text Transfer Protocol over Secure Socket Layer 或 Hyper
 #### 什么是对称加密
 
 对称加密是最快速、最简单的一种加密方式，加密（encryption）与解密（decryption）用的是同样的密钥（secret key）。对称加密有很多种算法，由于它效率很高，所以被广泛使用在很多加密协议的核心当中。
- 常见的有AES,DES,3DES等
+ 常见的有AES，DES，3DES等
 
 #### 非对称加密
 
@@ -289,7 +299,7 @@ OSI模型有7层结构，每层都可以有几个子层。 OSI的7层从上到�
 - 解决方法：每一次对话（session），客户端和服务器端都生成一个"对话密钥"（session key），用它来加密信息
 - 由于"对话密钥"是对称加密，所以运算速度非常快，而服务器公钥(非对称加密)只用于加密"对话密钥"本身，这样就减少了加密运算的消耗时间
 
-#### 30. XMPP是什么?
+#### XMPP是什么?
 
 1. XMPP 是一种基于XML的协议，XMPP是一个分散型通信网络
 2. XMPP是一种基于标准通用标记语言的子集XML的协议，它继承了在XML环境中灵活的发展性，XMPP有超强的扩展性。XMPP中定义了三个角色，客户端，服务端，网关。通信能够在这个三者的任意两个之间双向发生，而他们的传输是XML流
