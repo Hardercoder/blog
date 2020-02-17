@@ -1,3 +1,5 @@
+[TOC]
+
 #### 采用递归算法获取UIView及其子View下所有的UIImageView的实例
 
 ```objective-c
@@ -348,7 +350,7 @@
 }
 ```
 
-#### 寻找一个字符串中不包含相同字符的最长子串的长度
+#### 寻找一个字符串中不包含重复字符的最长子串的长度
 
 ```objective-c
 // 滑动窗口方法
@@ -429,6 +431,123 @@
         NSLog(@"33333=== i %d j %d",i,j);
     }
     NSLog(@"%d", ans > 0 ? ans + 1 : 0);
+}
+```
+
+#### 交换两个NSInteger的值
+
+```objective-c
+// 交换A和B的值
+// 1.使用中间变量
+- (void)swap0a:(NSInteger)a b:(NSInteger)b {
+    NSInteger temp = a;
+    a = b;
+    b = temp;
+    NSLog(@"%ld %ld",a,b);
+}
+
+// 2.加法
+- (void)swap1a:(NSInteger)a b:(NSInteger)b {
+    a = a + b;
+    b = a - b;
+    a = a - b;
+    NSLog(@"%ld %ld",a,b);
+}
+
+// 3.异或（相同为0，不同为1. 可以理解为不进位加法）
+- (void)swap2a:(NSInteger)a b:(NSInteger)b {
+    a = a ^ b;
+    b = a ^ b;
+    a = a ^ b;
+    NSLog(@"%ld %ld",a,b);
+}
+```
+
+#### 求两个NSInteger的最大公约数，这里假定a>b
+
+```objective-c
+/** 1.直接遍历法 */
+- (NSInteger)maxCommonDivisorFor0A:(NSInteger)a b:(NSInteger)b {
+    NSInteger max = 0;
+    for (NSInteger i = 1; i <= b; i++) {
+        if (a % i == 0 && b % i == 0) {
+            max = i;
+        }
+    }
+    NSLog(@"%ld",max);
+    return max;
+}
+
+/** 2.辗转相除法 其中a为大数，b为小数 */
+- (NSInteger)maxCommonDivisorFor1A:(NSInteger)a b:(NSInteger)b {
+    NSInteger r = a % b;
+    while(r > 0) {
+        a = b;
+        b = r;
+        r = a % b;
+    }
+    NSLog(@"%ld",b);
+    return b;
+}
+```
+
+#### 判断一个数是否为质数(只能被1和自身整除的叫质数)
+
+```objective-c
+- (BOOL)isPrime:(NSInteger)n {
+    for(int i = 2; i <= sqrt(n); i++) {
+        if(n % i == 0) {
+            return NO;
+        }
+    }
+    return YES;
+}
+```
+
+#### 给定一个字符串,输出本字符串中只出现一次并且最靠前的那个字符的位置
+
+```
+- (NSInteger)indexForFirstDisguistCharIn:(NSString*)str {
+    if (str == nil || str.length == 0) {
+        return -1;
+    }
+    if (str.length == 1) {
+        return 0;
+    }
+    // str : str's count 存储字符->字符出现的数量
+    NSMutableDictionary *charCountDict = [NSMutableDictionary dictionaryWithCapacity:str.length];
+    // 只出现1次的字符
+    NSMutableSet *difficultSet = [NSMutableSet setWithCapacity:str.length];
+    
+    for (int i = 0; i < str.length; i++) {
+        NSString *subStr = [str substringWithRange:NSMakeRange(i, 1)];
+        if ([charCountDict.allKeys containsObject:subStr]) {
+            int count = [charCountDict[subStr] intValue];
+            charCountDict[subStr] = @(count + 1);
+        }
+        else {
+            charCountDict[subStr] = @(1);
+        }
+        
+        if ([charCountDict[subStr] intValue] == 1) {
+            if (![difficultSet containsObject:subStr]) {
+                [difficultSet addObject:subStr];
+            }
+        }
+        else {
+            if ([difficultSet containsObject:subStr]) {
+                [difficultSet removeObject:subStr];
+            }
+        }
+    }
+    
+    for (int i = 0; i < str.length; i++) {
+        NSString *subStr = [str substringWithRange:NSMakeRange(i, 1)];
+        if ([difficultSet containsObject:subStr]) {
+            return i;
+        }
+    }
+    return -1;
 }
 ```
 

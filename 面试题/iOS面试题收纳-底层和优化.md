@@ -21,6 +21,10 @@ typedef struct objc_class *Class;
 
 #### 对象的isa指针指向哪里
 
+- 在Objective-C中，任何类的定义都是对象。类和类的实例（对象）没有任何本质上的区别。任何对象都有 `isa` 指针
+
+-  `isa` 是一个Class 类型的指针。 每个实例对象有个 `isa` 的指针，他指向对象的类，而Class里也有个 `isa` 指针， 指向 `meteClass` (元类)。元类保存了类方法的列表。当类方法被调用时，先会从本身查找类方法的实现，如果没有，元类会向他父类查找该方法。同时注意的是：元类也是类，它也是对象。元类也有 `isa` 指针,它的 `isa` 指针最终指向的是一个根元类。根元类的 `isa` 指针指向本身，这样形成了一个封闭的内循环
+
 ![](./reviewimgs/objc_isa)
 
 - instance对象的isa指向class对象
@@ -91,7 +95,7 @@ typedef struct objc_class *Class;
 
 - 不能向编译后得到的类中增加实例变量
 - 能向运行时创建的类中添加实例变量
-- 因为编译后的类已经注册在 runtime 中，类结构体中的 objc_ivar_list 实例变量的链表 和 instance_size 实例变量的内存大小已经确定，同时runtime 会调用 class_setIvarLayout 或 class_setWeakIvarLayout 来处理 strong weak 引用。所以不能向存在的类中添加实例变量。运行时创建的类是可以添加实例变量，调用 class_addIvar 函数。但是得在调用 objc_allocateClassPair 之后，objc_registerClassPair 之前，原因同上。
+- 因为编译后的类已经注册在 runtime 中，类结构体中的 objc_ivar_list 实例变量的链表 和 instance_size 实例变量的内存大小已经确定，同时runtime 会调用 class_setIvarLayout 或 class_setWeakIvarLayout 来处理 strong weak 引用。所以不能向存在的类中添加实例变量运行时创建的类是可以添加实例变量，调用 class_addIvar 函数。但是得在调用 objc_allocateClassPair 之后，objc_registerClassPair 之前，原因同上。
 
 #### 在运行时创建类的方法objc_allocateClassPair的方法名尾部为什么是pair（成对的意思）
 
@@ -268,8 +272,8 @@ struct category_t {
 
 #### Category和Extension的区别是什么
 
-- Category 在运行的时候才将数据合并到类信息中，不可以添加实例变量
-- Extension 在编译的时候就将数据包含在类信息中了，可以添加实例变量。一般用来隐藏类的私有信息
+- Category 在运行的时候才将数据合并到类信息中，有名字，不可以添加成员变量。可以声明属性，但是属性默认没有实现，可以使用runtime手写`getter/setter`方法
+- Extension 在编译的时候就将数据包含在类信息中了，可以添加属性和成员变量。一般用来隐藏类的私有信息
 
 #### Category中有load方法吗？load方法是什么时候调用的？load 方法能继承吗？
 
@@ -437,6 +441,17 @@ struct category_t {
       objc_setAssociatedObject(self, @selector(myWeakPro), PackWeakReference(myWeakPro), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
   }
   */
+  ```
+
+#### @protocol 和 category 中如何使用 @property
+
+- 在protocol中使用property只会生成setter和getter方法声明，我们使用属性的目的是希望遵守我协议的对象能实现该属性
+
+- category 使用 @property也是只会生成setter和getter方法声明，如果我们真的需要给category增加属性的实现,需要借助于运行时的两个函数
+
+  ```css
+  objc_setAssociatedObject
+  objc_getAssociatedObject
   ```
 
 ## Block
@@ -929,7 +944,7 @@ self.block = ^{
 
 #### _objc_msgForward 函数是做什么的?直接 调用它将会发生什么?
 
-- _objc_msgForward 是 IMP 类型，用于消息转发的。当向一个对象发送一条消息，但它并没有实现的时候，_objc_msgForward 会尝试做消息转发
+- `_objc_msgForward`是一个函数指针（和 IMP 的类型一样），是用于消息转发的：当向一个对象发送一条消息，但它并没有实现的时候`，_objc_msgForward`会尝试做消息转发
 - 直接调用_objc_msgForward 是非常危险的事，这是把双刃刀，如果用不好会直接导致程序 Crash，但是如果用得好，能做很多非常酷的事
 - JSPatch 就是直接调用_objc_msgForward 来实现其核心功能的
 
@@ -979,7 +994,7 @@ self.block = ^{
 
 #### ARC下什么样的对象由 Autoreleasepool 管理
 
-- 当使用alloc/new/copy/mutableCopy开始的方法进行初始化时，会生成并持有对象(系统会自动的帮它在合适位置release)，不需要pool进行管理
+- 当使用`alloc/new/copy/mutableCopy`开始的方法进行初始化时，会生成并持有对象(系统会自动的帮它在合适位置release)，不需要pool进行管理
 - 一般类方法创建的对象需要使用Autoreleasepool进行管理
 
 #### 如何实现AutoreleasePool
@@ -1023,6 +1038,13 @@ self.block = ^{
 
 - 在子线程你创建了 Pool 的话，产生的 Autorelease 对象就会交给 pool 去管理。
 - 如果你没有创建 Pool ，但是产生了 Autorelease 对象，就会调用 autoreleaseNoPage 方法。在这个方法中，会自动帮你创建一个 hotpage（hotPage 可以理解为当前正在使用的 AutoreleasePoolPage，如果你还是不理解，可以先看看 Autoreleasepool 的源代码，再来看这个问题 ），并调用 page->add(obj)将对象添加到 AutoreleasePoolPage 的栈中，也就是说你不进行手动的内存管理，也不会内存泄漏啦！StackOverFlow 的作者也说道，这个是 OS X 10.9+和 iOS 7+ 才加入的特性。
+
+#### 不手动指定autoreleasepool的前提下，一个autorealese对象在什么时刻释放？（比如在一个vc的viewDidLoad中创建）
+
+分两种情况：手动干预释放时机、系统自动去释放。
+
+1. 手动干预释放时机--指定autoreleasepool 就是所谓的：当前作用域大括号结束时释放。
+2. 系统自动去释放--不手动指定autoreleasepool Autorelease对象出了作用域之后，会被添加到最近一次创建的自动释放池中，并会在当前的 runloop 迭代结束时释放
 
 #### 以下代码运行会有是什么问题?
 

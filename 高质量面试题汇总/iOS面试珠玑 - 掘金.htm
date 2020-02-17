@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<!-- saved from url=(0058)https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-78 -->
+<html lang="zh-Hans"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover"><meta name="google-site-verification" content="cCHsgG9ktuCTgWgYfqCJql8AeR4gAne4DTZqztPoirE"><meta name="google-site-verification" content="nPvn9R5NJLsZKTv5VKIbn0OmkRcJ4PC6KdDoTX3n5Mw"><meta name="apple-itunes-app" content="app-id=987739104"><meta name="baidu-site-verification" content="qiK2a1kcFc"><meta name="360-site-verification" content="4c3c7d57d59f0e1a308462fbc7fd7e51"><meta name="sogou_site_verification" content="c49WUDZczQ"><style>body {
+        font-size: 16px;
+        line-height: 2;
+      }
+      a, button, input {
+        margin: 1rem 1.5rem;
+      }
+      img {
+        width: 0;
+        height: 0;
+      }
+      #juejin {
+        overflow-x: hidden;
+      }</style><title data-vue-meta="true">iOS面试珠玑 - 掘金</title><link rel="apple-touch-icon" sizes="180x180" href="https://b-gold-cdn.xitu.io/favicons/v2/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="https://b-gold-cdn.xitu.io/favicons/v2/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="https://b-gold-cdn.xitu.io/favicons/v2/favicon-16x16.png"><link rel="manifest" href="https://b-gold-cdn.xitu.io/favicons/v2/manifest.json"><link rel="mask-icon" href="https://b-gold-cdn.xitu.io/favicons/v2/safari-pinned-tab.svg" color="#5bbad5"><link rel="shortcut icon" href="https://b-gold-cdn.xitu.io/favicons/v2/favicon.ico"><meta name="msapplication-config" content="https://b-gold-cdn.xitu.io/favicons/v2/browserconfig.xml"><meta name="theme-color" content="#ffffff"><link rel="search" title="掘金" href="https://b-gold-cdn.xitu.io/conf/search.xml" type="application/opensearchdescription+xml"><link rel="stylesheet" href="./iOS面试珠玑 - 掘金_files/ionicons.min.css"><link rel="stylesheet" href="./iOS面试珠玑 - 掘金_files/iconfont.css"><link href="./iOS面试珠玑 - 掘金_files/0.1156efb3f40f1f28efe0.css" rel="stylesheet"><script async="" src="./iOS面试珠玑 - 掘金_files/hm.js"></script><script async="" src="./iOS面试珠玑 - 掘金_files/analytics.js"></script><script type="text/javascript" async="" src="./iOS面试珠玑 - 掘金_files/vds.js"></script><script type="text/javascript" async="" src="./iOS面试珠玑 - 掘金_files/collect-v.3.2.14.js"></script><script charset="utf-8" src="./iOS面试珠玑 - 掘金_files/4.b5543bf8548426ea8c4f.js"></script><meta data-vmid="keywords" name="keywords" content="iOS,安全,浏览器,服务器" data-vue-meta="true"><meta data-vmid="description" name="description" content="iOS基础类 这里包含了去哪儿，滴滴，蚂蚁金服，美团，今日头条，快手以及其它公司的一些面试题，大部分面试官问的重复的问题很多，总体来说就是以下的面试题。 简述iOS中的内存管理方式 iOS的内存管理用的是引用计数的方法，分为MRC(手动引用计数)和" data-vue-meta="true"></head><body><div id="juejin" data-v-498f8a10=""><div class="global-component-box" data-v-498f8a10=""><!----><div data-v-2b01e2dc="" data-v-498f8a10="" class="alert-list alert-list"></div><div data-v-1fce53a0="" data-v-498f8a10="" class="suspension-panel suspension-panel"><button data-v-1fce53a0="" title="回到顶部" class="btn to-top-btn" style=""><i data-v-1fce53a0="" class="ion-android-arrow-dropup"></i></button><button data-v-1fce53a0="" title="建议反馈" class="btn meiqia-btn" style=""><i data-v-1fce53a0="" class="ion-chatbubble-working"></i></button></div><!----><!----><div class="emoji-barrage" data-v-0349d03a="" data-v-498f8a10=""><!----></div><div class="book-new-user-award-popup" style="display:none;" data-v-7f5e8d84="" data-v-498f8a10=""><div class="content-box" style="display:;" data-v-7f5e8d84=""><div class="close ion-close-round" data-v-7f5e8d84=""></div><div class="header" data-v-7f5e8d84=""><div class="icon" data-v-7f5e8d84=""><img src="./iOS面试珠玑 - 掘金_files/icon.a87e5ae.svg" data-v-7f5e8d84=""></div><div class="txt" data-v-7f5e8d84="">新人专享好礼</div></div><div class="desc" data-v-7f5e8d84="">凡未购买过小册的用户，均可领取三张 5 折新人专享券，购买小册时自动使用专享券，最高可节省 45 元。</div><div class="tickets" data-v-7f5e8d84=""><div class="ticket" data-v-7f5e8d84=""><div class="ticket__inner" data-v-7f5e8d84=""><div class="enjoy" data-v-7f5e8d84=""><span class="new-title" data-v-7f5e8d84="">小册新人 5 折券</span></div><div class="sale" data-v-7f5e8d84="">最高可省 15 元</div></div></div><div class="ticket" data-v-7f5e8d84=""><div class="ticket__inner" data-v-7f5e8d84=""><div class="enjoy" data-v-7f5e8d84=""><span class="new-title" data-v-7f5e8d84="">小册新人 5 折券</span></div><div class="sale" data-v-7f5e8d84="">最高可省 15 元</div></div></div><div class="ticket" data-v-7f5e8d84=""><div class="ticket__inner" data-v-7f5e8d84=""><div class="enjoy" data-v-7f5e8d84=""><span class="new-title" data-v-7f5e8d84="">小册新人 5 折券</span></div><div class="sale" data-v-7f5e8d84="">最高可省 15 元</div></div></div></div><div class="remark" data-v-7f5e8d84="">注：专享券的使用期限在领券的七天内。</div><div class="submit-btn" data-v-7f5e8d84="">一键领取</div></div><div class="model success" style="display:none;" data-v-7f5e8d84=""><div class="heading" data-v-7f5e8d84="">领取成功</div><div class="content-text" data-v-7f5e8d84="">购买小册时自动使用专享券</div><div class="btn-success-footer" data-v-7f5e8d84=""><div class="btn-ok" data-v-7f5e8d84="">知道了</div><div class="btn-ok btn-link" data-v-7f5e8d84="">前往小册首页</div></div></div><div class="model fail" style="display:none;" data-v-7f5e8d84=""><div class="heading" data-v-7f5e8d84="">领取失败</div><div class="content-text" data-v-7f5e8d84="">本活动仅适用于小册新用户</div><div class="btn-ok" data-v-7f5e8d84="">知道了</div></div></div><!----><!----><div class="bind-phone-number-modal-box" data-v-ea3bee6e="" data-v-498f8a10=""><div st:block="bindPhoneNumberModal" class="modal-mask" style="display:none;" data-v-ea3bee6e=""></div><form class="bind-phone-number-form" style="display:none;" data-v-ea3bee6e=""><i title="关闭" class="close-btn ion-close-round" data-v-ea3bee6e=""></i><h1 class="title" data-v-ea3bee6e="">提示</h1><h2 class="hint" data-v-ea3bee6e="">根据我国<a href="http://www.cac.gov.cn/2017-08/25/c_1121541842.htm" target="_blank" style="color:#007fff">《互联网跟帖评论服务管理规定》</a>，您需要绑定手机号后才可在掘金社区内发布内容。</h2><div class="input-group" data-v-ea3bee6e=""><div class="input-box" data-v-ea3bee6e=""><input maxlength="64" placeholder="请输入要绑定的手机号码" value="" class="input" data-v-ea3bee6e=""></div><!----><!----></div><button st:name="bindBtn" class="btn" data-v-ea3bee6e="">绑定手机</button></form></div></div><!----><div data-v-93a60a52="" data-v-55484a2b="" data-v-498f8a10="" class="view-container"><div data-v-93a60a52="" class="main-header-box"><header data-v-1af5c9aa="" data-v-93a60a52="" class="main-header main-header"><div data-v-1af5c9aa="" class="container"><a data-v-1af5c9aa="" href="https://juejin.im/" class="logo"><img data-v-1af5c9aa="" src="./iOS面试珠玑 - 掘金_files/logo.a7995ad.svg" alt="掘金" class="logo-img"><img data-v-1af5c9aa="" src="./iOS面试珠玑 - 掘金_files/simplify-logo.3e3c253.svg" alt="掘金" class="mobile"></a><nav data-v-1af5c9aa="" role="navigation" class="main-nav"><ul data-v-1af5c9aa="" class="nav-list"><li data-v-1af5c9aa="" class="main-nav-list"><div data-v-1af5c9aa="" class="phone-show-menu"><span data-v-1af5c9aa="">首页</span><div data-v-1af5c9aa="" class="icon ion-arrow-down-b"></div></div><ul data-v-1af5c9aa="" class="phone-hide"><li data-v-1af5c9aa="" class="nav-item link-item route-active"><a data-v-1af5c9aa="" href="https://juejin.im/">首页</a></li><li data-v-1af5c9aa="" class="nav-item link-item activities"><a data-v-1af5c9aa="" href="https://juejin.im/pins">沸点</a></li><li data-v-1af5c9aa="" class="nav-item link-item"><a data-v-1af5c9aa="" href="https://juejin.im/topics">话题</a></li><li data-v-1af5c9aa="" class="nav-item link-item book discount"><a data-v-1af5c9aa="" href="https://juejin.im/books">小册</a></li><li data-v-1af5c9aa="" class="nav-item link-item"><a data-v-1af5c9aa="" href="https://juejin.im/events/all">活动</a></li></ul></li><li data-v-1af5c9aa="" class="nav-item search"><form data-v-1af5c9aa="" role="search" class="search-form"><input data-v-1af5c9aa="" type="search" maxlength="32" placeholder="搜索掘金" class="search-input"><img data-v-1af5c9aa="" src="./iOS面试珠玑 - 掘金_files/juejin-search-icon.6f8ba1b.svg" alt="搜索" class="search-icon"></form></li><li data-v-1af5c9aa="" class="nav-item add"><div data-v-1af5c9aa="" class="add-group"><button data-v-1af5c9aa="" class="add-btn">写文章</button><div data-v-1af5c9aa="" class="more"><i data-v-1af5c9aa="" class="more-icon ion-android-arrow-dropdown"></i></div><ul data-v-1af5c9aa="" class="more-list"><li data-v-1af5c9aa="" class="item">发布沸点</li><li data-v-1af5c9aa="" class="item">分享链接</li><!----></ul></div><!----></li><li data-v-1af5c9aa="" class="nav-item notification"><a data-v-1af5c9aa="" class="app-link" href="https://juejin.im/notification" target="_blank"><i data-v-1af5c9aa="" class="icon ion-android-notifications"></i><!----></a></li><li data-v-1af5c9aa="" class="nav-item menu"><div data-v-17f3e65e="" data-v-4f213b1c="" data-v-1af5c9aa="" data-src="https://user-gold-cdn.xitu.io/2020/1/12/16f9a3cab0a1d800?imageView2/1/w/100/h/100/q/85/format/webp/interlace/1" class="lazy avatar avatar loaded immediate" style="background-image: url(&quot;https://user-gold-cdn.xitu.io/2020/1/12/16f9a3cab0a1d800?imageView2/1/w/100/h/100/q/85/format/webp/interlace/1&quot;);"></div><!----><ul data-v-1af5c9aa="" class="nav-menu user-dropdown-list" style="display: none;"><div data-v-1af5c9aa="" class="nav-menu-item-group"><li data-v-1af5c9aa="" class="nav-menu-item"><a data-v-1af5c9aa=""><i data-v-1af5c9aa="" class="fengwei fw-write"></i><span data-v-1af5c9aa="">写文章</span></a></li><!----><li data-v-1af5c9aa="" class="nav-menu-item"><a data-v-1af5c9aa=""><i data-v-1af5c9aa="" class="fengwei fw-draft"></i><span data-v-1af5c9aa="">草稿</span></a></li></div><div data-v-1af5c9aa="" class="nav-menu-item-group"><li data-v-1af5c9aa="" class="nav-menu-item"><a data-v-1af5c9aa="" href="https://juejin.im/user/577ee218128fe100565b51a8" class="link-icon"><i data-v-1af5c9aa="" class="fengwei fw-person"></i><span data-v-1af5c9aa="">我的主页</span><!----></a></li><li data-v-1af5c9aa="" class="nav-menu-item"><a data-v-1af5c9aa="" href="https://juejin.im/user/577ee218128fe100565b51a8/likes"><img data-v-1af5c9aa="" src="./iOS面试珠玑 - 掘金_files/zan.e9d7698.svg" class="zan"><span data-v-1af5c9aa="">我赞过的</span></a></li><!----><li data-v-1af5c9aa="" class="nav-menu-item"><a data-v-1af5c9aa="" href="https://juejin.im/user/577ee218128fe100565b51a8/collections"><img data-v-1af5c9aa="" src="./iOS面试珠玑 - 掘金_files/collect.02e2979.svg" class="collect"><span data-v-1af5c9aa="">我的收藏集</span></a></li><li data-v-1af5c9aa="" class="nav-menu-item"><a data-v-1af5c9aa="" href="https://juejin.im/user/577ee218128fe100565b51a8/books?type=bought"><i data-v-1af5c9aa="" class="fengwei fw-bought"></i><span data-v-1af5c9aa="">已购</span></a></li><li data-v-1af5c9aa="" class="nav-menu-item"><a data-v-1af5c9aa="" href="https://juejin.im/subscribe"><i data-v-1af5c9aa="" class="fengwei fw-tag"></i><span data-v-1af5c9aa="">标签管理</span></a></li></div><div data-v-1af5c9aa="" class="nav-menu-item-group"><li data-v-1af5c9aa="" class="nav-menu-item"><a data-v-1af5c9aa="" href="https://juejin.im/user/settings"><i data-v-1af5c9aa="" class="fengwei fw-setting"></i><span data-v-1af5c9aa="">设置</span></a></li><li data-v-1af5c9aa="" class="nav-menu-item more"><a data-v-1af5c9aa=""><i data-v-1af5c9aa="" class="fengwei fw-info"></i><span data-v-1af5c9aa="">关于</span><i data-v-1af5c9aa="" class="ion-chevron-right more-icon"></i></a><ul data-v-1af5c9aa="" class="nav-menu more-dropdown-list"><div data-v-1af5c9aa="" class="nav-menu-item-group"><li data-v-1af5c9aa="" class="nav-menu-item"><a data-v-1af5c9aa="" href="https://juejin.im/app" target="_blank">下载应用</a></li><li data-v-1af5c9aa="" class="nav-menu-item"><a data-v-1af5c9aa="" href="https://juejin.im/about" target="_blank">关于</a></li><li data-v-1af5c9aa="" class="nav-menu-item"><a data-v-1af5c9aa="" href="https://xitu.io/jobs" target="_blank">加入我们</a></li><li data-v-1af5c9aa="" class="nav-menu-item"><a data-v-1af5c9aa="" href="https://github.com/xitu/gold-miner" rel="nofollow noopener noreferrer" target="_blank">翻译计划</a></li><li data-v-1af5c9aa="" class="nav-menu-item"><a data-v-1af5c9aa="" href="https://bd.juejin.im/?utm_campaign=bd&amp;utm_source=web&amp;utm_medium=nav" target="_blank">合作伙伴</a></li></div></ul></li></div><div data-v-1af5c9aa="" class="nav-menu-item-group"><li data-v-1af5c9aa="" class="nav-menu-item"><a data-v-1af5c9aa=""><i data-v-1af5c9aa="" class="fengwei fw-logout"></i><span data-v-1af5c9aa="">登出</span></a></li></div></ul></li><!----><!----></ul></nav></div></header></div><main data-v-93a60a52="" class="container main-container"><div data-v-55484a2b="" data-v-93a60a52="" class="view column-view"><div data-v-55484a2b="" data-v-93a60a52="" class="main-area article-area shadow"><article data-v-55484a2b="" itemscope="itemscope" itemtype="http://schema.org/Article" class="article" data-v-93a60a52=""><meta itemprop="url" content="https://juejin.im/post/5b03936a6fb9a07ac162bfe0"><meta itemprop="headline" content="iOS面试珠玑"><meta itemprop="keywords" content="iOS,安全,浏览器,服务器"><meta itemprop="datePublished" content="2018-05-31T09:30:33.854Z"><meta itemprop="image" content="https://user-gold-cdn.xitu.io/2018/6/4/163ca0c5db7877d1?w=3580&amp;h=1879&amp;f=png&amp;s=193813"><div itemprop="author" itemscope="itemscope" itemtype="http://schema.org/Person"><meta itemprop="name" content="Fabric"><meta itemprop="url" content="https://juejin.im/user/5a7bc68af265da4e8e784eee"></div><div itemprop="publisher" itemscope="itemscope" itemtype="http://schema.org/Organization"><meta itemprop="name" content="掘金"><div itemprop="logo" itemscope="itemscope" itemtype="https://schema.org/ImageObject"><meta itemprop="url" content="https://b-gold-cdn.xitu.io/icon/icon-white-180.png"><meta itemprop="width" content="180"><meta itemprop="height" content="180"></div></div><div data-v-55484a2b="" class="author-info-block"><a data-v-55484a2b="" href="https://juejin.im/user/5a7bc68af265da4e8e784eee" target="_blank" rel="" class="avatar-link"><div data-v-17f3e65e="" data-v-4f213b1c="" data-v-55484a2b="" data-src="https://user-gold-cdn.xitu.io/2018/2/8/1617385c2add419c?imageView2/1/w/100/h/100/q/85/format/webp/interlace/1" class="lazy avatar avatar loaded" style="background-image: url(&quot;https://user-gold-cdn.xitu.io/2018/2/8/1617385c2add419c?imageView2/1/w/100/h/100/q/85/format/webp/interlace/1&quot;);"></div></a><div data-v-55484a2b="" class="author-info-box"><a data-v-c1bb97ea="" data-v-55484a2b="" href="https://juejin.im/user/5a7bc68af265da4e8e784eee" target="_blank" rel="" class="username username ellipsis">Fabric<a data-v-2c188f64="" data-v-c1bb97ea="" href="https://juejin.im/book/5c90640c5188252d7941f5bb/section/5c9065385188252da6320022" target="_blank" rel="" class="rank"><img data-v-2c188f64="" src="./iOS面试珠玑 - 掘金_files/lv-2.f597b88.svg" alt="lv-2"></a></a><div data-v-55484a2b="" class="meta-box"><time data-v-55484a2b="" datetime="2018-05-31T09:30:33.854Z" title="Thu May 31 2018 17:30:33 GMT+0800 (China Standard Time)" class="time">2018年05月31日</time><span data-v-55484a2b="" class="views-count">阅读 11862</span><!----></div></div><button data-v-0c65ebc8="" data-v-55484a2b="" class="follow-button follow">关注</button></div><div data-v-17f3e65e="" data-v-7db8834b="" data-v-55484a2b="" data-src="https://user-gold-cdn.xitu.io/2018/6/4/163ca0c5db7877d1?imageView2/1/w/1304/h/734/q/85/format/webp/interlace/1" class="lazy thumb article-hero loaded" style="background-image: url(&quot;https://user-gold-cdn.xitu.io/2018/6/4/163ca0c5db7877d1?imageView2/1/w/1304/h/734/q/85/format/webp/interlace/1&quot;); background-size: cover;"></div><h1 data-v-55484a2b="" class="article-title">iOS面试珠玑</h1><div data-v-55484a2b="" data-id="5b0fc0b9518825153e3d57e6" itemprop="articleBody" class="article-content"><h1 class="heading" data-id="heading-0">iOS基础类</h1>
+<p><em>这里包含了去哪儿，滴滴，蚂蚁金服，美团，今日头条，快手以及其它公司的一些面试题，大部分面试官问的重复的问题很多，总体来说就是以下的面试题。</em></p>
+<blockquote>
+<ol>
+<li>简述iOS中的内存管理方式</li>
+</ol>
+</blockquote>
+<ul>
+<li>
+<p>iOS的内存管理用的是引用计数的方法，分为MRC(手动引用计数)和ARC(自动引用计数)。</p>
+</li>
+<li>
+<p>MRC:开发者手动地进行retain和release操作，对每个对象的retainCount进行+1,-1操作，当retainCount为0时，系统会自动释放对象内存。</p>
+</li>
+<li>
+<p>ARC:开发者通过声明对象的属性为strong,weak,retain,assign来管理对象的引用计数，被strong和retain修饰的属性变量系统会自动对所修饰变量的引用计数进行自增自减操作，同样地，retainCount为0时，系统会释放对象内存。</p>
+</li>
+</ul>
+<hr>
+<blockquote>
+<ol start="2">
+<li>block的分类，__block的作用,block循环引用产生的原因及解决办法</li>
+</ol>
+</blockquote>
+<ul>
+<li>blcok分为全局blcok，堆block，栈block。</li>
+<li>在 MRC下:只要没有访问外部变量，就是全局block。访问了外部变量，就是栈block。显示地调用[block copy]就是堆block。</li>
+<li>在 ARC下:只要没有访问外部变量，就是全局block。如果访问了外部变量，那么在访问外部变量之前存储在栈区，访问外部变量之后存储在堆区。</li>
+<li>__block的作用:将外部变量的传递形式由值传递变为指针传递，从而可以获取并且修改外部变量的值。同样，外部变量的修改，也会影响block函数的输出。</li>
+<li>block循环引用问题：当一个类的对象持有block，block里面又引用了这个对象，那么就是一个循环引用的关系。可以用strong-weak-dance的方法解除循环引用。</li>
+</ul>
+<hr>
+<blockquote>
+<p>3.深拷贝与浅拷贝</p>
+</blockquote>
+<ul>
+<li>
+<p>深拷贝就是开辟一块新的内存空间来存储原来内存空间的内容，对象指针指向新的内存空间。浅拷贝只是重新生成一个指针，指向的还是原来的内存空间。</p>
+</li>
+<li>
+<p>copy方法:如果是非可扩展类对象，则是浅拷贝。如果是可扩展类对象，则是深拷贝。</p>
+</li>
+<li>
+<p>mutableCopy方法:无论是可扩展类对象还是不可扩展类对象，都是深拷贝。</p>
+</li>
+<li>
+<p>注意:深拷贝和深复制不同，深拷贝的内存空间的元素还是指向原地址，但是深复制会开辟新的内存空间重新复制子元素。</p>
+</li>
+</ul>
+<hr>
+<blockquote>
+<p>4.iOS中常见的属性和默认的对象属性</p>
+</blockquote>
+<ul>
+<li>
+<p>常见属性: atomic, nonatomic, assign, retain, strong, weak, copy, readonly, readwrite, unsafe_unretained, getter=, setter= 等。</p>
+</li>
+<li>
+<p>默认属性: 继承于NSObject类的对象:(atomic, strong), 非继承于NSObject类的对象:(atomic, assign)</p>
+</li>
+<li>
+<p>属性意义:</p>
+<h5 class="heading" data-id="heading-1">atomic:原子性的，在执行setter和getter方法时可以保证访问变量的线程安全。</h5>
+<h5 class="heading" data-id="heading-2">nonatomic:非原子性的，无法保证访问变量的线程安全性，但是变量访问效率会提高。</h5>
+<h5 class="heading" data-id="heading-3">assign:主要用于修饰非继承于NSObject类型的对象，例如int, double, NSInteger等，当该对象被其他对象引用时，该对象的引用计数不会自加1。</h5>
+<h5 class="heading" data-id="heading-4">retain:一般情况下等同于ARC环境下的strong修饰符，但是在修饰block对象时，retain相当于assign，而strong相当于copy。</h5>
+<h5 class="heading" data-id="heading-5">strong:主要用于继承于NSObject类的对象，当strong修饰的对象被其他对象引用时，引用计数会自加1。</h5>
+<h5 class="heading" data-id="heading-6">weak:主要用于继承于NSObject类的对象，当weak修饰的对象被其他对象引用时，引用计数不会自加1，且retainCount为0时，指向该对象的指针将会置nil，指向堆栈的底部0x00000000，防止野指针的出现。</h5>
+<h5 class="heading" data-id="heading-7">unsafe_unretained:主要用于继承于NSObject类型的对象，当retainCount为0时，指向该对象的指针不会置nil，因此可能会出现野指针，但是效率方面会比weak要高。</h5>
+<h5 class="heading" data-id="heading-8">copy:主要适用于NSArray, NSDictionary, NSString, Block等类型的对象，开辟一块新的内存存储原来内存中的元素，对象指针指向新内存的地址。</h5>
+<h5 class="heading" data-id="heading-9">readonly: 只读属性</h5>
+<h5 class="heading" data-id="heading-10">readwrite: 读写属性</h5>
+<h5 class="heading" data-id="heading-11">getter = : 修改读属性名称</h5>
+<h5 class="heading" data-id="heading-12">setter = : 修改写属性名称</h5>
+</li>
+</ul>
+<hr>
+<blockquote>
+<p>5.哪些属性需要声明成copy，为什么?</p>
+</blockquote>
+<ul>
+<li>NSDictionary, NSArray, NSString, Block需要声明为copy属性修饰，block用copy修饰是因为block只有拷贝到堆上才能保证调用block的时候，block没有被系统提前释放掉。NSDictionary, NSArray, NSString用copy修饰的原因直接上代码(以NSString举例)</li>
+</ul>
+<pre><code class="hljs objc copyable" lang="objc"><span class="hljs-class"><span class="hljs-keyword">@interface</span> <span class="hljs-title">ViewController</span> ()</span>
+<span class="hljs-keyword">@property</span> (<span class="hljs-keyword">nonatomic</span>, <span class="hljs-keyword">copy</span>)<span class="hljs-built_in">NSString</span> *aStr;
+<span class="hljs-keyword">@property</span> (<span class="hljs-keyword">nonatomic</span>, <span class="hljs-keyword">strong</span>)<span class="hljs-built_in">NSString</span> *bStr;
+<span class="hljs-keyword">@end</span>
+
+<span class="hljs-class"><span class="hljs-keyword">@implementation</span> <span class="hljs-title">ViewController</span></span>
+
+- (<span class="hljs-keyword">void</span>)viewDidLoad {
+    [<span class="hljs-keyword">super</span> viewDidLoad];
+    <span class="hljs-comment">// Do any additional setup after loading the view, typically from a nib.</span>
+<span class="hljs-comment">//    [self buildUI];</span>
+    [<span class="hljs-keyword">self</span> testCode];
+}
+
+- (<span class="hljs-keyword">void</span>)testCode{
+    
+    <span class="hljs-built_in">NSMutableString</span> *mutableStr = [<span class="hljs-built_in">NSMutableString</span> stringWithFormat:<span class="hljs-string">@"%@"</span>, <span class="hljs-string">@"abc"</span>];
+    <span class="hljs-keyword">self</span>.aStr = mutableStr;
+    <span class="hljs-keyword">self</span>.bStr = mutableStr;
+    [mutableStr appendString:<span class="hljs-string">@"123"</span>];
+    <span class="hljs-built_in">NSLog</span>(<span class="hljs-string">@"copy修饰的字符串:%@"</span>, <span class="hljs-keyword">self</span>.aStr);
+    <span class="hljs-built_in">NSLog</span>(<span class="hljs-string">@"strong修饰的字符串:%@"</span>, <span class="hljs-keyword">self</span>.bStr);
+}
+<span class="copy-code-btn">复制代码</span></code></pre><p>打印结果:</p>
+<pre><code class="hljs objc copyable" lang="objc"><span class="hljs-number">2018</span><span class="hljs-number">-05</span><span class="hljs-number">-22</span> <span class="hljs-number">21</span>:<span class="hljs-number">13</span>:<span class="hljs-number">58.344883</span> TTFeedBackDemo[<span class="hljs-number">1224</span>:<span class="hljs-number">245923</span>] <span class="hljs-keyword">copy</span>修饰的字符串:abc
+<span class="hljs-number">2018</span><span class="hljs-number">-05</span><span class="hljs-number">-22</span> <span class="hljs-number">21</span>:<span class="hljs-number">13</span>:<span class="hljs-number">58.345004</span> TTFeedBackDemo[<span class="hljs-number">1224</span>:<span class="hljs-number">245923</span>] <span class="hljs-keyword">strong</span>修饰的字符串:abc123
+<span class="copy-code-btn">复制代码</span></code></pre><p>用了copy属性修饰之后，可以防止这些类型的对象被引用并且改变内容。</p>
+<hr>
+<blockquote>
+<ol start="6">
+<li>通知，代理，block，KVO的使用场景分别是什么，有什么区别？</li>
+</ol>
+</blockquote>
+<ul>
+<li>
+<p>通知: 适用于毫无关联的页面之间或者系统消息的传递，属于一对多的信息传递关系。例如系统音量的改变，系统状态的改变，应用模式的设置和改变，都比较适合用通知去传递信息。</p>
+</li>
+<li>
+<p>代理: 一对一的信息传递方式，适用于相互关联的页面之间的信息传递，例如push和present出来的页面和原页面之间的信息传递。</p>
+</li>
+<li>
+<p>block: 一对一的信息传递方式，效率会比代理要高(毕竟是直接取IMP指针的操作方式)。适用的场景和代理差不多，都是相互关联页面之间的页面传值。</p>
+</li>
+<li>
+<p>KVO: 属性监听，监听对象的某一属性值的变化状况，当需要监听对象属性改变的时候使用。例如在UIScrollView中，监听contentOffset，既可以用KVO，也可以用代理。但是其他一些情况，比如说UIWebView的加载进度,AVPlayer的播放进度，就只能用KVO来监听了，否则获取不到对应的属性值。</p>
+</li>
+</ul>
+<hr>
+<blockquote>
+<ol start="7">
+<li>简述对OC中的isa指针的认识</li>
+</ol>
+</blockquote>
+<ul>
+<li>
+<p>isa指针:首先，贴出NSObject.h文件，大家宏观感受一下。
+</p><figure><img class="lazyload inited" data-src="https://user-gold-cdn.xitu.io/2018/5/23/1638afb0cff80a82?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" data-width="1280" data-height="1152" src="data:image/svg+xml;utf8,&lt;?xml version=&quot;1.0&quot;?&gt;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; version=&quot;1.1&quot; width=&quot;1280&quot; height=&quot;1152&quot;&gt;&lt;/svg&gt;"><figcaption></figcaption></figure>
+Ojective-C语言是基于C语言的封装，它实现了将面向过程的语言向面向对象的语言的转变。而OC中绝大部分类又是继承于NSObject类的，所以研究清楚NSObject类的构成，对于理解OC语言很有帮助。<p></p>
+<h5 class="heading" data-id="heading-13">NSObject类引入了两个头文件:<code>#include &lt;objc/objc.h&gt;</code>、<code>#include &lt;objc/NSObjCRuntime.h&gt;</code>，第一个头文件引入的是objc结构体的构成方式即isa指针，第二个头文件引入的是Runtime消息查找机制。</h5>
+<h5 class="heading" data-id="heading-14">接下来又引入了三个类的声明:<code>@class NSString, NSMethodSignature, NSInvocation;</code></h5>
+<h5 class="heading" data-id="heading-15">NSMethodSignature和NSInvacation和OC的方法转发机制有关，而NSString是与NSObject的<code>+ (NSString *)description</code>方法有关。</h5>
+<p>isa指针: 代码如下</p>
+<pre><code class="hljs objc copyable" lang="objc"><span class="hljs-class"><span class="hljs-keyword">@interface</span> <span class="hljs-title">NSObject</span> &lt;<span class="hljs-title">NSObject</span>&gt; </span>{
+<span class="hljs-meta">#pragma clang diagnostic push</span>
+<span class="hljs-meta">#pragma clang diagnostic ignored <span class="hljs-meta-string">"-Wobjc-interface-ivars"</span></span>
+Class isa  OBJC_ISA_AVAILABILITY;
+<span class="hljs-meta">#pragma clang diagnostic pop</span>
+}
+<span class="copy-code-btn">复制代码</span></code></pre><p>NSObject对象其实包含了一个Class类型的isa指针。
+这个和id类型是一样的，代码如下:</p>
+<pre><code class="hljs objc copyable" lang="objc"><span class="hljs-keyword">struct</span> objc_object {
+Class _Nonnull isa  OBJC_ISA_AVAILABILITY;
+};
+
+<span class="hljs-comment">/// A pointer to an instance of a class.</span>
+<span class="hljs-keyword">typedef</span> <span class="hljs-keyword">struct</span> objc_object *<span class="hljs-keyword">id</span>;
+<span class="copy-code-btn">复制代码</span></code></pre><p>即id类型其实是objc_object指针类型的别称。objc_object结构体同样也是包含了一个指向Class类型的指针。
+继续看一下，Class isa指针的内部结构,如下</p>
+<pre><code class="hljs objc copyable" lang="objc"><span class="hljs-keyword">struct</span> objc_class {
+Class _Nonnull isa  OBJC_ISA_AVAILABILITY;<span class="hljs-comment">//指向元类的Class指针</span>
+
+<span class="hljs-meta">#if !__OBJC2__</span>
+Class _Nullable super_class                              OBJC2_UNAVAILABLE;<span class="hljs-comment">//指向父类的Class指针</span>
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">char</span> * _Nonnull name                               OBJC2_UNAVAILABLE;<span class="hljs-comment">//类名</span>
+<span class="hljs-keyword">long</span> version                                             OBJC2_UNAVAILABLE;<span class="hljs-comment">//类的版本信息,默认为0</span>
+<span class="hljs-keyword">long</span> info                                                OBJC2_UNAVAILABLE;<span class="hljs-comment">//运行期使用的一些位标识</span>
+<span class="hljs-keyword">long</span> instance_size                                       OBJC2_UNAVAILABLE;<span class="hljs-comment">//该类的实例变量大小</span>
+<span class="hljs-keyword">struct</span> objc_ivar_list * _Nullable ivars                  OBJC2_UNAVAILABLE;<span class="hljs-comment">//属性列表</span>
+<span class="hljs-keyword">struct</span> objc_method_list * _Nullable * _Nullable methodLists                    OBJC2_UNAVAILABLE;<span class="hljs-comment">//方法列表</span>
+<span class="hljs-keyword">struct</span> objc_cache * _Nonnull cache                       OBJC2_UNAVAILABLE;<span class="hljs-comment">//缓存方法列表</span>
+<span class="hljs-keyword">struct</span> objc_protocol_list * _Nullable protocols          OBJC2_UNAVAILABLE;<span class="hljs-comment">//协议列表</span>
+<span class="hljs-meta">#endif</span>
+
+} OBJC2_UNAVAILABLE;
+
+<span class="hljs-keyword">typedef</span> <span class="hljs-keyword">struct</span> objc_class *Class;
+<span class="copy-code-btn">复制代码</span></code></pre><p>Class其实就是一个objc_class类型的结构体指针。objc_class的结构体变量构成见上图，下面是objc_class类的super_class指针和isa元类指针的具体指向关系，请大家分清对象，对象的类，元类，根元类这些概念。
+</p><figure><img class="lazyload inited" data-src="https://user-gold-cdn.xitu.io/2018/5/23/1638bf89b650d5ff?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" data-width="598" data-height="625" src="data:image/svg+xml;utf8,&lt;?xml version=&quot;1.0&quot;?&gt;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; version=&quot;1.1&quot; width=&quot;598&quot; height=&quot;625&quot;&gt;&lt;/svg&gt;"><figcaption></figcaption></figure><p></p>
+</li>
+</ul>
+<hr>
+<blockquote>
+<ol start="8">
+<li>简述OC中的消息转发机制</li>
+</ol>
+</blockquote>
+<ul>
+<li>
+<p>当objc_msgSend方法调用找不到响应的函数名称时就会进行消息转发，主要分为3步:</p>
+<h5 class="heading" data-id="heading-16">1、动态方法解析</h5>
+<p>调用方法<code>+(BOOL)resolveInstanceMethod:(SEL)sel</code>(实例方法动态解析)和<code>+ (BOOL)resolveClassMethod:(SEL)sel</code>(类方法动态解析)。</p>
+<h5 class="heading" data-id="heading-17">2、备援接收者</h5>
+<p>调用方法  - (id)forwardingTargetForSelector:(SEL)aSelector</p>
+<h5 class="heading" data-id="heading-18">3、完全转发</h5>
+<p>调用方法<code>- (void)forwardInvocation:(NSInvocation *)anInvocation</code>和<code>- (NSMethodSignature *)methodSignatureForSelector:(SEL)aSelector</code></p>
+<p>具体的转发流程见下图:</p>
+</li>
+</ul>
+<p></p><figure><img class="lazyload inited" data-src="https://user-gold-cdn.xitu.io/2018/5/23/1638c0ba8ca81d4d?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" data-width="700" data-height="327" src="data:image/svg+xml;utf8,&lt;?xml version=&quot;1.0&quot;?&gt;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; version=&quot;1.1&quot; width=&quot;700&quot; height=&quot;327&quot;&gt;&lt;/svg&gt;"><figcaption></figcaption></figure><p></p>
+<hr>
+<blockquote>
+<ol start="9">
+<li>响应链原理</li>
+</ol>
+</blockquote>
+<ul>
+<li>
+<p>当用户触摸屏幕时，触碰屏幕产生事件UIEvent并存入UIApplication中的事件队列中, 并且在整个视图结构中自上而下的进行分发，如下图所示:
+</p><figure><img class="lazyload inited" data-src="https://user-gold-cdn.xitu.io/2018/5/23/1638c3e6e096e9ac?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" data-width="700" data-height="527" src="data:image/svg+xml;utf8,&lt;?xml version=&quot;1.0&quot;?&gt;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; version=&quot;1.1&quot; width=&quot;700&quot; height=&quot;527&quot;&gt;&lt;/svg&gt;"><figcaption></figcaption></figure><p></p>
+</li>
+<li>
+<p>这里着重介绍两个方法</p>
+</li>
+</ul>
+<pre><code class="hljs objc copyable" lang="objc"><span class="hljs-comment">//判断当前点击事件是否存在最优响应者(First Responder）</span>
+- (<span class="hljs-built_in">UIView</span> *)hitTest:(<span class="hljs-built_in">CGPoint</span>)point withEvent:(<span class="hljs-built_in">UIEvent</span> *)event;
+<span class="copy-code-btn">复制代码</span></code></pre><pre><code class="hljs objc copyable" lang="objc"><span class="hljs-comment">//判断当前点击是否在控件的Bounds之内</span>
+- (<span class="hljs-built_in">BOOL</span>)pointInside:(<span class="hljs-built_in">CGPoint</span>)point withEvent:(<span class="hljs-built_in">UIEvent</span> *)event;
+<span class="copy-code-btn">复制代码</span></code></pre><p>第一个方法返回一个可以响应event触摸事件的UIView，第二个方法判断触摸点位在不在可相应范围之内的BOOL值。所以会衍生出一些问题，比如说“如何让一个父视图以外的子视图响应点击事件”，“如何只让一个UIView的圆形区域响应触摸事件”等等，在此由于篇幅限制，不再一一展开详述。下面这幅图简述了系统查找响应事件控件的流程。
+</p><figure><img class="lazyload inited" data-src="https://user-gold-cdn.xitu.io/2018/5/23/1638c4a8bd2375cb?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" data-width="700" data-height="375" src="data:image/svg+xml;utf8,&lt;?xml version=&quot;1.0&quot;?&gt;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; version=&quot;1.1&quot; width=&quot;700&quot; height=&quot;375&quot;&gt;&lt;/svg&gt;"><figcaption></figcaption></figure><p></p>
+<hr>
+<blockquote>
+<ol start="10">
+<li>手写一个block结构体声明</li>
+</ol>
+</blockquote>
+<ul>
+<li>这就是考察一名iOS开发人员的写码基本功了，大家加深印象即可:
+<code>typedef void(^RBBlogDemoHandler)(void);</code></li>
+</ul>
+<hr>
+<blockquote>
+<ol start="11">
+<li>RunLoop原理，RunLoop与线程的关系</li>
+</ol>
+</blockquote>
+<ul>
+<li>RunLoop其实就是一个do-while循环，Runloop的存在保证了程序一直在前台运行。RunLoop和线程是一一对应的关系，即开启一个线程，就会创建一个RunLoop对线程进行处理和管理，直到Runloop中没有需要处理的item，RunLoop才会进入休眠状态，如果休眠一段时间没有被唤醒的话，RunLoop将会被销毁掉。RunLoop的执行逻辑见下图:
+<figure><img class="lazyload inited" data-src="https://user-gold-cdn.xitu.io/2018/5/24/1639197cd489a8f2?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" data-width="1255" data-height="1280" src="data:image/svg+xml;utf8,&lt;?xml version=&quot;1.0&quot;?&gt;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; version=&quot;1.1&quot; width=&quot;1255&quot; height=&quot;1280&quot;&gt;&lt;/svg&gt;"><figcaption></figcaption></figure></li>
+</ul>
+<hr>
+<blockquote>
+<ol start="12">
+<li>GCD与NSOperation两种管理多线程方式的异同点</li>
+</ol>
+</blockquote>
+<ul>
+<li>GCD是用C语言实现的，而NSOperation是用OC实现的。</li>
+<li>NSOperation可以设置最大线程并发数，可以设置线程依赖关系，可以设置线程的优先级。</li>
+<li>GCD方式管理多线程是一种对开发者非常友好的开发方式，开发者只需要关注同步异步，串行并发这些线程关系就可以轻松地进行线程管理了。另外，线程中执行的任务是通过Block的形式调用的，所以执行效率也是非常高的。</li>
+</ul>
+<hr>
+<blockquote>
+<ol start="13">
+<li>GCD的常用api</li>
+</ol>
+</blockquote>
+<ul>
+<li>dispatch_sync：同步线程函数</li>
+<li>dispatch_async：异步线程函数</li>
+<li>dispatch_group_async：群线程函数</li>
+<li>dispatch_barrier_async：栅栏函数，阻塞所属的队列的线程</li>
+<li>dispatch_barrier_sync：栅栏函数，阻塞当前线程</li>
+<li>dispatch_apply：该函数按指定的次数将指定的Block追加到指定的Dispatch Queue中，并等待全部处理执行结束。</li>
+</ul>
+<hr>
+<blockquote>
+<ol start="14">
+<li>GCD中的同步异步，串行并发的概念，GCD常见的线程死锁问题</li>
+</ol>
+</blockquote>
+<ul>
+<li>同步:针对于线程而言的概念，阻塞当前线程，不执行结束，当前线程就不会继续往下执行。</li>
+<li>异步:针对于线程而言的概念，不阻塞当前线程，当前线程会继续往下执行。</li>
+<li>串行：针对于队列而言，串行队列遵守FIFO(first-in-first-out)原则，只能一个任务一个任务地顺序执行。</li>
+<li>并发：针对于队列而言，并发队列可以在同一时间执行多个任务。</li>
+<li>类似于</li>
+</ul>
+<pre><code class="hljs objc copyable" lang="objc"><span class="hljs-built_in">dispatch_sync</span>(dispatch_get_main_queue(), ^{
+        <span class="hljs-built_in">NSLog</span>(<span class="hljs-string">@"%@"</span>, <span class="hljs-string">@"123"</span>);
+    });
+<span class="copy-code-btn">复制代码</span></code></pre><p>这样的函数，就是典型的GCD死锁函数。
+因为dispatch_sync阻塞的当前的线程，而当前线程是main_queue，也就是说是一个串行线程，当前线程只有先执行<code>NSLog(@"%@", @"123")</code>才能继续运行下去，但是当前线程又被阻塞掉了，无法向下继续执行，所以这就是一个死锁的GCD执行函数了。</p>
+<hr>
+<blockquote>
+<ol start="15">
+<li>iOS中常用的线程锁有哪些，分别具有哪些特点？</li>
+</ol>
+</blockquote>
+<ul>
+<li>@synchronized 关键字加锁 互斥锁，性能较差不推荐使用</li>
+<li>NSLock 互斥锁 不能多次调用 lock方法,会造成死锁</li>
+<li>NSRecursiveLock递归锁，NSRecursiveLock类定义的锁可以在同一线程多次lock，而不会造成死锁。递归锁会跟踪它被多少次lock。每次成功的lock都必须平衡调用unlock操作。只有所有的锁住和解锁操作都平衡的时候，锁才真正被释放给其他线程获得。</li>
+<li>NSConditionLock条件锁，顾名思义，这个锁对象有一个condition属性，只有condition的值相同，才能获取到该锁，并且执行解锁操作。</li>
+<li>POSIX互斥锁，POSIX是Unix/Linux平台上提供的一套条件互斥锁的API。用法和特点与NSLock类似。</li>
+<li>dispatch_semaphore信号量实现加锁，当信号量为0时，线程将会被卡死，通过信号量的增减来达到控制线程个数的目的。</li>
+<li>OSSpinLock自旋锁，用法类似于NSLock，可以自动检查线程锁是否已经打开，效率比较高，但是被证明不是线程安全的。</li>
+<li>GCD线程阻断<code>dispatch_barrier_async</code>/<code>dispatch_barrier_sync</code>，<code>dispatch_barrier_async</code>/<code>dispatch_barrier_sync</code>在一定的基础上也可以做线程同步，会在线程队列中打断其他线程执行当前任务。两个的区别是dispatch_barrier_async阻塞的是当前队列的线程，而dispatch_barrier_sync阻塞的是任务所插入队列的线程。</li>
+<li>各种线程锁的执行效率对比如下图:
+<figure><img class="lazyload inited" data-src="https://user-gold-cdn.xitu.io/2018/5/29/163aabcf78cb4462?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" data-width="1060" data-height="684" src="data:image/svg+xml;utf8,&lt;?xml version=&quot;1.0&quot;?&gt;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; version=&quot;1.1&quot; width=&quot;1060&quot; height=&quot;684&quot;&gt;&lt;/svg&gt;"><figcaption></figcaption></figure></li>
+</ul>
+<hr>
+<blockquote>
+<ol start="16">
+<li>Father的子类Son，分别写出<code>NSStringFromClass([self class])</code>,<code>NSStringFromClass([super class])</code>,<code>NSStringFromClass(self.superClass)</code>的打印值</li>
+</ol>
+</blockquote>
+<ul>
+<li>[self class] : Son</li>
+<li>[super class] : Son</li>
+<li>self.superClass : Father</li>
+<li>第一个就不用解释了，打印本类的类名。</li>
+<li>[super class]找到NSObject中class方法以后，reciever不变。实际上是因为super只是一个“编译器指示符”，它和self指向的是相同的receiver。这里要深刻理解super所指代的上下文环境。</li>
+<li>self.superClass是取到了本类的superClass指针，所以打印的是父类的类名。</li>
+</ul>
+<hr>
+<blockquote>
+<ol start="17">
+<li>KVO的原理</li>
+</ol>
+</blockquote>
+<ul>
+<li>例如，A类的实例的name属性被B类的实例监听了。这时，OC的runtime机制生成了一个KVONotifying_A的类来替代原来的A类，重写了+ (Class)class方法，返回[A Class]，从而把自己伪装成A类。重写了A类属性name的setter方法加入了NSObject的两个方法:<code>willChangeValueForKey:</code>(值改变之前)和<code>didChangevlueForKey:</code>(值改变之后)。在一个被观察属性发生改变之前，<code>willChangeValueForKey:</code>一定会被调用，这就会记录旧的值。而当改变发生后，<code>didChangeValueForKey:</code>会被调用，继而<code>observeValueForKey:ofObject:change:context:</code>也会被调用。</li>
+</ul>
+<hr>
+<blockquote>
+<ol start="18">
+<li>runtime的机制和应用</li>
+</ol>
+</blockquote>
+<ul>
+<li>Objective-C是一门动态强类型语言，它会将一些工作放在代码运行时才处理而并非编译时。也就是说，有很多类和成员变量在我们编译的时是不知道的，而在运行时，我们所编写的代码会转换成完整的确定的代码运行。因此，我们还需要一个运行时系统(Runtime system)来处理编译后的代码。例如OC中的类对象，都是在程序的运行期才知道这个对象是哪个类的对象，该类具有哪些特征，等等。我们执行的函数例如:[foo doSomeThing]，其实是通过函数objc_msgSend(foo, doSomeThing)来调用的，编译器将会在foo类的方法树中进行查找。</li>
+<li>具体的应用：JSON转Model，Model转数据库语言，方法交换Method Swizzing，消息转发，等等。</li>
+</ul>
+<hr>
+<blockquote>
+<p>19.MJExtension, MJRefresh, SDWebImage的实现原理</p>
+</blockquote>
+<ul>
+<li>MJExtension:通过运行时，拿到Model对应的PropertyName，然后通过KVC，将字典中的值传入Model。</li>
+<li>MJRefresh：所有的View继承于父类MJRefreshComponent，通过监听SCrollView的contentOffset来判断Refresh状态，从而触发各种状态的函数方法。</li>
+<li>SDWebImage：SDWebImageManager拿到需要请求的URL，会进行三级缓存的查找:NSCache, Memery磁盘，服务器。SDWebImageDownLoader会下载图片对应的Data，开启CGRefImage上下文进行图片异步渲染绘制得到UIImage然后传入UIImageView。</li>
+</ul>
+<hr>
+<blockquote>
+<ol start="20">
+<li>NSTimer计时器是准确的吗，为什么？</li>
+</ol>
+</blockquote>
+<ul>
+<li>NSTimer计时器不是准确的。</li>
+<li>原因：定时器被添加在主线程中，由于定时器在一个RunLoop中被检测一次，所以如果在这一次的RunLoop中做了耗时的操作，当前RunLoop持续的时间超过了定时器的间隔时间，那么下一次定时就被延后了。</li>
+</ul>
+<hr>
+<blockquote>
+<ol start="21">
+<li>类的分类和类的扩展的区别，类的分类的实现原理。</li>
+</ol>
+</blockquote>
+<ul>
+<li>类的分类可以动态添加方法(运行时)，类的扩展可以添加更多的属性变量（编译期）。
+ </li>
+<li>类的分类的实现原理：在运行时过程中，本类的方法加载完毕之后，会查询是否有类的分类，如果有类的分类，就会再去加载类的分类的方法，把这些方法全部存储到objc_class结构体的methodLists数组中。注意，这里的类的分类的方法是插入到数组的第一个元素位置的，也就是说类的分类的方法会覆盖本类的同名方法。如果有多个类的分类都包含同名函数，那么最后一个被加载进compile sources的类的分类文件中的方法将会覆盖其他的同名方法。</li>
+</ul>
+<hr>
+<blockquote>
+<ol start="22">
+<li>iOS动态关联属性(<code>objc_setAssociatedObject</code>,<code>objc_getAssocicatedObject</code>)的实现原理</li>
+</ol>
+</blockquote>
+<ul>
+<li>AssociationsManager 是顶级的对象，维护了一个从spinlock_t 锁到AssociationsHashMap哈希表的单例键值对映射；</li>
+<li>AssociationsHashMap是一个无序的哈希表，维护了从对象地址到 ObjectAssociationMap的映射；</li>
+<li>ObjectAssociationMap 是一个 C 中的 map ，维护了从 key 到 ObjcAssociation 的映射，即关联记录；</li>
+<li>ObjcAssociation是一个C的类，表示一个具体的关联结构，主要包括两个实例变量，_policy 表示关联策略，_value 表示关联对象。</li>
+</ul>
+<hr>
+<blockquote>
+<ol start="23">
+<li>Masonry的抗压缩属性和抗拉伸属性</li>
+</ol>
+</blockquote>
+<ul>
+<li>一般情况下，用Masonry设置两个平行的自适应Label(左面为Label1，右面为Label2)，那么效果图应该如下:
+<figure><img class="lazyload inited" data-src="https://user-gold-cdn.xitu.io/2018/5/30/163af0244b958fdc?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" data-width="602" data-height="116" src="data:image/svg+xml;utf8,&lt;?xml version=&quot;1.0&quot;?&gt;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; version=&quot;1.1&quot; width=&quot;602&quot; height=&quot;116&quot;&gt;&lt;/svg&gt;"><figcaption></figcaption></figure></li>
+<li>但是我想达到这样的效果，应该怎么设置呢？
+<figure><img class="lazyload inited" data-src="https://user-gold-cdn.xitu.io/2018/5/30/163af0338d740062?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" data-width="598" data-height="78" src="data:image/svg+xml;utf8,&lt;?xml version=&quot;1.0&quot;?&gt;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; version=&quot;1.1&quot; width=&quot;598&quot; height=&quot;78&quot;&gt;&lt;/svg&gt;"><figcaption></figcaption></figure></li>
+<li>可以设置抗拉伸属性优先级，代码如下:</li>
+</ul>
+<pre><code class="hljs objc copyable" lang="objc">[label1 setContentHuggingPriority:<span class="hljs-built_in">UILayoutPriorityRequired</span>
+                          forAxis:<span class="hljs-built_in">UILayoutConstraintAxisHorizontal</span>];
+[label2 setContentHuggingPriority:<span class="hljs-built_in">UILayoutPriorityDefaultLow</span>
+                          forAxis:<span class="hljs-built_in">UILayoutConstraintAxisHorizontal</span>];
+<span class="copy-code-btn">复制代码</span></code></pre><ul>
+<li>当文字过多的时候，一般效果如下:
+<figure><img class="lazyload inited" data-src="https://user-gold-cdn.xitu.io/2018/5/30/163af04c033c352b?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" data-width="618" data-height="84" src="data:image/svg+xml;utf8,&lt;?xml version=&quot;1.0&quot;?&gt;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; version=&quot;1.1&quot; width=&quot;618&quot; height=&quot;84&quot;&gt;&lt;/svg&gt;"><figcaption></figcaption></figure></li>
+<li>那么我想实现这样的效果，应该怎么办呢?
+<figure><img class="lazyload inited loaded" data-src="https://user-gold-cdn.xitu.io/2018/5/30/163af0596f6d6444?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" data-width="614" data-height="100" src="./iOS面试珠玑 - 掘金_files/163af0596f6d6444"><figcaption></figcaption></figure></li>
+<li>可以设置抗压缩属性，代码如下:</li>
+</ul>
+<pre><code class="hljs objc copyable" lang="objc">[label1 setContentCompressionResistancePriority:<span class="hljs-built_in">UILayoutPriorityDefaultLow</span>
+                                        forAxis:<span class="hljs-built_in">UILayoutConstraintAxisHorizontal</span>];
+[label2 setContentCompressionResistancePriority:<span class="hljs-built_in">UILayoutPriorityRequired</span>
+                                        forAxis:<span class="hljs-built_in">UILayoutConstraintAxisHorizontal</span>];
+<span class="copy-code-btn">复制代码</span></code></pre><blockquote>
+<ol start="24">
+<li>加密的种类，对称加密和非对称加密</li>
+</ol>
+</blockquote>
+<ul>
+<li>加密种类：</li>
+<li>对称加密算法：MD5，DES，AES。</li>
+<li>非对称加密算法：RSA等加密方式。</li>
+<li>对称加密：对称加密是最快速、最简单的一种加密方式，加密与解密用的是同样的密钥，这种方法在密码学中叫做对称加密算法。</li>
+<li>非对称加密：非对称加密为数据的加密与解密提供了一个非常安全的方法，它使用了一对密钥，公钥和私钥。私钥只能由一方安全保管，不能外泄，而公钥则可以发给任何请求它的人。非对称加密使用这对密钥中的一个进行加密，而解密则需要另一个密钥。</li>
+</ul>
+<hr>
+<blockquote>
+<ol start="25">
+<li>解释一下七层网络结构，三次握手协议和四次挥手协议</li>
+</ol>
+</blockquote>
+<ul>
+<li>
+<p>七层网络协议：</p>
+<h5 class="heading" data-id="heading-19">由低到高：物理层、数据链路层、网络层、传输层、表示层、会话层、应用层。</h5>
+</li>
+<li>
+<p>三次握手协议：</p>
+<h5 class="heading" data-id="heading-20">第一次握手：建立连接时，客户端发送syn包（syn=j）到服务器，并进入SYN_SENT状态，等待服务器确认；SYN：同步序列编号（Synchronize Sequence Numbers）。</h5>
+<h5 class="heading" data-id="heading-21">第二次握手：服务器收到syn包，必须确认客户的SYN（ack=j+1），同时自己也发送一个SYN包（syn=k），即SYN+ACK包，此时服务器进入SYN_RECV状态；</h5>
+<h5 class="heading" data-id="heading-22">第三次握手：客户端收到服务器的SYN+ACK包，向服务器发送确认包ACK(ack=k+1），此包发送完毕，客户端和服务器进入ESTABLISHED（TCP连接成功）状态，完成三次握手。</h5>
+</li>
+<li>
+<p>四次挥手协议：</p>
+<h5 class="heading" data-id="heading-23">1.第一次挥手：主机1(可以使客户端，也可以是服务器端)，设置Sequence Number和Acknowledgment Number，向主机2发送一个FIN报文段;此时，主机1进入FIN_WAIT_1状态;这表示主机1没有数据要发送给主机2了;</h5>
+<h5 class="heading" data-id="heading-24">2.第二次挥手：主机2收到了主机1发送的FIN报文段，向主机1回一个ACK报文段，Acknowledgment Number为Sequence Number加1;主机1进入FIN_WAIT_2状态;主机2告诉主机1，我也没有数据要发送了，可以进行关闭连接了;</h5>
+<h5 class="heading" data-id="heading-25">3.第三次挥手：主机2向主机1发送FIN报文段，请求关闭连接，同时主机2进入CLOSE_WAIT状态;</h5>
+<h5 class="heading" data-id="heading-26">4.第四次挥手：主机1收到主机2发送的FIN报文段，向主机2发送ACK报文段，然后主机1进入TIME_WAIT状态;主机2收到主机1的ACK报文段以后，就关闭连接;此时，主机1等待2MSL后依然没有收到回复，则证明Server端已正常关闭，那好，主机1也可以关闭连接了。</h5>
+</li>
+</ul>
+<hr>
+<blockquote>
+<ol start="26">
+<li>http和https的区别</li>
+</ol>
+</blockquote>
+<ul>
+<li>https在http的基础上增加了SSL数据传输安全性认证层。具体关系如下图：
+<figure><img class="lazyload inited" data-src="https://user-gold-cdn.xitu.io/2018/5/30/163b053ccde79d16?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" data-width="321" data-height="174" src="data:image/svg+xml;utf8,&lt;?xml version=&quot;1.0&quot;?&gt;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; version=&quot;1.1&quot; width=&quot;321&quot; height=&quot;174&quot;&gt;&lt;/svg&gt;"><figcaption></figcaption></figure></li>
+<li>https协议需要到ca申请证书。http是超文本传输协议，信息是明文传输，https 则是具有安全性的ssl加密传输协议。http和https使用的是完全不同的连接方式用的端口也不一样,前者是80,后者是443。http的连接很简单,是无状态的。HTTPS协议是由SSL+HTTP协议构建的可进行加密传输、身份认证的网络协议。</li>
+</ul>
+<hr>
+<blockquote>
+<ol start="27">
+<li>https双向验证原理</li>
+</ol>
+</blockquote>
+<ul>
+<li>1.浏览器将自己支持的一套加密规则发送给网站。</li>
+<li>2.网站从中选出一组加密算法与HASH算法，并将自己的身份信息以证书的形式发回给浏览器。证书里面包含了网站地址，加密公钥，以及证书的颁发机构等信息。</li>
+<li>3.浏览器获得网站证书之后浏览器要做以下工作：
+<h6 class="heading" data-id="heading-27">a) 验证证书的合法性（颁发证书的机构是否合法，证书中包含的网站地址是否与正在访问的地址一致等），如果证书受信任，则浏览器栏里面会显示一个小锁头，否则会给出证书不受信的提示。</h6>
+<h6 class="heading" data-id="heading-28">b) 如果证书受信任，或者是用户接受了不受信的证书，浏览器会生成一串随机数的密码，并用证书中提供的公钥加密。</h6>
+<h5 class="heading" data-id="heading-29">c) 使用约定好的HASH算法计算握手消息，并使用生成的随机数对消息进行加密，最后将之前生成的所有信息发送给网站。</h5>
+</li>
+<li>4.网站接收浏览器发来的数据之后要做以下的操作：
+<h5 class="heading" data-id="heading-30">a) 使用自己的私钥将信息解密取出密码，使用密码解密浏览器发来的握手消息，并验证HASH是否与浏览器发来的一致。</h5>
+<h5 class="heading" data-id="heading-31">b) 使用密码加密一段握手消息，发送给浏览器。</h5>
+</li>
+<li>5.浏览器解密并计算握手消息的HASH，如果与服务端发来的HASH一致，此时握手过程结束，之后所有的通信数据将由之前浏览器生成的随机密码并利用对称加密算法进行加密。</li>
+<li>具体的流程见下图：</li>
+</ul>
+<p></p><figure><img class="lazyload inited" data-src="https://user-gold-cdn.xitu.io/2018/5/30/163b0585442cfaa8?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" data-width="426" data-height="462" src="data:image/svg+xml;utf8,&lt;?xml version=&quot;1.0&quot;?&gt;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; version=&quot;1.1&quot; width=&quot;426&quot; height=&quot;462&quot;&gt;&lt;/svg&gt;"><figcaption></figcaption></figure><p></p>
+<hr>
+<blockquote>
+<ol start="28">
+<li>HTTP常用的头部字段，常见的返回状态码和意义</li>
+</ol>
+</blockquote>
+<ul>
+<li>
+<p>常见的头部字段：</p>
+<h5 class="heading" data-id="heading-32">host头域</h5>
+<h5 class="heading" data-id="heading-33">Host头域指定请求资源的Intenet主机和端口号，必须表示请求url的原始服务器或网关的位置。HTTP/1.1请求必须包含主机头域，否则系统会以400状态码返回。</h5>
+<h5 class="heading" data-id="heading-34">Referer头域</h5>
+<h5 class="heading" data-id="heading-35">Referer头域允许客户端指定请求uri的源资源地址，这可以允许服务器生成回退链表，可用来登陆、优化cache等。他也允许废除的或错误的连接由于维护的目的被追踪。如果请求的uri没有自己的uri地址，Referer不能被发送。如果指定的是部分uri地址，则此地址应该是一个相对地址。</h5>
+<h5 class="heading" data-id="heading-36">User-Agent头域</h5>
+<h5 class="heading" data-id="heading-37">User-Agent头域的内容包含发出请求的用户信息，User Agent也简称UA。用较为普通的一点来说，是一种向访问网站提供你所使用的浏览器类型、操作系统及版本、CPU类型、浏览器渲染引擎、浏览器语言、浏览器插件等信息的标识。</h5>
+<h5 class="heading" data-id="heading-38">Cache-Control头域</h5>
+<h5 class="heading" data-id="heading-39">Cache-Control指定请求和响应遵循的缓存机制。在请求消息或响应消息中设置Cache-Control并不会修改另一个消息处理过程中的缓存处理过程。请求时的缓存指令包括no-cache、no-store、max-age、max-stale、min-fresh、only-if-cached，响应消息中的指令包括public、private、no-cache、no-store、no-transform、must-revalidate、proxy-revalidate、max-age。</h5>
+<h5 class="heading" data-id="heading-40">Date头域</h5>
+<h5 class="heading" data-id="heading-41">Date头域表示消息发送的时间，时间的描述格式由rfc822定义。例如，Date:Mon,31Dec200104:25:57GMT。Date描述的时间表示世界标准时，换算成本地时间，需要知道用户所在的时区。</h5>
+</li>
+<li>
+<p>返回的状态码:</p>
+<h5 class="heading" data-id="heading-42">200（成功）  服务器已成功处理了请求。通常，这表示服务器提供了请求的网页。</h5>
+<h5 class="heading" data-id="heading-43">201（已创建）  请求成功且服务器已创建了新的资源。</h5>
+<h5 class="heading" data-id="heading-44">202（已接受）  服务器已接受了请求，但尚未对其进行处理。</h5>
+<h5 class="heading" data-id="heading-45">203（非授权信息）  服务器已成功处理了请求，但返回了可能来自另一来源的信息。</h5>
+<h5 class="heading" data-id="heading-46">204（无内容）  服务器成功处理了请求，但未返回任何内容。</h5>
+<h5 class="heading" data-id="heading-47">205（重置内容） 服务器成功处理了请求，但未返回任何内容。与 204 响应不同，此响应要求请求者重置文档视图（例如清除表单内容以输入新内容）。</h5>
+<h5 class="heading" data-id="heading-48">206（部分内容）  服务器成功处理了部分 GET 请求。</h5>
+<h5 class="heading" data-id="heading-49">300（多种选择）  服务器根据请求可执行多种操作。服务器可根据请求者 来选择一项操作，或提供操作列表供其选择。</h5>
+<h5 class="heading" data-id="heading-50">301（永久移动）  请求的网页已被永久移动到新位置。服务器返回此响应时，会自动将请求者转到新位置。您应使用此代码通知搜索引擎蜘蛛网页或网站已被永久移动到新位置。</h5>
+<h5 class="heading" data-id="heading-51">302（临时移动） 服务器目前正从不同位置的网页响应请求，但请求者应继续使用原有位置来进行以后的请求。会自动将请求者转到不同的位置。但由于搜索引擎会继续抓取原有位置并将其编入索引，因此您不应使用此代码来告诉搜索引擎页面或网站已被移动。</h5>
+<h5 class="heading" data-id="heading-52">303（查看其他位置） 当请求者应对不同的位置进行单独的 GET 请求以检索响应时，服务器会返回此代码。对于除 HEAD     #####  304（未修改） 自从上次请求后，请求的网页未被修改过。服务器返回此响应时，不会返回网页内容。如果网页自请求者上次请求后再也没有更改过，您应当将服务器配置为返回此响应。由于服务器可以告诉 搜索引擎自从上次抓取后网页没有更改过，因此可节省带宽和开销。</h5>
+<h5 class="heading" data-id="heading-53">305（使用代理） 请求者只能使用代理访问请求的网页。如果服务器返回此响应，那么，服务器还会指明请求者应当使用的代理。</h5>
+<h5 class="heading" data-id="heading-54">307（临时重定向）  服务器目前正从不同位置的网页响应请求，但请求者应继续使用原有位置来进行以后的请求。会自动将请求者转到不同的位置。但由于搜索引擎会继续抓取原有位置并将其编入索引，因此您不应使用此代码来告诉搜索引擎某个页面或网站已被移动。</h5>
+<h5 class="heading" data-id="heading-55">400（错误请求） 服务器不理解请求的语法。</h5>
+<h5 class="heading" data-id="heading-56">401（身份验证错误） 此页要求授权。您可能不希望将此网页纳入索引。</h5>
+<h5 class="heading" data-id="heading-57">403（禁止） 服务器拒绝请求。</h5>
+<h5 class="heading" data-id="heading-58">404（未找到） 服务器找不到请求的网页。例如，对于服务器上不存在的网页经常会返回此代码。例如：<a target="_blank" href="http://www.0631abc.com/20100aaaa%EF%BC%8C%E5%B0%B1%E4%BC%9A%E8%BF%9B%E5%85%A5404%E9%94%99%E8%AF%AF%E9%A1%B5%E9%9D%A2%E3%80%82" rel="nofollow noopener noreferrer">www.0631abc.com/20100aaaa，就…</a></h5>
+<h5 class="heading" data-id="heading-59">405（方法禁用） 禁用请求中指定的方法。</h5>
+<h5 class="heading" data-id="heading-60">406（不接受） 无法使用请求的内容特性响应请求的网页。</h5>
+<h5 class="heading" data-id="heading-61">407（需要代理授权） 此状态码与 401 类似，但指定请求者必须授权使用代理。如果服务器返回此响应，还表示请求者应当使用代理。</h5>
+<h5 class="heading" data-id="heading-62">408（请求超时） 服务器等候请求时发生超时。</h5>
+<h5 class="heading" data-id="heading-63">409（冲突） 服务器在完成请求时发生冲突。服务器必须在响应中包含有关冲突的信息。服务器在响应与前一个请求相冲突的 PUT 请求时可能会返回此代码，以及两个请求的差异列表。</h5>
+<h5 class="heading" data-id="heading-64">410（已删除） 请求的资源永久删除后，服务器返回此响应。该代码与 404（未找到）代码相似，但在资源以前存在而现在不存在的情况下，有时会用来替代 404 代码。如果资源已永久删除，您应当使用 301 指定资源的新位置。</h5>
+<h5 class="heading" data-id="heading-65">411（需要有效长度） 服务器不接受不含有效内容长度标头字段的请求。</h5>
+<h5 class="heading" data-id="heading-66">412（未满足前提条件） 服务器未满足请求者在请求中设置的其中一个前提条件。</h5>
+<h5 class="heading" data-id="heading-67">413（请求实体过大） 服务器无法处理请求，因为请求实体过大，超出服务器的处理能力。</h5>
+<h5 class="heading" data-id="heading-68">414（请求的 URI 过长） 请求的 URI（通常为网址）过长，服务器无法处理。</h5>
+<h5 class="heading" data-id="heading-69">415（不支持的媒体类型） 请求的格式不受请求页面的支持。</h5>
+<h5 class="heading" data-id="heading-70">416（请求范围不符合要求） 如果页面无法提供请求的范围，则服务器会返回此状态码。</h5>
+<h5 class="heading" data-id="heading-71">417（未满足期望值） 服务器未满足"期望"请求标头字段的要求。</h5>
+<h5 class="heading" data-id="heading-72">500（服务器内部错误）  服务器遇到错误，无法完成请求。</h5>
+<h5 class="heading" data-id="heading-73">501（尚未实施） 服务器不具备完成请求的功能。例如，当服务器无法识别请求方法时，服务器可能会返回此代码。</h5>
+<h5 class="heading" data-id="heading-74">502（错误网关） 服务器作为网关或代理，从上游服务器收到了无效的响应。</h5>
+<h5 class="heading" data-id="heading-75">503（服务不可用） 目前无法使用服务器（由于超载或进行停机维护）。通常，这只是一种暂时的状态。</h5>
+<h5 class="heading" data-id="heading-76">504（网关超时）  服务器作为网关或代理，未及时从上游服务器接收请求。</h5>
+<h5 class="heading" data-id="heading-77">505（HTTP 版本不受支持） 服务器不支持请求中所使用的 HTTP 协议版本。</h5>
+</li>
+</ul>
+<hr>
+<blockquote>
+<ol start="29">
+<li>@class和import以及include的区别</li>
+</ol>
+</blockquote>
+<ul>
+<li>import会引入整个.h头文件。</li>
+<li>@class只是告诉编译器该类中可以使用这个class类名。</li>
+<li>include和import的作用类似，但是可能造成重复引用的问题，一般用判断宏定义是否存在的方式来防止循环引用。</li>
+</ul>
+<hr>
+<blockquote>
+<ol start="30">
+<li>weak对象的管理方式</li>
+</ol>
+</blockquote>
+<ul>
+<li>
+<p>weak是弱引用，所引用对象的计数器不会加一，并在引用对象被释放的时候自动被设置为nil。runtime维护了一个weak表，用于存储指向某个对象的所有weak指针。weak表其实是一个hash（哈希）表，Key是所指对象的地址，Value是weak指针的地址（这个地址的值是所指对象的地址）数组。</p>
+</li>
+<li>
+<p>1、初始化时：runtime会调用objc_initWeak函数，初始化一个新的weak指针指向对象的地址。</p>
+</li>
+<li>
+<p>2、添加引用时：objc_initWeak函数会调用 objc_storeWeak() 函数， objc_storeWeak() 的作用是更新指针指向，创建对应的弱引用表。</p>
+</li>
+<li>
+<p>3、释放时，调用clearDeallocating函数。clearDeallocating函数首先根据对象地址获取所有weak指针地址的数组，然后遍历这个数组把其中的数据设为nil，最后把这个entry从weak表中删除，最后清理对象的记录。</p>
+</li>
+</ul>
+<hr>
+<blockquote>
+<ol start="31">
+<li>iOS的retain和release的操作是在编译期还是运行时进行的</li>
+</ol>
+</blockquote>
+<ul>
+<li>retain和release是在编译期由编译器自动生成的代码，例如:</li>
+</ul>
+<pre><code class="hljs objc copyable" lang="objc">- (<span class="hljs-keyword">void</span>) setUserName:(<span class="hljs-built_in">UITextField</span> *)userName { 
+    [_userName release]; 
+    _userName = [userName <span class="hljs-keyword">retain</span>]; 
+}
+<span class="copy-code-btn">复制代码</span></code></pre><hr>
+<blockquote>
+<ol start="32">
+<li>+(void)load方法和+(void)initial方法的异同</li>
+</ol>
+</blockquote>
+<ul>
+<li>+(void)load方法:</li>
+<li>对于加入运行期系统的类及分类，必定会调用此方法，且仅调用一次。
+iOS会在应用程序启动的时候调用load方法，在main函数之前调用
+执行子类的load方法前，会先执行所有超类的load方法，顺序为父类-&gt;子类-&gt;分类
+在load方法中使用其他类是不安全的，因为会调用其他类的load方法，而如果关系复杂的话，就无法判断出各个类的载入顺序，类只有初始化完成后，类实例才能进行正常使用
+load 方法不遵从继承规则，如果类本身没有实现load方法，那么系统就不会调用，不管父类有没有实现（跟下文的initialize有明显区别）
+尽可能的精简load方法，因为整个应用程序在执行load方法时会阻塞，即，程序会阻塞直到所有类的load方法执行完毕，才会继续
+load 方法中最常用的就是方法交换method swizzling。</li>
+<li>+(void)initial方法:</li>
+<li>在首次使用该类之前由运行期系统调用，且仅调用一次
+惰性调用，只有当程序使用相关类时，才会调用
+运行期系统会确保initialize方法是在线程安全的环境中执行，即，只有执行initialize的那个线程可以操作类或类实例。其他线程都要先阻塞，等待initialize执行完。如果类未实现initialize方法，而其超类实现了，那么会运行超类的实现代码，而且会运行两次。initialize方法是线程安全的，可以用来设置内部数据，比如，某个全局状态，如数组、字典等无法在编译期初始化，可以放在initialize里面。</li>
+</ul>
+<hr>
+<ol start="33">
+<li>UIViewController的生命周期方法调用顺序</li>
+</ol>
+<ul>
+<li>
+<p>当一个视图控制器被创建，并在屏幕上现实的时候。代码的执行顺序：</p>
+<h5 class="heading" data-id="heading-78">1.alloc       创建对象，分配空间。</h5>
+<h5 class="heading" data-id="heading-79">2.init       初始化对象，初始化数据。</h5>
+<h5 class="heading" data-id="heading-80">3.loadView                            从nib载入视图，通常这一步不需要去干涉。除非你没有使用xib文件创建视图</h5>
+<h5 class="heading" data-id="heading-81">4.viewDidLoad   载入完成，可以进行自定义数据以及动态的创建其他空间。</h5>
+<h5 class="heading" data-id="heading-82">5.viewWillAppear  视图将出现在屏幕之前。</h5>
+<h5 class="heading" data-id="heading-83">6.viewDidAppear  视图在屏幕上渲染完成。</h5>
+</li>
+<li>
+<p>当一个视图被移除屏幕并且销毁的时候执行顺序：</p>
+<h5 class="heading" data-id="heading-84">1.viewWillDisappear  视图被移除之前。</h5>
+<h5 class="heading" data-id="heading-85">2.viewDidDisappear   视图被移除之后。</h5>
+<h5 class="heading" data-id="heading-86">3.dealloc        销毁视图。</h5>
+</li>
+</ul>
+<hr>
+<blockquote>
+<ol start="34">
+<li>iOS中各类控件的继承树关系</li>
+</ol>
+</blockquote>
+<ul>
+<li>一张图告诉你所有的继承关系：
+<figure><img class="lazyload inited" data-src="https://user-gold-cdn.xitu.io/2018/5/31/163b548a8f5d919b?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" data-width="873" data-height="1159" src="data:image/svg+xml;utf8,&lt;?xml version=&quot;1.0&quot;?&gt;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; version=&quot;1.1&quot; width=&quot;873&quot; height=&quot;1159&quot;&gt;&lt;/svg&gt;"><figcaption></figcaption></figure></li>
+</ul>
+<hr>
+<blockquote>
+<ol start="35">
+<li>如何化解NSTimer的循环引用关系</li>
+</ol>
+</blockquote>
+<ul>
+<li>首先要理解NSTimer为什么会引起循环引用：NSTimer和使用Timer的ViewController相互持有。</li>
+<li>解决办法有两个:
+<h5 class="heading" data-id="heading-87">1. 在ViewContoller的viewWillDisappear生命周期中注销Timer。</h5>
+<h5 class="heading" data-id="heading-88">2. 引入第三方NSObject(如HWWeakTimer)管理和持有Timer，让Timer持有第三方的成员变量。这样就打破了互相引用的循环关系。</h5>
+</li>
+</ul>
+<hr>
+<blockquote>
+<ol start="36">
+<li>怎样管理第三方SDK，CocoaPods和Carthage的异同</li>
+</ol>
+</blockquote>
+<ul>
+<li>
+<p>iOS中一般使用CocoaPods和Carthage来管理第三方SDK。</p>
+</li>
+<li>
+<p>两者的比较：</p>
+<h5 class="heading" data-id="heading-89">1. Carthage只支持iOS 8及以上版本使用。</h5>
+<h5 class="heading" data-id="heading-90">2. CocoaPods默认会自动创建并更新你的应用程序和所有依赖的Xcode workspace。Carthage使用xcodebuild来编译框架的二进制文件，但如何集成它们将交由用户自己判断。CocoaPods的方法更易于使用，但Carthage更灵活并且是非侵入性的。</h5>
+<h5 class="heading" data-id="heading-91">我们创建Carthage的原因是想要一种尽可能简单的工具——一个只关心本职工作的依赖管理器，而不是取代部分Xcode的功能，或者需要让框架作者做一些额外的工作。CocoaPods提供的一些特性很棒，但由于附加的复杂性，它们将不会被包含在Carthage当中。</h5>
+</li>
+</ul>
+<hr>
+<blockquote>
+<ol start="37">
+<li>-(BOOL)isKindOfClass和-(BOOL)isMemberOfClass的区别</li>
+</ol>
+</blockquote>
+<ul>
+<li>
+<p>-(BOOL) isKindOfClass: classObj   判断是否是这个类或者这个类的子类的实例</p>
+</li>
+<li>
+<p>-(BOOL) isMemberOfClass: classObj 判断是否是这个类的实例</p>
+</li>
+</ul>
+<hr>
+<blockquote>
+<ol start="38">
+<li>数据持久化的几种方式和对应的应用场景</li>
+</ol>
+</blockquote>
+<ul>
+<li>plist文件(属性列表):即直接拖拽plist文件到程序目录当中。由NSBundle获取本地plist资源。存储一些本地的，且不会改变的数据到程序当中。</li>
+<li>preference(偏好设置):即NSUserDefaults，存储一些小型数据，设置参数，开关属性等等。</li>
+<li>NSKeyedArchiver(归档):存储一些不涉及增删改查的字典数组或者NSObject等，存储的对象一定要遵循NSCoder和NSDecoder协议。</li>
+<li>SQLite 3:存储一些涉及增删改查的字段数据。</li>
+<li>CoreData:效率比较高，存储一些涉及增删改查的且体积非常大的数据。</li>
+</ul>
+<hr>
+<blockquote>
+<ol start="39">
+<li>如何实现一个完整的单例</li>
+</ol>
+</blockquote>
+<ul>
+<li>实现了单例的初始化之后，一定要重写+(id) allocWithZone:(struct _NSZone *)zone，-(id) copyWithZone:(NSZone *)zone，-(id) mutablecopyWithZone:(NSZone *)zone这三个方法，代码如下:</li>
+</ul>
+<pre><code class="hljs objc copyable" lang="objc"><span class="hljs-meta">#import <span class="hljs-meta-string">"Singleton.h"</span></span>
+<span class="hljs-class"><span class="hljs-keyword">@interface</span> <span class="hljs-title">Singleton</span>()&lt;<span class="hljs-title">NSCopying</span>,<span class="hljs-title">NSMutableCopying</span>&gt;</span>
+<span class="hljs-keyword">@end</span>
+ 
+<span class="hljs-class"><span class="hljs-keyword">@implementation</span> <span class="hljs-title">Singleton</span></span>
+ 
+<span class="hljs-keyword">static</span> Singleton* _instance = <span class="hljs-literal">nil</span>;
+ 
++(<span class="hljs-keyword">instancetype</span>) shareInstance
+{
+    <span class="hljs-keyword">static</span> <span class="hljs-built_in">dispatch_once_t</span> onceToken ;
+    <span class="hljs-built_in">dispatch_once</span>(&amp;onceToken, ^{
+        _instance = [[<span class="hljs-keyword">super</span> allocWithZone:<span class="hljs-literal">NULL</span>] init] ;
+        <span class="hljs-comment">//不是使用alloc方法，而是调用[[super allocWithZone:NULL] init] </span>
+        <span class="hljs-comment">//已经重载allocWithZone基本的对象分配方法，所以要借用父类（NSObject）的功能来帮助出处理底层内存分配的杂物</span>
+    }) ;
+     
+    <span class="hljs-keyword">return</span> _instance ;
+}
+ 
++(<span class="hljs-keyword">id</span>) allocWithZone:(<span class="hljs-keyword">struct</span> _NSZone *)zone
+{
+    <span class="hljs-keyword">return</span> [Singleton shareInstance] ;
+}
+ 
+-(<span class="hljs-keyword">id</span>) copyWithZone:(<span class="hljs-built_in">NSZone</span> *)zone
+{
+    <span class="hljs-keyword">return</span> [Singleton shareInstance] ;<span class="hljs-comment">//return _instance;</span>
+}
+ 
+-(<span class="hljs-keyword">id</span>) mutablecopyWithZone:(<span class="hljs-built_in">NSZone</span> *)zone
+{
+    <span class="hljs-keyword">return</span> [Singleton shareInstance] ;
+}
+<span class="hljs-keyword">@end</span>
+<span class="copy-code-btn">复制代码</span></code></pre><hr>
+<blockquote>
+<ol start="40">
+<li>iOS的系统单例有哪些？</li>
+</ol>
+</blockquote>
+<ul>
+<li>
+<p>[UIScreen mainScreen] (应用程序窗口)</p>
+</li>
+<li>
+<p>[UIDevice currentDevice] (当前设备)</p>
+</li>
+<li>
+<p>[UIApplication sharedApplication] (应用程序实例)</p>
+</li>
+<li>
+<p>[NSNotificationCenter defaultCenter] (消息中心):</p>
+</li>
+<li>
+<p>[NSFileManager defaultManager] (文件管理):</p>
+</li>
+<li>
+<p>[NSUserDefaults standardUserDefaults] (应用程序设置):</p>
+</li>
+<li>
+<p>[NSURLCache sharedURLCache] (请求缓存)：</p>
+</li>
+<li>
+<p>[NSHTTPCookieStorage sharedHTTPCookieStorage] (应用程序cookies池)</p>
+</li>
+</ul>
+<hr>
+<blockquote>
+<ol start="41">
+<li>APP启动主要流程</li>
+</ol>
+</blockquote>
+<ul>
+<li>APP启动主要流程: 点击icon -&gt; 加载动态链接库等 -&gt; 映像文件加载imageLoader -&gt;  runtime -&gt; load  -&gt; main -&gt; delegate。</li>
+</ul>
+<hr>
+<blockquote>
+<ol start="42">
+<li>iOS的沙盒机制</li>
+</ol>
+</blockquote>
+<ul>
+<li>
+<p>出于安全考虑，iPhone对于安装在上面的应用程序有所限制，这个限制就是应用程序只能在为该改程序创建的文件系统中读取文件，不可以去其它地方访问，此区域被成为沙盒，所以所有的非代码文件都要保存在此，例如图像，图标，声音，映像，属性列表，文本文件等。总体来说沙盒就是一种独立、安全、封闭的空间。沙盒(sandbox)的核心内容是：sandbox对应用程序执行各种操作的权限限制。</p>
+</li>
+<li>
+<p>沙盒的特点:</p>
+<h5 class="heading" data-id="heading-92">1. 每个应用程序都有自己的存储空间。</h5>
+<h5 class="heading" data-id="heading-93">2. 每个应用程序都不可以翻过自己的围墙去访问别的存储空间的内容。(已经越狱的除外）</h5>
+<h5 class="heading" data-id="heading-94">3. 在访问别人沙盒内的数据时需要访问权限。</h5>
+</li>
+<li>
+<p>应用程序沙盒目录下有三个文件夹Documents、Library（下面有Caches和Preferences目录）、tmp。</p>
+<h5 class="heading" data-id="heading-95">Documents：保存应用运行时生成的需要持久化的数据iTunes会自动备份该目录。苹果建议将在应用程序中浏览到的文件数据保存在该目录下。</h5>
+<h5 class="heading" data-id="heading-96">Library/Caches：一般存储的是缓存文件，例如图片视频等，此目录下的文件不会再应用程序退出时删除，在手机备份的时候，iTunes不会备份该目录。</h5>
+<h5 class="heading" data-id="heading-97">Library/Preferences：保存应用程序的所有偏好设置iOS的Settings(设置)，我们不应该直接在这里创建文件，而是需要通过NSUserDefault这个类来访问应用程序的偏好设置。iTunes会自动备份该文件目录下的内容。</h5>
+<h5 class="heading" data-id="heading-98">tmp：临时文件目录，在程序重新运行的时候，和开机的时候，会清空tmp文件夹。</h5>
+</li>
+</ul>
+<h4 class="heading" data-id="heading-99">以上是Fabric自己总结的一些面试心经，有兴趣的朋友可以加我微信共同讨论：justlikeitRobert。各位老铁看了我这篇文章之后，如果找到了满意的工作，别忘了和Fabric一起分享成功喜悦，一分也是爱，哈哈！</h4>
+<p></p><figure><img class="lazyload inited" data-src="https://user-gold-cdn.xitu.io/2018/5/31/163b5878e457b915?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" data-width="300" data-height="390" src="data:image/svg+xml;utf8,&lt;?xml version=&quot;1.0&quot;?&gt;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; version=&quot;1.1&quot; width=&quot;300&quot; height=&quot;390&quot;&gt;&lt;/svg&gt;"><figcaption></figcaption></figure><p></p>
+</div></article><div data-v-55484a2b="" data-v-93a60a52="" class="tag-list-box"><div data-v-55484a2b="" data-v-93a60a52="" class="tag-list-title">关注下面的标签，发现更多相似文章</div><div data-v-55484a2b="" data-v-93a60a52="" st:block="tagList" class="tag-list"><a data-v-55484a2b="" href="https://juejin.im/tag/iOS" target="_blank" rel="" st:name="tag" class="item" data-v-93a60a52=""><div data-v-17f3e65e="" data-v-7db8834b="" data-v-55484a2b="" data-src="https://user-gold-cdn.xitu.io/155962881259379c25251a455680e3249366e3a3ac373.jpg?imageView2/2/w/42/h/42/q/85/format/webp/interlace/1" class="lazy thumb tag-icon" style="background-image: none; background-size: contain;"></div><div data-v-55484a2b="" class="tag-title">iOS</div></a><a data-v-55484a2b="" href="https://juejin.im/tag/%E5%AE%89%E5%85%A8" target="_blank" rel="" st:name="tag" class="item" data-v-93a60a52=""><div data-v-17f3e65e="" data-v-7db8834b="" data-v-55484a2b="" data-src="https://lc-gold-cdn.xitu.io/0d0249202f5462360439.png?imageView2/2/w/42/h/42/q/85/format/webp/interlace/1" class="lazy thumb tag-icon" style="background-image: none; background-size: contain;"></div><div data-v-55484a2b="" class="tag-title">安全</div></a><a data-v-55484a2b="" href="https://juejin.im/tag/%E6%B5%8F%E8%A7%88%E5%99%A8" target="_blank" rel="" st:name="tag" class="item" data-v-93a60a52=""><div data-v-17f3e65e="" data-v-7db8834b="" data-v-55484a2b="" data-src="https://lc-gold-cdn.xitu.io/baf3558e2acdfa623201.png?imageView2/2/w/42/h/42/q/85/format/webp/interlace/1" class="lazy thumb tag-icon" style="background-image: none; background-size: contain;"></div><div data-v-55484a2b="" class="tag-title">浏览器</div></a><a data-v-55484a2b="" href="https://juejin.im/tag/%E6%9C%8D%E5%8A%A1%E5%99%A8" target="_blank" rel="" st:name="tag" class="item" data-v-93a60a52=""><div data-v-17f3e65e="" data-v-7db8834b="" data-v-55484a2b="" data-src="https://lc-gold-cdn.xitu.io/be1879c7e9983dab0049.png?imageView2/2/w/42/h/42/q/85/format/webp/interlace/1" class="lazy thumb tag-icon" style="background-image: none; background-size: contain;"></div><div data-v-55484a2b="" class="tag-title">服务器</div></a></div></div><a data-v-55484a2b="" href="https://juejin.im/user/5a7bc68af265da4e8e784eee" target="_blank" rel="" data-v-93a60a52=""><div data-v-55484a2b="" class="footer-author-block"><div data-v-6d99f1f4="" data-v-55484a2b="" itemscope="itemscope" itemtype="http://schema.org/Person" class="author"><meta itemprop="url" content="https://juejin.im/user/5a7bc68af265da4e8e784eee"><meta itemprop="image" content="https://user-gold-cdn.xitu.io/2018/2/8/1617385c2add419c?w=300&amp;h=287&amp;f=jpeg&amp;s=14543"><meta itemprop="name" content="Fabric"><meta itemprop="jobTitle" content="iOS研发工程师"><div itemprop="memberOf" itemscope="itemscope" itemtype="http://schema.org/Organization"><meta itemprop="name" content="左手网络科技"></div><div data-v-6d99f1f4="" class="author-info-block"><a data-v-6d99f1f4="" href="https://juejin.im/user/5a7bc68af265da4e8e784eee" target="_blank" rel="" class="avatar-link"><div data-v-17f3e65e="" data-v-4f213b1c="" data-v-6d99f1f4="" data-src="https://user-gold-cdn.xitu.io/2018/2/8/1617385c2add419c?imageView2/1/w/100/h/100/q/85/format/webp/interlace/1" class="lazy avatar avatar" style="background-image: none;"></div></a><div data-v-6d99f1f4="" class="author-info-box"><div data-v-6d99f1f4="" class="profile-box"><a data-v-c1bb97ea="" data-v-6d99f1f4="" href="https://juejin.im/user/5a7bc68af265da4e8e784eee" target="_blank" rel="" class="username username ellipsis">Fabric<a data-v-2c188f64="" data-v-c1bb97ea="" href="https://juejin.im/book/5c90640c5188252d7941f5bb/section/5c9065385188252da6320022" target="_blank" rel="" class="rank"><img data-v-2c188f64="" src="./iOS面试珠玑 - 掘金_files/lv-2.f597b88.svg" alt="lv-2"></a></a><span data-v-6d99f1f4="" class="position ellipsis">iOS研发工程师 @ 左手网络科技</span></div><div data-v-6d99f1f4="" class="meta-box"><a data-v-6d99f1f4="" href="https://juejin.im/user/5a7bc68af265da4e8e784eee/posts" target="_blank" rel="" class="posts"><span data-v-6d99f1f4="" class="count post-count">发布了 4 篇专栏 · </span></a><span data-v-6d99f1f4="" class="count">获得点赞 650 · </span><span data-v-6d99f1f4="" class="count">获得阅读 22,212</span></div></div><button data-v-0c65ebc8="" data-v-6d99f1f4="" class="follow-button follow">关注</button></div></div></div></a><div data-v-55484a2b="" data-v-93a60a52="" st:block="banner" class="article-banner"><a data-v-55484a2b="" data-v-93a60a52="" st:name="link" st:state="https://juejin.im/extension/?utm_source=juejin.im&amp;utm_medium=post&amp;utm_campaign=extension_promotion" class="banner-title" href="https://juejin.im/extension/?utm_source=juejin.im&amp;utm_medium=post&amp;utm_campaign=extension_promotion" target="_blank">安装掘金浏览器插件</a><div data-v-55484a2b="" data-v-93a60a52="" class="banner-content">打开新标签页发现好内容，掘金、GitHub、Dribbble、ProductHunt 等站点内容轻松获取。快来安装掘金浏览器插件获取高质量内容吧！</div></div><!----><!----><div data-v-3c6f984e="" data-v-55484a2b="" class="comment-list-box" id="comment-box" data-v-93a60a52="" manual="true"><div data-v-3c6f984e="" class="title">评论</div><div data-v-578ff3fc="" data-v-3c6f984e="" class="comment-form comment-form"><div data-v-578ff3fc="" class="avatar-box"><div data-v-17f3e65e="" data-v-4f213b1c="" data-v-578ff3fc="" data-src="https://user-gold-cdn.xitu.io/2020/1/12/16f9a3cab0a1d800?imageView2/1/w/100/h/100/q/85/format/webp/interlace/1" class="lazy avatar avatar loaded" style="background-image: url(&quot;https://user-gold-cdn.xitu.io/2020/1/12/16f9a3cab0a1d800?imageView2/1/w/100/h/100/q/85/format/webp/interlace/1&quot;);"></div></div><div data-v-578ff3fc="" class="form-box"><div data-v-578ff3fc="" class="input-box"><div data-v-12ada2ce="" data-v-578ff3fc="" class="auth-card"><!----><div data-v-578ff3fc="" data-v-12ada2ce="" contenteditable="true" spellcheck="false" placeholder="输入评论..." class="rich-input empty"><br data-v-578ff3fc="" data-v-12ada2ce=""></div></div><!----></div><!----></div><input data-v-578ff3fc="" type="file" class="hidden"></div><div data-v-777ea110="" data-v-3c6f984e="" class="comment-list comment-list"><div data-v-cf1367a0="" data-v-777ea110="" class="image-viewer-box"><!----></div><div data-v-777ea110="" class="item"><div data-v-1a87a0ea="" data-v-777ea110="" class="comment comment"><div data-v-33183964="" data-v-1a87a0ea="" st:block="userPopover" st:state="5a30b2d16fb9a0451e3fc969" class="user-popover-box popover"><!----><a data-v-1a87a0ea="" href="https://juejin.im/user/5a30b2d16fb9a0451e3fc969" target="_blank" rel="" class="user-link" data-v-33183964=""><div data-v-17f3e65e="" data-v-4f213b1c="" data-v-1a87a0ea="" data-src="https://user-gold-cdn.xitu.io/2019/8/6/16c64d237c418c9a?imageView2/1/w/100/h/100/q/85/format/webp/interlace/1" class="lazy avatar avatar" style="background-image: none;"></div></a></div><div data-v-1a87a0ea="" class="content-box comment-divider-line"><div data-v-1a87a0ea="" class="meta-box"><div data-v-33183964="" data-v-1a87a0ea="" st:block="userPopover" st:state="5a30b2d16fb9a0451e3fc969" class="user-popover-box"><!----><a data-v-c1bb97ea="" data-v-1a87a0ea="" href="https://juejin.im/user/5a30b2d16fb9a0451e3fc969" target="_blank" rel="" class="username username ellipsis" data-v-33183964="">摸鱼去了<a data-v-2c188f64="" data-v-c1bb97ea="" href="https://juejin.im/book/5c90640c5188252d7941f5bb/section/5c9065385188252da6320022" target="_blank" rel="" class="rank"><img data-v-2c188f64="" src="./iOS面试珠玑 - 掘金_files/lv-1.636691c.svg" alt="lv-1"></a></a></div><div data-v-1a87a0ea="" class="position"></div></div><div data-v-1a87a0ea="" class="content">M</div><div data-v-1a87a0ea="" class="limit-ctl-box"><!----><!----></div><!----><div data-v-1a87a0ea="" class="reply-stat"><time data-v-1a87a0ea="" datetime="2019-12-24T15:59:03.108Z" title="Tue Dec 24 2019 23:59:03 GMT+0800 (China Standard Time)" class="time">1月前</time><div data-v-1a87a0ea="" class="delete"> &nbsp;·&nbsp;删除</div><div data-v-1a87a0ea="" class="action-box"><div data-v-1a87a0ea="" class="like-action action"><svg data-v-1a87a0ea="" aria-hidden="true" width="16" height="16" viewBox="0 0 20 20" class="icon like-icon"><g data-v-1a87a0ea="" fill="none" fill-rule="evenodd"><path data-v-1a87a0ea="" d="M0 0h20v20H0z"></path> <path data-v-1a87a0ea="" stroke="#8A93A0" stroke-linejoin="round" d="M4.58 8.25V17h-1.4C2.53 17 2 16.382 2 15.624V9.735c0-.79.552-1.485 1.18-1.485h1.4zM11.322 2c1.011.019 1.614.833 1.823 1.235.382.735.392 1.946.13 2.724-.236.704-.785 1.629-.785 1.629h4.11c.434 0 .838.206 1.107.563.273.365.363.84.24 1.272l-1.86 6.513A1.425 1.425 0 0 1 14.724 17H6.645V7.898C8.502 7.51 9.643 4.59 9.852 3.249A1.47 1.47 0 0 1 11.322 2z"></path></g></svg><!----></div><div data-v-1a87a0ea="" class="comment-action action"><svg data-v-1a87a0ea="" aria-hidden="true" width="16" height="16" viewBox="0 0 20 20" class="icon comment-icon"><g data-v-1a87a0ea="" fill="none" fill-rule="evenodd"><path data-v-1a87a0ea="" d="M0 0h20v20H0z"></path> <path data-v-1a87a0ea="" stroke="#8A93A0" stroke-linejoin="round" d="M10 17c-4.142 0-7.5-2.91-7.5-6.5S5.858 4 10 4c4.142 0 7.5 2.91 7.5 6.5 0 1.416-.522 2.726-1.41 3.794-.129.156.41 3.206.41 3.206l-3.265-1.134c-.998.369-2.077.634-3.235.634z"></path></g></svg> <span data-v-1a87a0ea="" class="action-title">回复</span></div></div></div><!----><div data-v-e493e5ee="" data-v-1a87a0ea="" class="sub-comment-list sub-comment-list"><!----></div></div><!----></div></div><div data-v-777ea110="" class="item"><div data-v-1a87a0ea="" data-v-777ea110="" class="comment comment"><div data-v-33183964="" data-v-1a87a0ea="" st:block="userPopover" st:state="5d4283bb6fb9a06aec261dfa" class="user-popover-box popover"><!----><a data-v-1a87a0ea="" href="https://juejin.im/user/5d4283bb6fb9a06aec261dfa" target="_blank" rel="" class="user-link" data-v-33183964=""><div data-v-17f3e65e="" data-v-4f213b1c="" data-v-1a87a0ea="" data-src="https://b-gold-cdn.xitu.io/v3/static/img/default-avatar.e30559a.svg" class="lazy avatar avatar loaded" style="background-image: url(&quot;https://b-gold-cdn.xitu.io/v3/static/img/default-avatar.e30559a.svg&quot;);"></div></a></div><div data-v-1a87a0ea="" class="content-box comment-divider-line"><div data-v-1a87a0ea="" class="meta-box"><div data-v-33183964="" data-v-1a87a0ea="" st:block="userPopover" st:state="5d4283bb6fb9a06aec261dfa" class="user-popover-box"><!----><a data-v-c1bb97ea="" data-v-1a87a0ea="" href="https://juejin.im/user/5d4283bb6fb9a06aec261dfa" target="_blank" rel="" class="username username ellipsis" data-v-33183964="">d7d497d0b84c11e998c6bf1565597863<!----></a></div><div data-v-1a87a0ea="" class="position"></div></div><div data-v-1a87a0ea="" class="content">[内容违规]</div><div data-v-1a87a0ea="" class="limit-ctl-box"><!----><!----></div><!----><div data-v-1a87a0ea="" class="reply-stat"><time data-v-1a87a0ea="" datetime="2019-08-06T08:42:19.525Z" title="Tue Aug 06 2019 16:42:19 GMT+0800 (China Standard Time)" class="time">6月前</time><div data-v-1a87a0ea="" class="delete"> &nbsp;·&nbsp;删除</div><div data-v-1a87a0ea="" class="action-box"><div data-v-1a87a0ea="" class="like-action action"><svg data-v-1a87a0ea="" aria-hidden="true" width="16" height="16" viewBox="0 0 20 20" class="icon like-icon"><g data-v-1a87a0ea="" fill="none" fill-rule="evenodd"><path data-v-1a87a0ea="" d="M0 0h20v20H0z"></path> <path data-v-1a87a0ea="" stroke="#8A93A0" stroke-linejoin="round" d="M4.58 8.25V17h-1.4C2.53 17 2 16.382 2 15.624V9.735c0-.79.552-1.485 1.18-1.485h1.4zM11.322 2c1.011.019 1.614.833 1.823 1.235.382.735.392 1.946.13 2.724-.236.704-.785 1.629-.785 1.629h4.11c.434 0 .838.206 1.107.563.273.365.363.84.24 1.272l-1.86 6.513A1.425 1.425 0 0 1 14.724 17H6.645V7.898C8.502 7.51 9.643 4.59 9.852 3.249A1.47 1.47 0 0 1 11.322 2z"></path></g></svg><!----></div><div data-v-1a87a0ea="" class="comment-action action"><svg data-v-1a87a0ea="" aria-hidden="true" width="16" height="16" viewBox="0 0 20 20" class="icon comment-icon"><g data-v-1a87a0ea="" fill="none" fill-rule="evenodd"><path data-v-1a87a0ea="" d="M0 0h20v20H0z"></path> <path data-v-1a87a0ea="" stroke="#8A93A0" stroke-linejoin="round" d="M10 17c-4.142 0-7.5-2.91-7.5-6.5S5.858 4 10 4c4.142 0 7.5 2.91 7.5 6.5 0 1.416-.522 2.726-1.41 3.794-.129.156.41 3.206.41 3.206l-3.265-1.134c-.998.369-2.077.634-3.235.634z"></path></g></svg> <span data-v-1a87a0ea="" class="action-title">回复</span></div></div></div><!----><div data-v-e493e5ee="" data-v-1a87a0ea="" class="sub-comment-list sub-comment-list"><!----></div></div><!----></div></div><div data-v-777ea110="" class="item"><div data-v-1a87a0ea="" data-v-777ea110="" class="comment comment"><div data-v-33183964="" data-v-1a87a0ea="" st:block="userPopover" st:state="5d284bea6fb9a07ea803f732" class="user-popover-box popover"><!----><a data-v-1a87a0ea="" href="https://juejin.im/user/5d284bea6fb9a07ea803f732" target="_blank" rel="" class="user-link" data-v-33183964=""><div data-v-17f3e65e="" data-v-4f213b1c="" data-v-1a87a0ea="" data-src="https://b-gold-cdn.xitu.io/v3/static/img/default-avatar.e30559a.svg" class="lazy avatar avatar loaded" style="background-image: url(&quot;https://b-gold-cdn.xitu.io/v3/static/img/default-avatar.e30559a.svg&quot;);"></div></a></div><div data-v-1a87a0ea="" class="content-box comment-divider-line"><div data-v-1a87a0ea="" class="meta-box"><div data-v-33183964="" data-v-1a87a0ea="" st:block="userPopover" st:state="5d284bea6fb9a07ea803f732" class="user-popover-box"><!----><a data-v-c1bb97ea="" data-v-1a87a0ea="" href="https://juejin.im/user/5d284bea6fb9a07ea803f732" target="_blank" rel="" class="username username ellipsis" data-v-33183964="">dfdffa41b38911e98da4d1391af1c391<!----></a></div><div data-v-1a87a0ea="" class="position"></div></div><div data-v-1a87a0ea="" class="content">[内容违规]</div><div data-v-1a87a0ea="" class="limit-ctl-box"><!----><!----></div><!----><div data-v-1a87a0ea="" class="reply-stat"><time data-v-1a87a0ea="" datetime="2019-07-29T06:43:49.784Z" title="Mon Jul 29 2019 14:43:49 GMT+0800 (China Standard Time)" class="time">6月前</time><div data-v-1a87a0ea="" class="delete"> &nbsp;·&nbsp;删除</div><div data-v-1a87a0ea="" class="action-box"><div data-v-1a87a0ea="" class="like-action action"><svg data-v-1a87a0ea="" aria-hidden="true" width="16" height="16" viewBox="0 0 20 20" class="icon like-icon"><g data-v-1a87a0ea="" fill="none" fill-rule="evenodd"><path data-v-1a87a0ea="" d="M0 0h20v20H0z"></path> <path data-v-1a87a0ea="" stroke="#8A93A0" stroke-linejoin="round" d="M4.58 8.25V17h-1.4C2.53 17 2 16.382 2 15.624V9.735c0-.79.552-1.485 1.18-1.485h1.4zM11.322 2c1.011.019 1.614.833 1.823 1.235.382.735.392 1.946.13 2.724-.236.704-.785 1.629-.785 1.629h4.11c.434 0 .838.206 1.107.563.273.365.363.84.24 1.272l-1.86 6.513A1.425 1.425 0 0 1 14.724 17H6.645V7.898C8.502 7.51 9.643 4.59 9.852 3.249A1.47 1.47 0 0 1 11.322 2z"></path></g></svg><!----></div><div data-v-1a87a0ea="" class="comment-action action"><svg data-v-1a87a0ea="" aria-hidden="true" width="16" height="16" viewBox="0 0 20 20" class="icon comment-icon"><g data-v-1a87a0ea="" fill="none" fill-rule="evenodd"><path data-v-1a87a0ea="" d="M0 0h20v20H0z"></path> <path data-v-1a87a0ea="" stroke="#8A93A0" stroke-linejoin="round" d="M10 17c-4.142 0-7.5-2.91-7.5-6.5S5.858 4 10 4c4.142 0 7.5 2.91 7.5 6.5 0 1.416-.522 2.726-1.41 3.794-.129.156.41 3.206.41 3.206l-3.265-1.134c-.998.369-2.077.634-3.235.634z"></path></g></svg> <span data-v-1a87a0ea="" class="action-title">回复</span></div></div></div><!----><div data-v-e493e5ee="" data-v-1a87a0ea="" class="sub-comment-list sub-comment-list"><!----></div></div><!----></div></div><div data-v-777ea110="" class="item"><div data-v-1a87a0ea="" data-v-777ea110="" class="comment comment"><div data-v-33183964="" data-v-1a87a0ea="" st:block="userPopover" st:state="5caf8d705188251aec285689" class="user-popover-box popover"><!----><a data-v-1a87a0ea="" href="https://juejin.im/user/5caf8d705188251aec285689" target="_blank" rel="" class="user-link" data-v-33183964=""><div data-v-17f3e65e="" data-v-4f213b1c="" data-v-1a87a0ea="" data-src="https://mirror-gold-cdn.xitu.io/16a0dc0857b3624116b?imageView2/1/w/100/h/100/q/85/format/webp/interlace/1" class="lazy avatar avatar" style="background-image: none;"></div></a></div><div data-v-1a87a0ea="" class="content-box comment-divider-line"><div data-v-1a87a0ea="" class="meta-box"><div data-v-33183964="" data-v-1a87a0ea="" st:block="userPopover" st:state="5caf8d705188251aec285689" class="user-popover-box"><!----><a data-v-c1bb97ea="" data-v-1a87a0ea="" href="https://juejin.im/user/5caf8d705188251aec285689" target="_blank" rel="" class="username username ellipsis" data-v-33183964="">dolin<a data-v-2c188f64="" data-v-c1bb97ea="" href="https://juejin.im/book/5c90640c5188252d7941f5bb/section/5c9065385188252da6320022" target="_blank" rel="" class="rank"><img data-v-2c188f64="" src="./iOS面试珠玑 - 掘金_files/lv-1.636691c.svg" alt="lv-1"></a></a></div><div data-v-1a87a0ea="" class="position">开发工程师 @ 暂无</div></div><div data-v-1a87a0ea="" class="content">mark</div><div data-v-1a87a0ea="" class="limit-ctl-box"><!----><!----></div><!----><div data-v-1a87a0ea="" class="reply-stat"><time data-v-1a87a0ea="" datetime="2019-06-14T12:22:47.331Z" title="Fri Jun 14 2019 20:22:47 GMT+0800 (China Standard Time)" class="time">8月前</time><div data-v-1a87a0ea="" class="delete"> &nbsp;·&nbsp;删除</div><div data-v-1a87a0ea="" class="action-box"><div data-v-1a87a0ea="" class="like-action action"><svg data-v-1a87a0ea="" aria-hidden="true" width="16" height="16" viewBox="0 0 20 20" class="icon like-icon"><g data-v-1a87a0ea="" fill="none" fill-rule="evenodd"><path data-v-1a87a0ea="" d="M0 0h20v20H0z"></path> <path data-v-1a87a0ea="" stroke="#8A93A0" stroke-linejoin="round" d="M4.58 8.25V17h-1.4C2.53 17 2 16.382 2 15.624V9.735c0-.79.552-1.485 1.18-1.485h1.4zM11.322 2c1.011.019 1.614.833 1.823 1.235.382.735.392 1.946.13 2.724-.236.704-.785 1.629-.785 1.629h4.11c.434 0 .838.206 1.107.563.273.365.363.84.24 1.272l-1.86 6.513A1.425 1.425 0 0 1 14.724 17H6.645V7.898C8.502 7.51 9.643 4.59 9.852 3.249A1.47 1.47 0 0 1 11.322 2z"></path></g></svg><!----></div><div data-v-1a87a0ea="" class="comment-action action"><svg data-v-1a87a0ea="" aria-hidden="true" width="16" height="16" viewBox="0 0 20 20" class="icon comment-icon"><g data-v-1a87a0ea="" fill="none" fill-rule="evenodd"><path data-v-1a87a0ea="" d="M0 0h20v20H0z"></path> <path data-v-1a87a0ea="" stroke="#8A93A0" stroke-linejoin="round" d="M10 17c-4.142 0-7.5-2.91-7.5-6.5S5.858 4 10 4c4.142 0 7.5 2.91 7.5 6.5 0 1.416-.522 2.726-1.41 3.794-.129.156.41 3.206.41 3.206l-3.265-1.134c-.998.369-2.077.634-3.235.634z"></path></g></svg> <span data-v-1a87a0ea="" class="action-title">回复</span></div></div></div><!----><div data-v-e493e5ee="" data-v-1a87a0ea="" class="sub-comment-list sub-comment-list"><!----></div></div><!----></div></div><div data-v-777ea110="" class="item"><div data-v-1a87a0ea="" data-v-777ea110="" class="comment comment"><div data-v-33183964="" data-v-1a87a0ea="" st:block="userPopover" st:state="5caf8d705188251aec285689" class="user-popover-box popover"><!----><a data-v-1a87a0ea="" href="https://juejin.im/user/5caf8d705188251aec285689" target="_blank" rel="" class="user-link" data-v-33183964=""><div data-v-17f3e65e="" data-v-4f213b1c="" data-v-1a87a0ea="" data-src="https://mirror-gold-cdn.xitu.io/16a0dc0857b3624116b?imageView2/1/w/100/h/100/q/85/format/webp/interlace/1" class="lazy avatar avatar" style="background-image: none;"></div></a></div><div data-v-1a87a0ea="" class="content-box comment-divider-line"><div data-v-1a87a0ea="" class="meta-box"><div data-v-33183964="" data-v-1a87a0ea="" st:block="userPopover" st:state="5caf8d705188251aec285689" class="user-popover-box"><!----><a data-v-c1bb97ea="" data-v-1a87a0ea="" href="https://juejin.im/user/5caf8d705188251aec285689" target="_blank" rel="" class="username username ellipsis" data-v-33183964="">dolin<a data-v-2c188f64="" data-v-c1bb97ea="" href="https://juejin.im/book/5c90640c5188252d7941f5bb/section/5c9065385188252da6320022" target="_blank" rel="" class="rank"><img data-v-2c188f64="" src="./iOS面试珠玑 - 掘金_files/lv-1.636691c.svg" alt="lv-1"></a></a></div><div data-v-1a87a0ea="" class="position">开发工程师 @ 暂无</div></div><div data-v-1a87a0ea="" class="content">在 ARC下:只要没有访问外部变量，就是全局block。如果访问了外部变量，那么在访问外部变量之前存储在栈区，访问外部变量之后存储在堆区。
+
+
+并不是这样的</div><div data-v-1a87a0ea="" class="limit-ctl-box"><!----><!----></div><!----><div data-v-1a87a0ea="" class="reply-stat"><time data-v-1a87a0ea="" datetime="2019-06-14T12:20:28.336Z" title="Fri Jun 14 2019 20:20:28 GMT+0800 (China Standard Time)" class="time">8月前</time><div data-v-1a87a0ea="" class="delete"> &nbsp;·&nbsp;删除</div><div data-v-1a87a0ea="" class="action-box"><div data-v-1a87a0ea="" class="like-action action"><svg data-v-1a87a0ea="" aria-hidden="true" width="16" height="16" viewBox="0 0 20 20" class="icon like-icon"><g data-v-1a87a0ea="" fill="none" fill-rule="evenodd"><path data-v-1a87a0ea="" d="M0 0h20v20H0z"></path> <path data-v-1a87a0ea="" stroke="#8A93A0" stroke-linejoin="round" d="M4.58 8.25V17h-1.4C2.53 17 2 16.382 2 15.624V9.735c0-.79.552-1.485 1.18-1.485h1.4zM11.322 2c1.011.019 1.614.833 1.823 1.235.382.735.392 1.946.13 2.724-.236.704-.785 1.629-.785 1.629h4.11c.434 0 .838.206 1.107.563.273.365.363.84.24 1.272l-1.86 6.513A1.425 1.425 0 0 1 14.724 17H6.645V7.898C8.502 7.51 9.643 4.59 9.852 3.249A1.47 1.47 0 0 1 11.322 2z"></path></g></svg><!----></div><div data-v-1a87a0ea="" class="comment-action action"><svg data-v-1a87a0ea="" aria-hidden="true" width="16" height="16" viewBox="0 0 20 20" class="icon comment-icon"><g data-v-1a87a0ea="" fill="none" fill-rule="evenodd"><path data-v-1a87a0ea="" d="M0 0h20v20H0z"></path> <path data-v-1a87a0ea="" stroke="#8A93A0" stroke-linejoin="round" d="M10 17c-4.142 0-7.5-2.91-7.5-6.5S5.858 4 10 4c4.142 0 7.5 2.91 7.5 6.5 0 1.416-.522 2.726-1.41 3.794-.129.156.41 3.206.41 3.206l-3.265-1.134c-.998.369-2.077.634-3.235.634z"></path></g></svg> <span data-v-1a87a0ea="" class="action-title">回复</span></div></div></div><!----><div data-v-e493e5ee="" data-v-1a87a0ea="" class="sub-comment-list sub-comment-list"><!----></div></div><!----></div></div><div data-v-777ea110="" class="item"><div data-v-1a87a0ea="" data-v-777ea110="" class="comment comment"><div data-v-33183964="" data-v-1a87a0ea="" st:block="userPopover" st:state="5c72483ae51d457ab52e3e2f" class="user-popover-box popover"><!----><a data-v-1a87a0ea="" href="https://juejin.im/user/5c72483ae51d457ab52e3e2f" target="_blank" rel="" class="user-link" data-v-33183964=""><div data-v-17f3e65e="" data-v-4f213b1c="" data-v-1a87a0ea="" data-src="https://user-gold-cdn.xitu.io/2019/5/22/16ade2667d60b53c?imageView2/1/w/100/h/100/q/85/format/webp/interlace/1" class="lazy avatar avatar" style="background-image: none;"></div></a></div><div data-v-1a87a0ea="" class="content-box comment-divider-line"><div data-v-1a87a0ea="" class="meta-box"><div data-v-33183964="" data-v-1a87a0ea="" st:block="userPopover" st:state="5c72483ae51d457ab52e3e2f" class="user-popover-box"><!----><a data-v-c1bb97ea="" data-v-1a87a0ea="" href="https://juejin.im/user/5c72483ae51d457ab52e3e2f" target="_blank" rel="" class="username username ellipsis" data-v-33183964="">我爱野指针<a data-v-2c188f64="" data-v-c1bb97ea="" href="https://juejin.im/book/5c90640c5188252d7941f5bb/section/5c9065385188252da6320022" target="_blank" rel="" class="rank"><img data-v-2c188f64="" src="./iOS面试珠玑 - 掘金_files/lv-1.636691c.svg" alt="lv-1"></a></a></div><div data-v-1a87a0ea="" class="position">iOS开发</div></div><div data-v-1a87a0ea="" class="content">objc_class的结构是不是过时了</div><div data-v-1a87a0ea="" class="limit-ctl-box"><!----><!----></div><!----><div data-v-1a87a0ea="" class="reply-stat"><time data-v-1a87a0ea="" datetime="2019-04-30T18:04:06.453Z" title="Wed May 01 2019 02:04:06 GMT+0800 (China Standard Time)" class="time">9月前</time><div data-v-1a87a0ea="" class="delete"> &nbsp;·&nbsp;删除</div><div data-v-1a87a0ea="" class="action-box"><div data-v-1a87a0ea="" class="like-action action"><svg data-v-1a87a0ea="" aria-hidden="true" width="16" height="16" viewBox="0 0 20 20" class="icon like-icon"><g data-v-1a87a0ea="" fill="none" fill-rule="evenodd"><path data-v-1a87a0ea="" d="M0 0h20v20H0z"></path> <path data-v-1a87a0ea="" stroke="#8A93A0" stroke-linejoin="round" d="M4.58 8.25V17h-1.4C2.53 17 2 16.382 2 15.624V9.735c0-.79.552-1.485 1.18-1.485h1.4zM11.322 2c1.011.019 1.614.833 1.823 1.235.382.735.392 1.946.13 2.724-.236.704-.785 1.629-.785 1.629h4.11c.434 0 .838.206 1.107.563.273.365.363.84.24 1.272l-1.86 6.513A1.425 1.425 0 0 1 14.724 17H6.645V7.898C8.502 7.51 9.643 4.59 9.852 3.249A1.47 1.47 0 0 1 11.322 2z"></path></g></svg><!----></div><div data-v-1a87a0ea="" class="comment-action action"><svg data-v-1a87a0ea="" aria-hidden="true" width="16" height="16" viewBox="0 0 20 20" class="icon comment-icon"><g data-v-1a87a0ea="" fill="none" fill-rule="evenodd"><path data-v-1a87a0ea="" d="M0 0h20v20H0z"></path> <path data-v-1a87a0ea="" stroke="#8A93A0" stroke-linejoin="round" d="M10 17c-4.142 0-7.5-2.91-7.5-6.5S5.858 4 10 4c4.142 0 7.5 2.91 7.5 6.5 0 1.416-.522 2.726-1.41 3.794-.129.156.41 3.206.41 3.206l-3.265-1.134c-.998.369-2.077.634-3.235.634z"></path></g></svg> <span data-v-1a87a0ea="" class="action-title">回复</span></div></div></div><!----><div data-v-e493e5ee="" data-v-1a87a0ea="" class="sub-comment-list sub-comment-list"><!----></div></div><!----></div></div></div><div data-v-3c6f984e="" class="fetch-more-comment">查看更多 &gt;</div></div></div><!----><div data-v-55484a2b="" data-v-93a60a52="" st:block="recommended" class="main-area recommended-area shadow"><div data-v-55484a2b="" data-v-93a60a52="" class="recommended-entry-list-title">相关推荐</div><!----><ul data-v-75e69b00="" data-v-55484a2b="" st:block="entryList" class="entry-list recommended-entry-list" data-v-93a60a52=""><!----><li data-v-75e69b00="" data-growing-container="true" data-growing-title="entryList" class="item"><div data-v-11818eff="" data-v-75e69b00="" class="entry-box"><div data-v-6f1d7dec="" data-v-11818eff="" st:block="entry" st:state="5a1ec07c6fb9a04528463ff4|1" class="entry"><a data-v-6f1d7dec="" href="https://juejin.im/post/5a1d4e546fb9a0450f21af23" target="_blank" rel="" st:name="link" class="entry-link"><div data-v-6f1d7dec="" class="content-box"><div data-v-6f1d7dec="" class="info-box"><div data-v-6f1d7dec="" class="info-row meta-row"><ul data-v-6f1d7dec="" class="meta-list"><!----><!----><li data-v-6f1d7dec="" class="item post">专栏</li><li data-v-6f1d7dec="" class="item username clickable"><div data-v-33183964="" data-v-6f1d7dec="" st:block="userPopover" st:state="5795b50e6be3ff006616a291" class="user-popover-box"><!----><a data-v-6f1d7dec="" href="https://juejin.im/user/5795b50e6be3ff006616a291" target="_blank" rel="" st:name="user" st:state="5795b50e6be3ff006616a291" data-v-33183964="">北海北方</a></div></li><li data-v-6f1d7dec="" class="item">2年前</li><li data-v-6f1d7dec="" class="item tag"><a data-v-6f1d7dec="" href="https://juejin.im/tag/HTTP" target="_blank" rel="" st:name="tag" st:state="55e7d00800b0c86e8e693ef4" class="tag">HTTP</a></li><!----></ul></div><div data-v-6f1d7dec="" class="info-row title-row"><!----><!----><a data-v-6f1d7dec="" href="https://juejin.im/post/5a1d4e546fb9a0450f21af23" target="_blank" rel="" st:name="title" class="title">HTTP----HTTP缓存机制</a></div><div data-v-6f1d7dec="" class="info-row action-row"><ul data-v-6f1d7dec="" class="action-list"><li data-v-6f1d7dec="" st:name="likeBtn" class="item like clickable"><a data-v-6f1d7dec="" class="title-box"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/zan.e9d7698.svg" class="icon"><span data-v-6f1d7dec="" class="count">754</span></a></li><li data-v-6f1d7dec="" st:name="commentBtn" class="item comment clickable"><a data-v-6f1d7dec="" href="https://juejin.im/post/5a1d4e546fb9a0450f21af23#comment" target="_blank" rel="" class="title-box"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/comment.4d5744f.svg" class="icon"><span data-v-6f1d7dec="" class="count">46</span></a></li><li data-v-6f1d7dec="" st:name="shareBtn" title="分享" class="item share clickable hover"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/share.1d55e69.svg" class="icon"><div data-v-6f1d7dec="" class="share-panel"><div data-v-6f1d7dec="" st:name="shareItem" st:state="weibo" class="share-item weibo"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/weibo.8e2f5d6.svg" class="icon">微博</div><div data-v-6f1d7dec="" st:name="shareItem" st:state="wechat" class="share-item wechat"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/wechat.844402c.svg" class="icon">微信扫一扫<div data-v-6f1d7dec="" class="qr-code-box"><img data-v-6f1d7dec="" src="https://juejin.im/post/5b03936a6fb9a07ac162bfe0" class="qr-code"></div></div></div></li><li data-v-6f1d7dec="" title="收藏" st:name="collectBtn" class="item collect clickable hover"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/collect.02e2979.svg" class="icon"><!----></li><!----></ul></div></div><!----></div></a></div></div></li><li data-v-75e69b00="" data-growing-container="true" data-growing-title="entryList" class="item"><div data-v-11818eff="" data-v-75e69b00="" class="entry-box"><div data-v-6f1d7dec="" data-v-11818eff="" st:block="entry" st:state="5e3a7959e51d45271b745d7f|2" class="entry"><a data-v-6f1d7dec="" href="https://juejin.im/post/5e3a7611e51d4526d90cfe69" target="_blank" rel="" st:name="link" class="entry-link"><div data-v-6f1d7dec="" class="content-box"><div data-v-6f1d7dec="" class="info-box"><div data-v-6f1d7dec="" class="info-row meta-row"><ul data-v-6f1d7dec="" class="meta-list"><!----><!----><li data-v-6f1d7dec="" class="item post">专栏</li><li data-v-6f1d7dec="" class="item username clickable"><div data-v-33183964="" data-v-6f1d7dec="" st:block="userPopover" st:state="5c232836e51d454b9829248a" class="user-popover-box"><!----><a data-v-6f1d7dec="" href="https://juejin.im/user/5c232836e51d454b9829248a" target="_blank" rel="" st:name="user" st:state="5c232836e51d454b9829248a" data-v-33183964="">李yao~鹏</a></div></li><li data-v-6f1d7dec="" class="item">8天前</li><li data-v-6f1d7dec="" class="item tag"><a data-v-6f1d7dec="" href="https://juejin.im/tag/iOS" target="_blank" rel="" st:name="tag" st:state="5597838ae4b08a686ce23139" class="tag">iOS</a></li><!----></ul></div><div data-v-6f1d7dec="" class="info-row title-row"><!----><!----><a data-v-6f1d7dec="" href="https://juejin.im/post/5e3a7611e51d4526d90cfe69" target="_blank" rel="" st:name="title" class="title">OC：深入探究 block</a></div><div data-v-6f1d7dec="" class="info-row action-row"><ul data-v-6f1d7dec="" class="action-list"><li data-v-6f1d7dec="" st:name="likeBtn" class="item like clickable"><a data-v-6f1d7dec="" class="title-box"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/zan.e9d7698.svg" class="icon"><span data-v-6f1d7dec="" class="count">1</span></a></li><li data-v-6f1d7dec="" st:name="commentBtn" class="item comment clickable"><a data-v-6f1d7dec="" href="https://juejin.im/post/5e3a7611e51d4526d90cfe69#comment" target="_blank" rel="" class="title-box"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/comment.4d5744f.svg" class="icon"><!----></a></li><li data-v-6f1d7dec="" st:name="shareBtn" title="分享" class="item share clickable hover"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/share.1d55e69.svg" class="icon"><div data-v-6f1d7dec="" class="share-panel"><div data-v-6f1d7dec="" st:name="shareItem" st:state="weibo" class="share-item weibo"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/weibo.8e2f5d6.svg" class="icon">微博</div><div data-v-6f1d7dec="" st:name="shareItem" st:state="wechat" class="share-item wechat"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/wechat.844402c.svg" class="icon">微信扫一扫<div data-v-6f1d7dec="" class="qr-code-box"><img data-v-6f1d7dec="" src="https://juejin.im/post/5b03936a6fb9a07ac162bfe0" class="qr-code"></div></div></div></li><li data-v-6f1d7dec="" title="收藏" st:name="collectBtn" class="item collect clickable hover"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/collect.02e2979.svg" class="icon"><!----></li><!----></ul></div></div><!----></div></a></div></div></li><li data-v-75e69b00="" data-growing-container="true" data-growing-title="entryList" class="item"><div data-v-11818eff="" data-v-75e69b00="" class="entry-box"><div data-v-6f1d7dec="" data-v-11818eff="" st:block="entry" st:state="5e398300e51d45270179549b|3" class="entry"><a data-v-6f1d7dec="" href="https://juejin.im/post/5e37e33c6fb9a02fee1ee125" target="_blank" rel="" st:name="link" class="entry-link"><div data-v-6f1d7dec="" class="content-box"><div data-v-6f1d7dec="" class="info-box"><div data-v-6f1d7dec="" class="info-row meta-row"><ul data-v-6f1d7dec="" class="meta-list"><!----><!----><li data-v-6f1d7dec="" class="item post">专栏</li><li data-v-6f1d7dec="" class="item username clickable"><div data-v-33183964="" data-v-6f1d7dec="" st:block="userPopover" st:state="5ce2154b6fb9a07ed2243f29" class="user-popover-box"><!----><a data-v-6f1d7dec="" href="https://juejin.im/user/5ce2154b6fb9a07ed2243f29" target="_blank" rel="" st:name="user" st:state="5ce2154b6fb9a07ed2243f29" data-v-33183964="">流年匆匆i</a></div></li><li data-v-6f1d7dec="" class="item">8天前</li><li data-v-6f1d7dec="" class="item tag"><a data-v-6f1d7dec="" href="https://juejin.im/tag/iOS" target="_blank" rel="" st:name="tag" st:state="5597838ae4b08a686ce23139" class="tag">iOS</a></li><!----></ul></div><div data-v-6f1d7dec="" class="info-row title-row"><!----><!----><a data-v-6f1d7dec="" href="https://juejin.im/post/5e37e33c6fb9a02fee1ee125" target="_blank" rel="" st:name="title" class="title">iOS 消息查找流程</a></div><div data-v-6f1d7dec="" class="info-row action-row"><ul data-v-6f1d7dec="" class="action-list"><li data-v-6f1d7dec="" st:name="likeBtn" class="item like clickable"><a data-v-6f1d7dec="" class="title-box"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/zan.e9d7698.svg" class="icon"><span data-v-6f1d7dec="" class="count">4</span></a></li><li data-v-6f1d7dec="" st:name="commentBtn" class="item comment clickable"><a data-v-6f1d7dec="" href="https://juejin.im/post/5e37e33c6fb9a02fee1ee125#comment" target="_blank" rel="" class="title-box"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/comment.4d5744f.svg" class="icon"><!----></a></li><li data-v-6f1d7dec="" st:name="shareBtn" title="分享" class="item share clickable hover"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/share.1d55e69.svg" class="icon"><div data-v-6f1d7dec="" class="share-panel"><div data-v-6f1d7dec="" st:name="shareItem" st:state="weibo" class="share-item weibo"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/weibo.8e2f5d6.svg" class="icon">微博</div><div data-v-6f1d7dec="" st:name="shareItem" st:state="wechat" class="share-item wechat"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/wechat.844402c.svg" class="icon">微信扫一扫<div data-v-6f1d7dec="" class="qr-code-box"><img data-v-6f1d7dec="" src="https://juejin.im/post/5b03936a6fb9a07ac162bfe0" class="qr-code"></div></div></div></li><li data-v-6f1d7dec="" title="收藏" st:name="collectBtn" class="item collect clickable hover"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/collect.02e2979.svg" class="icon"><!----></li><!----></ul></div></div><!----></div></a></div></div></li><!----><li data-v-75e69b00="" data-growing-container="true" data-growing-title="entryList" class="item"><div data-v-11818eff="" data-v-75e69b00="" class="entry-box"><div data-v-6f1d7dec="" data-v-11818eff="" st:block="entry" st:state="5e3900c8f265da574d0ff929|4" class="entry"><a data-v-6f1d7dec="" href="https://juejin.im/post/5e2be84ae51d454d5177b512" target="_blank" rel="" st:name="link" class="entry-link"><div data-v-6f1d7dec="" class="content-box"><div data-v-6f1d7dec="" class="info-box"><div data-v-6f1d7dec="" class="info-row meta-row"><ul data-v-6f1d7dec="" class="meta-list"><!----><!----><li data-v-6f1d7dec="" class="item post">专栏</li><li data-v-6f1d7dec="" class="item username clickable"><div data-v-33183964="" data-v-6f1d7dec="" st:block="userPopover" st:state="5bd65d0d51882528d5286497" class="user-popover-box"><!----><a data-v-6f1d7dec="" href="https://juejin.im/user/5bd65d0d51882528d5286497" target="_blank" rel="" st:name="user" st:state="5bd65d0d51882528d5286497" data-v-33183964="">我是好宝宝</a></div></li><li data-v-6f1d7dec="" class="item">9天前</li><li data-v-6f1d7dec="" class="item tag"><a data-v-6f1d7dec="" href="https://juejin.im/tag/iOS" target="_blank" rel="" st:name="tag" st:state="5597838ae4b08a686ce23139" class="tag">iOS</a></li><!----></ul></div><div data-v-6f1d7dec="" class="info-row title-row"><!----><!----><a data-v-6f1d7dec="" href="https://juejin.im/post/5e2be84ae51d454d5177b512" target="_blank" rel="" st:name="title" class="title">iOS探索 方法的本质和方法查找流程</a></div><div data-v-6f1d7dec="" class="info-row action-row"><ul data-v-6f1d7dec="" class="action-list"><li data-v-6f1d7dec="" st:name="likeBtn" class="item like clickable"><a data-v-6f1d7dec="" class="title-box"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/zan.e9d7698.svg" class="icon"><span data-v-6f1d7dec="" class="count">3</span></a></li><li data-v-6f1d7dec="" st:name="commentBtn" class="item comment clickable"><a data-v-6f1d7dec="" href="https://juejin.im/post/5e2be84ae51d454d5177b512#comment" target="_blank" rel="" class="title-box"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/comment.4d5744f.svg" class="icon"><!----></a></li><li data-v-6f1d7dec="" st:name="shareBtn" title="分享" class="item share clickable hover"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/share.1d55e69.svg" class="icon"><div data-v-6f1d7dec="" class="share-panel"><div data-v-6f1d7dec="" st:name="shareItem" st:state="weibo" class="share-item weibo"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/weibo.8e2f5d6.svg" class="icon">微博</div><div data-v-6f1d7dec="" st:name="shareItem" st:state="wechat" class="share-item wechat"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/wechat.844402c.svg" class="icon">微信扫一扫<div data-v-6f1d7dec="" class="qr-code-box"><img data-v-6f1d7dec="" src="https://juejin.im/post/5b03936a6fb9a07ac162bfe0" class="qr-code"></div></div></div></li><li data-v-6f1d7dec="" title="收藏" st:name="collectBtn" class="item collect clickable hover"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/collect.02e2979.svg" class="icon"><!----></li><!----></ul></div></div><div data-v-17f3e65e="" data-v-7db8834b="" data-v-6f1d7dec="" data-src="https://user-gold-cdn.xitu.io/2020/2/4/1700eaac6f576253?imageView2/1/w/120/h/120/q/85/format/webp/interlace/1" class="lazy thumb thumb" style="background-image: none; background-size: cover;"></div></div></a></div></div></li><li data-v-75e69b00="" data-growing-container="true" data-growing-title="entryList" class="item"><div data-v-11818eff="" data-v-75e69b00="" class="entry-box"><div data-v-6f1d7dec="" data-v-11818eff="" st:block="entry" st:state="5e3795cbe51d45023424a167|5" class="entry"><a data-v-6f1d7dec="" href="https://juejin.im/post/5e3794a7f265da3e51531c9d" target="_blank" rel="" st:name="link" class="entry-link"><div data-v-6f1d7dec="" class="content-box"><div data-v-6f1d7dec="" class="info-box"><div data-v-6f1d7dec="" class="info-row meta-row"><ul data-v-6f1d7dec="" class="meta-list"><!----><!----><li data-v-6f1d7dec="" class="item post">专栏</li><li data-v-6f1d7dec="" class="item username clickable"><div data-v-33183964="" data-v-6f1d7dec="" st:block="userPopover" st:state="59df4819f265da432c22da43" class="user-popover-box"><!----><a data-v-6f1d7dec="" href="https://juejin.im/user/59df4819f265da432c22da43" target="_blank" rel="" st:name="user" st:state="59df4819f265da432c22da43" data-v-33183964="">___克里斯___</a></div></li><li data-v-6f1d7dec="" class="item">10天前</li><li data-v-6f1d7dec="" class="item tag"><a data-v-6f1d7dec="" href="https://juejin.im/tag/iOS" target="_blank" rel="" st:name="tag" st:state="5597838ae4b08a686ce23139" class="tag">iOS</a></li><!----></ul></div><div data-v-6f1d7dec="" class="info-row title-row"><!----><!----><a data-v-6f1d7dec="" href="https://juejin.im/post/5e3794a7f265da3e51531c9d" target="_blank" rel="" st:name="title" class="title">关于iOS内存的深入排查和优化</a></div><div data-v-6f1d7dec="" class="info-row action-row"><ul data-v-6f1d7dec="" class="action-list"><li data-v-6f1d7dec="" st:name="likeBtn" class="item like clickable"><a data-v-6f1d7dec="" class="title-box"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/zan.e9d7698.svg" class="icon"><span data-v-6f1d7dec="" class="count">13</span></a></li><li data-v-6f1d7dec="" st:name="commentBtn" class="item comment clickable"><a data-v-6f1d7dec="" href="https://juejin.im/post/5e3794a7f265da3e51531c9d#comment" target="_blank" rel="" class="title-box"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/comment.4d5744f.svg" class="icon"><span data-v-6f1d7dec="" class="count">2</span></a></li><li data-v-6f1d7dec="" st:name="shareBtn" title="分享" class="item share clickable hover"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/share.1d55e69.svg" class="icon"><div data-v-6f1d7dec="" class="share-panel"><div data-v-6f1d7dec="" st:name="shareItem" st:state="weibo" class="share-item weibo"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/weibo.8e2f5d6.svg" class="icon">微博</div><div data-v-6f1d7dec="" st:name="shareItem" st:state="wechat" class="share-item wechat"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/wechat.844402c.svg" class="icon">微信扫一扫<div data-v-6f1d7dec="" class="qr-code-box"><img data-v-6f1d7dec="" src="https://juejin.im/post/5b03936a6fb9a07ac162bfe0" class="qr-code"></div></div></div></li><li data-v-6f1d7dec="" title="收藏" st:name="collectBtn" class="item collect clickable hover"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/collect.02e2979.svg" class="icon"><!----></li><!----></ul></div></div><!----></div></a></div></div></li><!----><!----><li data-v-75e69b00="" data-growing-container="true" data-growing-title="entryList" class="item"><div data-v-11818eff="" data-v-75e69b00="" class="entry-box"><div data-v-6f1d7dec="" data-v-11818eff="" st:block="entry" st:state="5e32458be51d45028e46792b|4" class="entry"><a data-v-6f1d7dec="" href="https://juejin.im/post/5e32449d6fb9a02fe4581907" target="_blank" rel="" st:name="link" class="entry-link"><div data-v-6f1d7dec="" class="content-box"><div data-v-6f1d7dec="" class="info-box"><div data-v-6f1d7dec="" class="info-row meta-row"><ul data-v-6f1d7dec="" class="meta-list"><!----><!----><li data-v-6f1d7dec="" class="item post">专栏</li><li data-v-6f1d7dec="" class="item username clickable"><div data-v-33183964="" data-v-6f1d7dec="" st:block="userPopover" st:state="5874526761ff4b006d4fd9a4" class="user-popover-box"><!----><a data-v-6f1d7dec="" href="https://juejin.im/user/5874526761ff4b006d4fd9a4" target="_blank" rel="" st:name="user" st:state="5874526761ff4b006d4fd9a4" data-v-33183964="">winty</a></div></li><li data-v-6f1d7dec="" class="item">14天前</li><li data-v-6f1d7dec="" class="item tag"><a data-v-6f1d7dec="" href="https://juejin.im/tag/%E5%89%8D%E7%AB%AF" target="_blank" rel="" st:name="tag" st:state="5597a05ae4b08a686ce56f6f" class="tag">前端</a><a data-v-6f1d7dec="" href="https://juejin.im/tag/%E6%B5%8F%E8%A7%88%E5%99%A8" target="_blank" rel="" st:name="tag" st:state="57089cf279bc44004c6266dc" class="tag">浏览器</a></li><!----></ul></div><div data-v-6f1d7dec="" class="info-row title-row"><!----><!----><a data-v-6f1d7dec="" href="https://juejin.im/post/5e32449d6fb9a02fe4581907" target="_blank" rel="" st:name="title" class="title">细说浏览器输入URL后发生了什么</a></div><div data-v-6f1d7dec="" class="info-row action-row"><ul data-v-6f1d7dec="" class="action-list"><li data-v-6f1d7dec="" st:name="likeBtn" class="item like clickable"><a data-v-6f1d7dec="" class="title-box"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/zan.e9d7698.svg" class="icon"><span data-v-6f1d7dec="" class="count">64</span></a></li><li data-v-6f1d7dec="" st:name="commentBtn" class="item comment clickable"><a data-v-6f1d7dec="" href="https://juejin.im/post/5e32449d6fb9a02fe4581907#comment" target="_blank" rel="" class="title-box"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/comment.4d5744f.svg" class="icon"><span data-v-6f1d7dec="" class="count">3</span></a></li><li data-v-6f1d7dec="" st:name="shareBtn" title="分享" class="item share clickable hover"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/share.1d55e69.svg" class="icon"><div data-v-6f1d7dec="" class="share-panel"><div data-v-6f1d7dec="" st:name="shareItem" st:state="weibo" class="share-item weibo"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/weibo.8e2f5d6.svg" class="icon">微博</div><div data-v-6f1d7dec="" st:name="shareItem" st:state="wechat" class="share-item wechat"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/wechat.844402c.svg" class="icon">微信扫一扫<div data-v-6f1d7dec="" class="qr-code-box"><img data-v-6f1d7dec="" src="https://juejin.im/post/5b03936a6fb9a07ac162bfe0" class="qr-code"></div></div></div></li><li data-v-6f1d7dec="" title="收藏" st:name="collectBtn" class="item collect clickable hover"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/collect.02e2979.svg" class="icon"><!----></li><!----></ul></div></div><div data-v-17f3e65e="" data-v-7db8834b="" data-v-6f1d7dec="" data-src="https://user-gold-cdn.xitu.io/2020/1/30/16ff45e0aa3983ba?imageView2/1/w/120/h/120/q/85/format/webp/interlace/1" class="lazy thumb thumb" style="background-image: none; background-size: cover;"></div></div></a></div></div></li><li data-v-75e69b00="" data-growing-container="true" data-growing-title="entryList" class="item"><div data-v-11818eff="" data-v-75e69b00="" class="entry-box"><div data-v-6f1d7dec="" data-v-11818eff="" st:block="entry" st:state="5e1bbd2ef265da3e12181c42|5" class="entry"><a data-v-6f1d7dec="" href="https://juejin.im/post/5e1695515188253abf5ce2bd" target="_blank" rel="" st:name="link" class="entry-link"><div data-v-6f1d7dec="" class="content-box"><div data-v-6f1d7dec="" class="info-box"><div data-v-6f1d7dec="" class="info-row meta-row"><ul data-v-6f1d7dec="" class="meta-list"><!----><!----><li data-v-6f1d7dec="" class="item post">专栏</li><li data-v-6f1d7dec="" class="item username clickable"><div data-v-33183964="" data-v-6f1d7dec="" st:block="userPopover" st:state="582aca2ba22b9d006b59ae68" class="user-popover-box"><!----><a data-v-6f1d7dec="" href="https://juejin.im/user/582aca2ba22b9d006b59ae68" target="_blank" rel="" st:name="user" st:state="582aca2ba22b9d006b59ae68" data-v-33183964="">恋猫de小郭</a></div></li><li data-v-6f1d7dec="" class="item">1月前</li><li data-v-6f1d7dec="" class="item tag"><a data-v-6f1d7dec="" href="https://juejin.im/tag/iOS" target="_blank" rel="" st:name="tag" st:state="5597838ae4b08a686ce23139" class="tag">iOS</a><a data-v-6f1d7dec="" href="https://juejin.im/tag/Flutter" target="_blank" rel="" st:name="tag" st:state="5a96291f6fb9a0535b535438" class="tag">Flutter</a></li><!----></ul></div><div data-v-6f1d7dec="" class="info-row title-row"><!----><!----><a data-v-6f1d7dec="" href="https://juejin.im/post/5e1695515188253abf5ce2bd" target="_blank" rel="" st:name="title" class="title">谁告诉你 Flutter 会干掉原生开发？</a></div><div data-v-6f1d7dec="" class="info-row action-row"><ul data-v-6f1d7dec="" class="action-list"><li data-v-6f1d7dec="" st:name="likeBtn" class="item like clickable"><a data-v-6f1d7dec="" class="title-box"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/zan.e9d7698.svg" class="icon"><span data-v-6f1d7dec="" class="count">91</span></a></li><li data-v-6f1d7dec="" st:name="commentBtn" class="item comment clickable"><a data-v-6f1d7dec="" href="https://juejin.im/post/5e1695515188253abf5ce2bd#comment" target="_blank" rel="" class="title-box"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/comment.4d5744f.svg" class="icon"><span data-v-6f1d7dec="" class="count">119</span></a></li><li data-v-6f1d7dec="" st:name="shareBtn" title="分享" class="item share clickable hover"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/share.1d55e69.svg" class="icon"><div data-v-6f1d7dec="" class="share-panel"><div data-v-6f1d7dec="" st:name="shareItem" st:state="weibo" class="share-item weibo"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/weibo.8e2f5d6.svg" class="icon">微博</div><div data-v-6f1d7dec="" st:name="shareItem" st:state="wechat" class="share-item wechat"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/wechat.844402c.svg" class="icon">微信扫一扫<div data-v-6f1d7dec="" class="qr-code-box"><img data-v-6f1d7dec="" src="https://juejin.im/post/5b03936a6fb9a07ac162bfe0" class="qr-code"></div></div></div></li><li data-v-6f1d7dec="" title="收藏" st:name="collectBtn" class="item collect clickable hover"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/collect.02e2979.svg" class="icon"><!----></li><!----></ul></div></div><!----></div></a></div></div></li><li data-v-75e69b00="" data-growing-container="true" data-growing-title="entryList" class="item"><div data-v-11818eff="" data-v-75e69b00="" class="entry-box"><div data-v-6f1d7dec="" data-v-11818eff="" st:block="entry" st:state="5e13cb5ef265da5d2a16bea6|6" class="entry"><a data-v-6f1d7dec="" href="https://juejin.im/post/5e12fe306fb9a0481467d399" target="_blank" rel="" st:name="link" class="entry-link"><div data-v-6f1d7dec="" class="content-box"><div data-v-6f1d7dec="" class="info-box"><div data-v-6f1d7dec="" class="info-row meta-row"><ul data-v-6f1d7dec="" class="meta-list"><!----><!----><li data-v-6f1d7dec="" class="item post">专栏</li><li data-v-6f1d7dec="" class="item username clickable"><div data-v-33183964="" data-v-6f1d7dec="" st:block="userPopover" st:state="582aca2ba22b9d006b59ae68" class="user-popover-box"><!----><a data-v-6f1d7dec="" href="https://juejin.im/user/582aca2ba22b9d006b59ae68" target="_blank" rel="" st:name="user" st:state="582aca2ba22b9d006b59ae68" data-v-33183964="">恋猫de小郭</a></div></li><li data-v-6f1d7dec="" class="item">1月前</li><li data-v-6f1d7dec="" class="item tag"><a data-v-6f1d7dec="" href="https://juejin.im/tag/iOS" target="_blank" rel="" st:name="tag" st:state="5597838ae4b08a686ce23139" class="tag">iOS</a><a data-v-6f1d7dec="" href="https://juejin.im/tag/%E5%89%8D%E7%AB%AF" target="_blank" rel="" st:name="tag" st:state="5597a05ae4b08a686ce56f6f" class="tag">前端</a></li><!----></ul></div><div data-v-6f1d7dec="" class="info-row title-row"><!----><!----><a data-v-6f1d7dec="" href="https://juejin.im/post/5e12fe306fb9a0481467d399" target="_blank" rel="" st:name="title" class="title">移动开发者的必知音视频基础知识</a></div><div data-v-6f1d7dec="" class="info-row action-row"><ul data-v-6f1d7dec="" class="action-list"><li data-v-6f1d7dec="" st:name="likeBtn" class="item like clickable"><a data-v-6f1d7dec="" class="title-box"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/zan.e9d7698.svg" class="icon"><span data-v-6f1d7dec="" class="count">439</span></a></li><li data-v-6f1d7dec="" st:name="commentBtn" class="item comment clickable"><a data-v-6f1d7dec="" href="https://juejin.im/post/5e12fe306fb9a0481467d399#comment" target="_blank" rel="" class="title-box"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/comment.4d5744f.svg" class="icon"><span data-v-6f1d7dec="" class="count">57</span></a></li><li data-v-6f1d7dec="" st:name="shareBtn" title="分享" class="item share clickable hover"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/share.1d55e69.svg" class="icon"><div data-v-6f1d7dec="" class="share-panel"><div data-v-6f1d7dec="" st:name="shareItem" st:state="weibo" class="share-item weibo"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/weibo.8e2f5d6.svg" class="icon">微博</div><div data-v-6f1d7dec="" st:name="shareItem" st:state="wechat" class="share-item wechat"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/wechat.844402c.svg" class="icon">微信扫一扫<div data-v-6f1d7dec="" class="qr-code-box"><img data-v-6f1d7dec="" src="https://juejin.im/post/5b03936a6fb9a07ac162bfe0" class="qr-code"></div></div></div></li><li data-v-6f1d7dec="" title="收藏" st:name="collectBtn" class="item collect clickable hover"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/collect.02e2979.svg" class="icon"><!----></li><!----></ul></div></div><div data-v-17f3e65e="" data-v-7db8834b="" data-v-6f1d7dec="" data-src="https://user-gold-cdn.xitu.io/2020/1/6/16f7a713b71c661e?imageView2/1/w/120/h/120/q/85/format/webp/interlace/1" class="lazy thumb thumb" style="background-image: none; background-size: cover;"></div></div></a></div></div></li><li data-v-75e69b00="" data-growing-container="true" data-growing-title="entryList" class="item"><div data-v-11818eff="" data-v-75e69b00="" class="entry-box"><div data-v-6f1d7dec="" data-v-11818eff="" st:block="entry" st:state="5e37e7dd6fb9a02fe9720258|7" class="entry"><a data-v-6f1d7dec="" href="https://juejin.im/post/5e37e7cc6fb9a02fe11872b2" target="_blank" rel="" st:name="link" class="entry-link"><div data-v-6f1d7dec="" class="content-box"><div data-v-6f1d7dec="" class="info-box"><div data-v-6f1d7dec="" class="info-row meta-row"><ul data-v-6f1d7dec="" class="meta-list"><!----><!----><li data-v-6f1d7dec="" class="item post">专栏</li><li data-v-6f1d7dec="" class="item username clickable"><div data-v-33183964="" data-v-6f1d7dec="" st:block="userPopover" st:state="5b542b76e51d4533d2042b62" class="user-popover-box"><!----><a data-v-6f1d7dec="" href="https://juejin.im/user/5b542b76e51d4533d2042b62" target="_blank" rel="" st:name="user" st:state="5b542b76e51d4533d2042b62" data-v-33183964="">QiShare</a></div></li><li data-v-6f1d7dec="" class="item">10天前</li><li data-v-6f1d7dec="" class="item tag"><a data-v-6f1d7dec="" href="https://juejin.im/tag/iOS" target="_blank" rel="" st:name="tag" st:state="5597838ae4b08a686ce23139" class="tag">iOS</a></li><!----></ul></div><div data-v-6f1d7dec="" class="info-row title-row"><!----><!----><a data-v-6f1d7dec="" href="https://juejin.im/post/5e37e7cc6fb9a02fe11872b2" target="_blank" rel="" st:name="title" class="title">用 Swift 进行贝塞尔曲线绘制</a></div><div data-v-6f1d7dec="" class="info-row action-row"><ul data-v-6f1d7dec="" class="action-list"><li data-v-6f1d7dec="" st:name="likeBtn" class="item like clickable"><a data-v-6f1d7dec="" class="title-box"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/zan.e9d7698.svg" class="icon"><span data-v-6f1d7dec="" class="count">6</span></a></li><li data-v-6f1d7dec="" st:name="commentBtn" class="item comment clickable"><a data-v-6f1d7dec="" href="https://juejin.im/post/5e37e7cc6fb9a02fe11872b2#comment" target="_blank" rel="" class="title-box"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/comment.4d5744f.svg" class="icon"><!----></a></li><li data-v-6f1d7dec="" st:name="shareBtn" title="分享" class="item share clickable hover"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/share.1d55e69.svg" class="icon"><div data-v-6f1d7dec="" class="share-panel"><div data-v-6f1d7dec="" st:name="shareItem" st:state="weibo" class="share-item weibo"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/weibo.8e2f5d6.svg" class="icon">微博</div><div data-v-6f1d7dec="" st:name="shareItem" st:state="wechat" class="share-item wechat"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/wechat.844402c.svg" class="icon">微信扫一扫<div data-v-6f1d7dec="" class="qr-code-box"><img data-v-6f1d7dec="" src="https://juejin.im/post/5b03936a6fb9a07ac162bfe0" class="qr-code"></div></div></div></li><li data-v-6f1d7dec="" title="收藏" st:name="collectBtn" class="item collect clickable hover"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/collect.02e2979.svg" class="icon"><!----></li><!----></ul></div></div><!----></div></a></div></div></li><li data-v-75e69b00="" data-growing-container="true" data-growing-title="entryList" class="item"><div data-v-11818eff="" data-v-75e69b00="" class="entry-box"><div data-v-6f1d7dec="" data-v-11818eff="" st:block="entry" st:state="5e1ecf56f265da3e1c5651b7|8" class="entry"><a data-v-6f1d7dec="" href="https://juejin.im/post/5e1dfd0f51882521414ae0ec" target="_blank" rel="" st:name="link" class="entry-link"><div data-v-6f1d7dec="" class="content-box"><div data-v-6f1d7dec="" class="info-box"><div data-v-6f1d7dec="" class="info-row meta-row"><ul data-v-6f1d7dec="" class="meta-list"><!----><!----><li data-v-6f1d7dec="" class="item post">专栏</li><li data-v-6f1d7dec="" class="item username clickable"><div data-v-33183964="" data-v-6f1d7dec="" st:block="userPopover" st:state="5e1dbf1c6fb9a02fd742b07c" class="user-popover-box"><!----><a data-v-6f1d7dec="" href="https://juejin.im/user/5e1dbf1c6fb9a02fd742b07c" target="_blank" rel="" st:name="user" st:state="5e1dbf1c6fb9a02fd742b07c" data-v-33183964="">字节中台客户端团队</a></div></li><li data-v-6f1d7dec="" class="item">27天前</li><li data-v-6f1d7dec="" class="item tag"><a data-v-6f1d7dec="" href="https://juejin.im/tag/iOS" target="_blank" rel="" st:name="tag" st:state="5597838ae4b08a686ce23139" class="tag">iOS</a><a data-v-6f1d7dec="" href="https://juejin.im/tag/Android" target="_blank" rel="" st:name="tag" st:state="5597838ee4b08a686ce2319d" class="tag">Android</a></li><!----></ul></div><div data-v-6f1d7dec="" class="info-row title-row"><!----><!----><a data-v-6f1d7dec="" href="https://juejin.im/post/5e1dfd0f51882521414ae0ec" target="_blank" rel="" st:name="title" class="title">[南京|北京] 字节跳动中台客户端团队招聘，新的一年，新的起点。</a></div><div data-v-6f1d7dec="" class="info-row action-row"><ul data-v-6f1d7dec="" class="action-list"><li data-v-6f1d7dec="" st:name="likeBtn" class="item like clickable"><a data-v-6f1d7dec="" class="title-box"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/zan.e9d7698.svg" class="icon"><span data-v-6f1d7dec="" class="count">23</span></a></li><li data-v-6f1d7dec="" st:name="commentBtn" class="item comment clickable"><a data-v-6f1d7dec="" href="https://juejin.im/post/5e1dfd0f51882521414ae0ec#comment" target="_blank" rel="" class="title-box"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/comment.4d5744f.svg" class="icon"><span data-v-6f1d7dec="" class="count">33</span></a></li><li data-v-6f1d7dec="" st:name="shareBtn" title="分享" class="item share clickable hover"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/share.1d55e69.svg" class="icon"><div data-v-6f1d7dec="" class="share-panel"><div data-v-6f1d7dec="" st:name="shareItem" st:state="weibo" class="share-item weibo"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/weibo.8e2f5d6.svg" class="icon">微博</div><div data-v-6f1d7dec="" st:name="shareItem" st:state="wechat" class="share-item wechat"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/wechat.844402c.svg" class="icon">微信扫一扫<div data-v-6f1d7dec="" class="qr-code-box"><img data-v-6f1d7dec="" src="https://juejin.im/post/5b03936a6fb9a07ac162bfe0" class="qr-code"></div></div></div></li><li data-v-6f1d7dec="" title="收藏" st:name="collectBtn" class="item collect clickable hover"><img data-v-6f1d7dec="" src="./iOS面试珠玑 - 掘金_files/collect.02e2979.svg" class="icon"><!----></li><!----></ul></div></div><div data-v-17f3e65e="" data-v-7db8834b="" data-v-6f1d7dec="" data-src="https://user-gold-cdn.xitu.io/2020/1/17/16fb279b83568fe9?imageView2/1/w/120/h/120/q/85/format/webp/interlace/1" class="lazy thumb thumb" style="background-image: none; background-size: cover;"></div></div></a></div></div></li><li data-v-75e69b00="" class="item"><!----></li><!----></ul></div><div data-v-4db971a4="" data-v-55484a2b="" st:block="sidebar" class="sidebar sidebar top sticky" data-v-93a60a52=""><div data-v-ac8c06c4="" data-v-489f0eec="" data-v-4db971a4="" class="sidebar-block author-block shadow"><div data-v-ac8c06c4="" class="block-title">关于作者</div><div data-v-ac8c06c4="" class="block-body"><a data-v-489f0eec="" href="https://juejin.im/user/5a7bc68af265da4e8e784eee" target="_blank" rel="" class="user-item item" data-v-ac8c06c4=""><div data-v-17f3e65e="" data-v-4f213b1c="" data-v-489f0eec="" data-src="https://user-gold-cdn.xitu.io/2018/2/8/1617385c2add419c?imageView2/1/w/100/h/100/q/85/format/webp/interlace/1" class="lazy avatar avatar loaded" style="background-image: url(&quot;https://user-gold-cdn.xitu.io/2018/2/8/1617385c2add419c?imageView2/1/w/100/h/100/q/85/format/webp/interlace/1&quot;);"></div><div data-v-489f0eec="" class="info-box"><a data-v-c1bb97ea="" data-v-489f0eec="" href="https://juejin.im/user/5a7bc68af265da4e8e784eee" target="_blank" rel="" class="username">Fabric<a data-v-2c188f64="" data-v-c1bb97ea="" href="https://juejin.im/book/5c90640c5188252d7941f5bb/section/5c9065385188252da6320022" target="_blank" rel="" class="rank"><img data-v-2c188f64="" src="./iOS面试珠玑 - 掘金_files/lv-2.f597b88.svg" alt="lv-2"></a></a><div data-v-489f0eec="" title="iOS研发工程师 @ 左手网络科技" class="position">iOS研发工程师 @ 左手网络科技</div></div></a><div data-v-489f0eec="" data-v-ac8c06c4="" class="stat-item item"><svg data-v-489f0eec="" data-v-ac8c06c4="" xmlns="http://www.w3.org/2000/svg" width="25" height="26" viewBox="0 0 25 26" class="zan"><g data-v-489f0eec="" data-v-ac8c06c4="" fill="none" fill-rule="evenodd" transform="translate(0 .57)"><ellipse data-v-489f0eec="" data-v-ac8c06c4="" cx="12.5" cy="12.57" fill="#E1EFFF" rx="12.5" ry="12.57"></ellipse> <path data-v-489f0eec="" data-v-ac8c06c4="" fill="#7BB9FF" d="M8.596 11.238V19H7.033C6.463 19 6 18.465 6 17.807v-5.282c0-.685.483-1.287 1.033-1.287h1.563zm4.275-4.156A1.284 1.284 0 0 1 14.156 6c.885.016 1.412.722 1.595 1.07.334.638.343 1.687.114 2.361-.207.61-.687 1.412-.687 1.412h3.596c.38 0 .733.178.969.488.239.317.318.728.21 1.102l-1.628 5.645a1.245 1.245 0 0 1-1.192.922h-7.068v-7.889c1.624-.336 2.623-2.866 2.806-4.029z"></path></g></svg> <span data-v-489f0eec="" data-v-ac8c06c4="" class="content">获得点赞<span data-v-489f0eec="" data-v-ac8c06c4="" class="count">650</span></span></div><div data-v-489f0eec="" data-v-ac8c06c4="" class="stat-item item"><svg data-v-489f0eec="" data-v-ac8c06c4="" width="25" height="25" viewBox="0 0 25 25" class="icon stat-view-icon"><g data-v-489f0eec="" data-v-ac8c06c4="" fill="none" fill-rule="evenodd"><circle data-v-489f0eec="" data-v-ac8c06c4="" cx="12.5" cy="12.5" r="12.5" fill="#E1EFFF"></circle> <path data-v-489f0eec="" data-v-ac8c06c4="" fill="#7BB9FF" d="M4 12.5S6.917 7 12.75 7s8.75 5.5 8.75 5.5-2.917 5.5-8.75 5.5S4 12.5 4 12.5zm8.75 2.292c1.208 0 2.188-1.026 2.188-2.292 0-1.266-.98-2.292-2.188-2.292-1.208 0-2.188 1.026-2.188 2.292 0 1.266.98 2.292 2.188 2.292z"></path></g></svg> <span data-v-489f0eec="" data-v-ac8c06c4="" class="content">文章被阅读<span data-v-489f0eec="" data-v-ac8c06c4="" class="count">22,212</span></span></div><!----></div></div><!----><div data-v-fe5f1342="" data-v-3d6659e8="" data-v-4db971a4="" class="index-book-collect" place="post" category="5562b405e4b00c57d9b94a41"><div data-v-fe5f1342="" class="header"><div data-v-fe5f1342="" class="title">掘金小册</div><div data-v-fe5f1342="" class="controllers"><div data-v-fe5f1342="" class="arrow icon ion-chevron-left"></div><div data-v-fe5f1342="" class="arrow icon ion-chevron-right"></div></div></div><div data-v-fe5f1342="" class="slide-book transition--next"><div data-v-40bb3638="" data-v-fe5f1342="" class="slide-book-list item"><a data-v-40bb3638="" href="https://juejin.im/book/5c7d467e5188251b9156fdc0" class="item"><div data-v-40bb3638="" class="poster"><div data-v-17f3e65e="" data-v-7db8834b="" data-v-40bb3638="" data-src="https://user-gold-cdn.xitu.io/2019/5/10/16a9d7ca96cf1e2f?imageView2/1/w/104/h/144/q/95/format/webp/interlace/1" class="lazy thumb poster-img loaded" style="background-image: url(&quot;https://user-gold-cdn.xitu.io/2019/5/10/16a9d7ca96cf1e2f?imageView2/1/w/104/h/144/q/95/format/webp/interlace/1&quot;); background-size: cover;"></div></div><div data-v-40bb3638="" class="content-text"><div data-v-40bb3638="" class="title">图解  Kafka 之实战指南</div><div data-v-40bb3638="" class="price"><div data-v-40bb3638="" class="new">新人价 ￥14.95</div><div data-v-40bb3638="" class="delete">￥29.9</div></div></div></a><a data-v-40bb3638="" href="https://juejin.im/book/59e17a7ff265da430629cc4e" class="item"><div data-v-40bb3638="" class="poster"><div data-v-17f3e65e="" data-v-7db8834b="" data-v-40bb3638="" data-src="https://user-gold-cdn.xitu.io/2017/11/20/15fd7933f4f4ed03?imageView2/1/w/104/h/144/q/95/format/webp/interlace/1" class="lazy thumb poster-img loaded" style="background-image: url(&quot;https://user-gold-cdn.xitu.io/2017/11/20/15fd7933f4f4ed03?imageView2/1/w/104/h/144/q/95/format/webp/interlace/1&quot;); background-size: cover;"></div></div><div data-v-40bb3638="" class="content-text"><div data-v-40bb3638="" class="title">程序员职业小白书 —— 如何规划和经营你的职业</div><div data-v-40bb3638="" class="price"><div data-v-40bb3638="" class="new">新人价 ￥14.95</div><div data-v-40bb3638="" class="delete">￥29.9</div></div></div></a></div></div><div data-v-fe5f1342="" class="book-newuser"><div data-v-fe5f1342="" class="newuser-title"><span data-v-fe5f1342="">新人专享好礼</span></div><div data-v-fe5f1342="" class="giftbag"><img data-v-fe5f1342="" src="./iOS面试珠玑 - 掘金_files/45.b99ea03.svg"><div data-v-fe5f1342="" class="content-text"><div data-v-fe5f1342="" class="title">送你<span data-v-fe5f1342="" class="highlight">45元</span>买小册</div><div data-v-fe5f1342="" class="btn-box"><div data-v-fe5f1342="" class="btn-giftbag">立即领取</div></div></div></div></div></div><div data-v-ac8c06c4="" data-v-68ac5792="" data-v-4db971a4="" class="sidebar-block app-download-sidebar-block shadow"><!----><div data-v-ac8c06c4="" class="block-body"><a data-v-68ac5792="" data-v-ac8c06c4="" class="app-link" href="https://juejin.im/app" target="_blank"><img data-v-68ac5792="" data-v-ac8c06c4="" src="./iOS面试珠玑 - 掘金_files/post.7cb7332.png" class="qr-img"><div data-v-68ac5792="" data-v-ac8c06c4="" class="content-box"><div data-v-68ac5792="" data-v-ac8c06c4="" class="headline">下载掘金客户端</div><div data-v-68ac5792="" data-v-ac8c06c4="" class="desc">一个帮助开发者成长的社区</div></div><div data-v-68ac5792="" data-v-ac8c06c4="" title="关闭" class="close-btn ion-close-round"></div></a></div></div><div data-v-ac8c06c4="" data-v-ebbbde12="" data-v-4db971a4="" class="sidebar-block wechat-sidebar-block pure"><div data-v-885caa6c="" data-v-ebbbde12="" class="wechat-banner" data-v-ac8c06c4=""><img data-v-885caa6c="" src="./iOS面试珠玑 - 掘金_files/ios.c0a0c8c.png" class="wechat-img"></div><div data-v-ebbbde12="" data-v-ac8c06c4="" title="关闭" class="close-btn ion-close-round"></div></div><div data-v-ac8c06c4="" data-v-1c36032c="" data-v-4db971a4="" class="sidebar-block related-entry-sidebar-block shadow" st:block="relatedEntrySidebarBlock"><div data-v-ac8c06c4="" class="block-title">相关文章</div><div data-v-ac8c06c4="" class="block-body"><div data-v-1c36032c="" data-v-ac8c06c4="" class="entry-list"><a data-v-1c36032c="" href="https://juejin.im/post/5a1d4e546fb9a0450f21af23" target="_blank" rel="" st:name="link" class="item" data-v-ac8c06c4=""><div data-v-1c36032c="" class="entry-title">HTTP----HTTP缓存机制</div><div data-v-1c36032c="" class="entry-meta-box"><div data-v-1c36032c="" class="entry-meta"><img data-v-1c36032c="" src="./iOS面试珠玑 - 掘金_files/zan.e9d7698.svg" class="icon"><span data-v-1c36032c="" class="count">754</span></div><div data-v-1c36032c="" class="entry-meta"><img data-v-1c36032c="" src="./iOS面试珠玑 - 掘金_files/comment.a7c8341.svg" class="icon"><span data-v-1c36032c="" class="count">46</span></div></div></a><a data-v-1c36032c="" href="https://juejin.im/post/5e3a7611e51d4526d90cfe69" target="_blank" rel="" st:name="link" class="item" data-v-ac8c06c4=""><div data-v-1c36032c="" class="entry-title">OC：深入探究 block</div><div data-v-1c36032c="" class="entry-meta-box"><div data-v-1c36032c="" class="entry-meta"><img data-v-1c36032c="" src="./iOS面试珠玑 - 掘金_files/zan.e9d7698.svg" class="icon"><span data-v-1c36032c="" class="count">1</span></div><div data-v-1c36032c="" class="entry-meta"><img data-v-1c36032c="" src="./iOS面试珠玑 - 掘金_files/comment.a7c8341.svg" class="icon"><span data-v-1c36032c="" class="count">0</span></div></div></a><a data-v-1c36032c="" href="https://juejin.im/post/5e37e33c6fb9a02fee1ee125" target="_blank" rel="" st:name="link" class="item" data-v-ac8c06c4=""><div data-v-1c36032c="" class="entry-title">iOS 消息查找流程</div><div data-v-1c36032c="" class="entry-meta-box"><div data-v-1c36032c="" class="entry-meta"><img data-v-1c36032c="" src="./iOS面试珠玑 - 掘金_files/zan.e9d7698.svg" class="icon"><span data-v-1c36032c="" class="count">4</span></div><div data-v-1c36032c="" class="entry-meta"><img data-v-1c36032c="" src="./iOS面试珠玑 - 掘金_files/comment.a7c8341.svg" class="icon"><span data-v-1c36032c="" class="count">0</span></div></div></a><a data-v-1c36032c="" href="https://juejin.im/post/5e2be84ae51d454d5177b512" target="_blank" rel="" st:name="link" class="item" data-v-ac8c06c4=""><div data-v-1c36032c="" class="entry-title">iOS探索 方法的本质和方法查找流程</div><div data-v-1c36032c="" class="entry-meta-box"><div data-v-1c36032c="" class="entry-meta"><img data-v-1c36032c="" src="./iOS面试珠玑 - 掘金_files/zan.e9d7698.svg" class="icon"><span data-v-1c36032c="" class="count">3</span></div><div data-v-1c36032c="" class="entry-meta"><img data-v-1c36032c="" src="./iOS面试珠玑 - 掘金_files/comment.a7c8341.svg" class="icon"><span data-v-1c36032c="" class="count">0</span></div></div></a><a data-v-1c36032c="" href="https://juejin.im/post/5e3794a7f265da3e51531c9d" target="_blank" rel="" st:name="link" class="item" data-v-ac8c06c4=""><div data-v-1c36032c="" class="entry-title">关于iOS内存的深入排查和优化</div><div data-v-1c36032c="" class="entry-meta-box"><div data-v-1c36032c="" class="entry-meta"><img data-v-1c36032c="" src="./iOS面试珠玑 - 掘金_files/zan.e9d7698.svg" class="icon"><span data-v-1c36032c="" class="count">13</span></div><div data-v-1c36032c="" class="entry-meta"><img data-v-1c36032c="" src="./iOS面试珠玑 - 掘金_files/comment.a7c8341.svg" class="icon"><span data-v-1c36032c="" class="count">2</span></div></div></a></div></div></div><div data-v-4db971a4="" class="sticky-block-box"><div data-v-ac8c06c4="" data-v-3b4f39bd="" data-v-4db971a4="" class="sidebar-block catalog-block pure"><nav data-v-22463ae8="" data-v-3b4f39bd="" class="article-catalog" data-v-ac8c06c4="" style=""><div data-v-22463ae8="" class="catalog-title">目录</div><div data-v-22463ae8="" class="catalog-body"><ul data-v-22463ae8="" class="catalog-list" style="margin-top: -161.602px;"><li data-v-22463ae8="" class="item d1"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-0" title="iOS基础类">iOS基础类</a><ul class="sub-list"><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-1" title="atomic:原子性的，在执行setter和getter方法时可以保证访问变量的线程安全。">atomic:原子性的，在执行setter和getter方法时可以保证访问变量的线程安全。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-2" title="nonatomic:非原子性的，无法保证访问变量的线程安全性，但是变量访问效率会提高。">nonatomic:非原子性的，无法保证访问变量的线程安全性，但是变量访问效率会提高。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-3" title="assign:主要用于修饰非继承于NSObject类型的对象，例如int, double, NSInteger等，当该对象被其他对象引用时，该对象的引用计数不会自加1。">assign:主要用于修饰非继承于NSObject类型的对象，例如int, double, NSInteger等，当该对象被其他对象引用时，该对象的引用计数不会自加1。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-4" title="retain:一般情况下等同于ARC环境下的strong修饰符，但是在修饰block对象时，retain相当于assign，而strong相当于copy。">retain:一般情况下等同于ARC环境下的strong修饰符，但是在修饰block对象时，retain相当于assign，而strong相当于copy。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-5" title="strong:主要用于继承于NSObject类的对象，当strong修饰的对象被其他对象引用时，引用计数会自加1。">strong:主要用于继承于NSObject类的对象，当strong修饰的对象被其他对象引用时，引用计数会自加1。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-6" title="weak:主要用于继承于NSObject类的对象，当weak修饰的对象被其他对象引用时，引用计数不会自加1，且retainCount为0时，指向该对象的指针将会置nil，指向堆栈的底部0x00000000，防止野指针的出现。">weak:主要用于继承于NSObject类的对象，当weak修饰的对象被其他对象引用时，引用计数不会自加1，且retainCount为0时，指向该对象的指针将会置nil，指向堆栈的底部0x00000000，防止野指针的出现。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-7" title="unsafe_unretained:主要用于继承于NSObject类型的对象，当retainCount为0时，指向该对象的指针不会置nil，因此可能会出现野指针，但是效率方面会比weak要高。">unsafe_unretained:主要用于继承于NSObject类型的对象，当retainCount为0时，指向该对象的指针不会置nil，因此可能会出现野指针，但是效率方面会比weak要高。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-8" title="copy:主要适用于NSArray, NSDictionary, NSString, Block等类型的对象，开辟一块新的内存存储原来内存中的元素，对象指针指向新内存的地址。">copy:主要适用于NSArray, NSDictionary, NSString, Block等类型的对象，开辟一块新的内存存储原来内存中的元素，对象指针指向新内存的地址。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-9" title="readonly: 只读属性">readonly: 只读属性</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-10" title="readwrite: 读写属性">readwrite: 读写属性</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-11" title="getter = : 修改读属性名称">getter = : 修改读属性名称</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-12" title="setter = : 修改写属性名称">setter = : 修改写属性名称</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-13" title="NSObject类引入了两个头文件:#include &lt;objc/objc.h&gt;、#include &lt;objc/NSObjCRuntime.h&gt;，第一个头文件引入的是objc结构体的构成方式即isa指针，第二个头文件引入的是Runtime消息查找机制。">NSObject类引入了两个头文件:#include &lt;objc/objc.h&gt;、#include &lt;objc/NSObjCRuntime.h&gt;，第一个头文件引入的是objc结构体的构成方式即isa指针，第二个头文件引入的是Runtime消息查找机制。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-14" title="接下来又引入了三个类的声明:@class NSString, NSMethodSignature, NSInvocation;">接下来又引入了三个类的声明:@class NSString, NSMethodSignature, NSInvocation;</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-15" title="NSMethodSignature和NSInvacation和OC的方法转发机制有关，而NSString是与NSObject的+ (NSString *)description方法有关。">NSMethodSignature和NSInvacation和OC的方法转发机制有关，而NSString是与NSObject的+ (NSString *)description方法有关。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-16" title="1、动态方法解析">1、动态方法解析</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-17" title="2、备援接收者">2、备援接收者</a><!----></li><li class="item d2 active"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-18" title="3、完全转发">3、完全转发</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-19" title="由低到高：物理层、数据链路层、网络层、传输层、表示层、会话层、应用层。">由低到高：物理层、数据链路层、网络层、传输层、表示层、会话层、应用层。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-20" title="第一次握手：建立连接时，客户端发送syn包（syn=j）到服务器，并进入SYN_SENT状态，等待服务器确认；SYN：同步序列编号（Synchronize Sequence Numbers）。">第一次握手：建立连接时，客户端发送syn包（syn=j）到服务器，并进入SYN_SENT状态，等待服务器确认；SYN：同步序列编号（Synchronize Sequence Numbers）。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-21" title="第二次握手：服务器收到syn包，必须确认客户的SYN（ack=j+1），同时自己也发送一个SYN包（syn=k），即SYN+ACK包，此时服务器进入SYN_RECV状态；">第二次握手：服务器收到syn包，必须确认客户的SYN（ack=j+1），同时自己也发送一个SYN包（syn=k），即SYN+ACK包，此时服务器进入SYN_RECV状态；</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-22" title="第三次握手：客户端收到服务器的SYN+ACK包，向服务器发送确认包ACK(ack=k+1），此包发送完毕，客户端和服务器进入ESTABLISHED（TCP连接成功）状态，完成三次握手。">第三次握手：客户端收到服务器的SYN+ACK包，向服务器发送确认包ACK(ack=k+1），此包发送完毕，客户端和服务器进入ESTABLISHED（TCP连接成功）状态，完成三次握手。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-23" title="1.第一次挥手：主机1(可以使客户端，也可以是服务器端)，设置Sequence Number和Acknowledgment Number，向主机2发送一个FIN报文段;此时，主机1进入FIN_WAIT_1状态;这表示主机1没有数据要发送给主机2了;">1.第一次挥手：主机1(可以使客户端，也可以是服务器端)，设置Sequence Number和Acknowledgment Number，向主机2发送一个FIN报文段;此时，主机1进入FIN_WAIT_1状态;这表示主机1没有数据要发送给主机2了;</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-24" title="2.第二次挥手：主机2收到了主机1发送的FIN报文段，向主机1回一个ACK报文段，Acknowledgment Number为Sequence Number加1;主机1进入FIN_WAIT_2状态;主机2告诉主机1，我也没有数据要发送了，可以进行关闭连接了;">2.第二次挥手：主机2收到了主机1发送的FIN报文段，向主机1回一个ACK报文段，Acknowledgment Number为Sequence Number加1;主机1进入FIN_WAIT_2状态;主机2告诉主机1，我也没有数据要发送了，可以进行关闭连接了;</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-25" title="3.第三次挥手：主机2向主机1发送FIN报文段，请求关闭连接，同时主机2进入CLOSE_WAIT状态;">3.第三次挥手：主机2向主机1发送FIN报文段，请求关闭连接，同时主机2进入CLOSE_WAIT状态;</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-26" title="4.第四次挥手：主机1收到主机2发送的FIN报文段，向主机2发送ACK报文段，然后主机1进入TIME_WAIT状态;主机2收到主机1的ACK报文段以后，就关闭连接;此时，主机1等待2MSL后依然没有收到回复，则证明Server端已正常关闭，那好，主机1也可以关闭连接了。">4.第四次挥手：主机1收到主机2发送的FIN报文段，向主机2发送ACK报文段，然后主机1进入TIME_WAIT状态;主机2收到主机1的ACK报文段以后，就关闭连接;此时，主机1等待2MSL后依然没有收到回复，则证明Server端已正常关闭，那好，主机1也可以关闭连接了。</a><ul class="sub-list"><li class="item d3"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-27" title="a) 验证证书的合法性（颁发证书的机构是否合法，证书中包含的网站地址是否与正在访问的地址一致等），如果证书受信任，则浏览器栏里面会显示一个小锁头，否则会给出证书不受信的提示。">a) 验证证书的合法性（颁发证书的机构是否合法，证书中包含的网站地址是否与正在访问的地址一致等），如果证书受信任，则浏览器栏里面会显示一个小锁头，否则会给出证书不受信的提示。</a><!----></li><li class="item d3"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-28" title="b) 如果证书受信任，或者是用户接受了不受信的证书，浏览器会生成一串随机数的密码，并用证书中提供的公钥加密。">b) 如果证书受信任，或者是用户接受了不受信的证书，浏览器会生成一串随机数的密码，并用证书中提供的公钥加密。</a><!----></li></ul></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-29" title="c) 使用约定好的HASH算法计算握手消息，并使用生成的随机数对消息进行加密，最后将之前生成的所有信息发送给网站。">c) 使用约定好的HASH算法计算握手消息，并使用生成的随机数对消息进行加密，最后将之前生成的所有信息发送给网站。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-30" title="a) 使用自己的私钥将信息解密取出密码，使用密码解密浏览器发来的握手消息，并验证HASH是否与浏览器发来的一致。">a) 使用自己的私钥将信息解密取出密码，使用密码解密浏览器发来的握手消息，并验证HASH是否与浏览器发来的一致。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-31" title="b) 使用密码加密一段握手消息，发送给浏览器。">b) 使用密码加密一段握手消息，发送给浏览器。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-32" title="host头域">host头域</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-33" title="Host头域指定请求资源的Intenet主机和端口号，必须表示请求url的原始服务器或网关的位置。HTTP/1.1请求必须包含主机头域，否则系统会以400状态码返回。">Host头域指定请求资源的Intenet主机和端口号，必须表示请求url的原始服务器或网关的位置。HTTP/1.1请求必须包含主机头域，否则系统会以400状态码返回。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-34" title="Referer头域">Referer头域</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-35" title="Referer头域允许客户端指定请求uri的源资源地址，这可以允许服务器生成回退链表，可用来登陆、优化cache等。他也允许废除的或错误的连接由于维护的目的被追踪。如果请求的uri没有自己的uri地址，Referer不能被发送。如果指定的是部分uri地址，则此地址应该是一个相对地址。">Referer头域允许客户端指定请求uri的源资源地址，这可以允许服务器生成回退链表，可用来登陆、优化cache等。他也允许废除的或错误的连接由于维护的目的被追踪。如果请求的uri没有自己的uri地址，Referer不能被发送。如果指定的是部分uri地址，则此地址应该是一个相对地址。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-36" title="User-Agent头域">User-Agent头域</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-37" title="User-Agent头域的内容包含发出请求的用户信息，User Agent也简称UA。用较为普通的一点来说，是一种向访问网站提供你所使用的浏览器类型、操作系统及版本、CPU类型、浏览器渲染引擎、浏览器语言、浏览器插件等信息的标识。">User-Agent头域的内容包含发出请求的用户信息，User Agent也简称UA。用较为普通的一点来说，是一种向访问网站提供你所使用的浏览器类型、操作系统及版本、CPU类型、浏览器渲染引擎、浏览器语言、浏览器插件等信息的标识。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-38" title="Cache-Control头域">Cache-Control头域</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-39" title="Cache-Control指定请求和响应遵循的缓存机制。在请求消息或响应消息中设置Cache-Control并不会修改另一个消息处理过程中的缓存处理过程。请求时的缓存指令包括no-cache、no-store、max-age、max-stale、min-fresh、only-if-cached，响应消息中的指令包括public、private、no-cache、no-store、no-transform、must-revalidate、proxy-revalidate、max-age。">Cache-Control指定请求和响应遵循的缓存机制。在请求消息或响应消息中设置Cache-Control并不会修改另一个消息处理过程中的缓存处理过程。请求时的缓存指令包括no-cache、no-store、max-age、max-stale、min-fresh、only-if-cached，响应消息中的指令包括public、private、no-cache、no-store、no-transform、must-revalidate、proxy-revalidate、max-age。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-40" title="Date头域">Date头域</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-41" title="Date头域表示消息发送的时间，时间的描述格式由rfc822定义。例如，Date:Mon,31Dec200104:25:57GMT。Date描述的时间表示世界标准时，换算成本地时间，需要知道用户所在的时区。">Date头域表示消息发送的时间，时间的描述格式由rfc822定义。例如，Date:Mon,31Dec200104:25:57GMT。Date描述的时间表示世界标准时，换算成本地时间，需要知道用户所在的时区。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-42" title="200（成功）  服务器已成功处理了请求。通常，这表示服务器提供了请求的网页。">200（成功）  服务器已成功处理了请求。通常，这表示服务器提供了请求的网页。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-43" title="201（已创建）  请求成功且服务器已创建了新的资源。">201（已创建）  请求成功且服务器已创建了新的资源。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-44" title="202（已接受）  服务器已接受了请求，但尚未对其进行处理。">202（已接受）  服务器已接受了请求，但尚未对其进行处理。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-45" title="203（非授权信息）  服务器已成功处理了请求，但返回了可能来自另一来源的信息。">203（非授权信息）  服务器已成功处理了请求，但返回了可能来自另一来源的信息。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-46" title="204（无内容）  服务器成功处理了请求，但未返回任何内容。">204（无内容）  服务器成功处理了请求，但未返回任何内容。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-47" title="205（重置内容） 服务器成功处理了请求，但未返回任何内容。与 204 响应不同，此响应要求请求者重置文档视图（例如清除表单内容以输入新内容）。">205（重置内容） 服务器成功处理了请求，但未返回任何内容。与 204 响应不同，此响应要求请求者重置文档视图（例如清除表单内容以输入新内容）。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-48" title="206（部分内容）  服务器成功处理了部分 GET 请求。">206（部分内容）  服务器成功处理了部分 GET 请求。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-49" title="300（多种选择）  服务器根据请求可执行多种操作。服务器可根据请求者 来选择一项操作，或提供操作列表供其选择。">300（多种选择）  服务器根据请求可执行多种操作。服务器可根据请求者 来选择一项操作，或提供操作列表供其选择。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-50" title="301（永久移动）  请求的网页已被永久移动到新位置。服务器返回此响应时，会自动将请求者转到新位置。您应使用此代码通知搜索引擎蜘蛛网页或网站已被永久移动到新位置。">301（永久移动）  请求的网页已被永久移动到新位置。服务器返回此响应时，会自动将请求者转到新位置。您应使用此代码通知搜索引擎蜘蛛网页或网站已被永久移动到新位置。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-51" title="302（临时移动） 服务器目前正从不同位置的网页响应请求，但请求者应继续使用原有位置来进行以后的请求。会自动将请求者转到不同的位置。但由于搜索引擎会继续抓取原有位置并将其编入索引，因此您不应使用此代码来告诉搜索引擎页面或网站已被移动。">302（临时移动） 服务器目前正从不同位置的网页响应请求，但请求者应继续使用原有位置来进行以后的请求。会自动将请求者转到不同的位置。但由于搜索引擎会继续抓取原有位置并将其编入索引，因此您不应使用此代码来告诉搜索引擎页面或网站已被移动。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-52" title="303（查看其他位置） 当请求者应对不同的位置进行单独的 GET 请求以检索响应时，服务器会返回此代码。对于除 HEAD     #####  304（未修改） 自从上次请求后，请求的网页未被修改过。服务器返回此响应时，不会返回网页内容。如果网页自请求者上次请求后再也没有更改过，您应当将服务器配置为返回此响应。由于服务器可以告诉 搜索引擎自从上次抓取后网页没有更改过，因此可节省带宽和开销。">303（查看其他位置） 当请求者应对不同的位置进行单独的 GET 请求以检索响应时，服务器会返回此代码。对于除 HEAD     #####  304（未修改） 自从上次请求后，请求的网页未被修改过。服务器返回此响应时，不会返回网页内容。如果网页自请求者上次请求后再也没有更改过，您应当将服务器配置为返回此响应。由于服务器可以告诉 搜索引擎自从上次抓取后网页没有更改过，因此可节省带宽和开销。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-53" title="305（使用代理） 请求者只能使用代理访问请求的网页。如果服务器返回此响应，那么，服务器还会指明请求者应当使用的代理。">305（使用代理） 请求者只能使用代理访问请求的网页。如果服务器返回此响应，那么，服务器还会指明请求者应当使用的代理。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-54" title="307（临时重定向）  服务器目前正从不同位置的网页响应请求，但请求者应继续使用原有位置来进行以后的请求。会自动将请求者转到不同的位置。但由于搜索引擎会继续抓取原有位置并将其编入索引，因此您不应使用此代码来告诉搜索引擎某个页面或网站已被移动。">307（临时重定向）  服务器目前正从不同位置的网页响应请求，但请求者应继续使用原有位置来进行以后的请求。会自动将请求者转到不同的位置。但由于搜索引擎会继续抓取原有位置并将其编入索引，因此您不应使用此代码来告诉搜索引擎某个页面或网站已被移动。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-55" title="400（错误请求） 服务器不理解请求的语法。">400（错误请求） 服务器不理解请求的语法。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-56" title="401（身份验证错误） 此页要求授权。您可能不希望将此网页纳入索引。">401（身份验证错误） 此页要求授权。您可能不希望将此网页纳入索引。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-57" title="403（禁止） 服务器拒绝请求。">403（禁止） 服务器拒绝请求。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-58" title="404（未找到） 服务器找不到请求的网页。例如，对于服务器上不存在的网页经常会返回此代码。例如：www.0631abc.com/20100aaaa，就…">404（未找到） 服务器找不到请求的网页。例如，对于服务器上不存在的网页经常会返回此代码。例如：www.0631abc.com/20100aaaa，就…</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-59" title="405（方法禁用） 禁用请求中指定的方法。">405（方法禁用） 禁用请求中指定的方法。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-60" title="406（不接受） 无法使用请求的内容特性响应请求的网页。">406（不接受） 无法使用请求的内容特性响应请求的网页。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-61" title="407（需要代理授权） 此状态码与 401 类似，但指定请求者必须授权使用代理。如果服务器返回此响应，还表示请求者应当使用代理。">407（需要代理授权） 此状态码与 401 类似，但指定请求者必须授权使用代理。如果服务器返回此响应，还表示请求者应当使用代理。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-62" title="408（请求超时） 服务器等候请求时发生超时。">408（请求超时） 服务器等候请求时发生超时。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-63" title="409（冲突） 服务器在完成请求时发生冲突。服务器必须在响应中包含有关冲突的信息。服务器在响应与前一个请求相冲突的 PUT 请求时可能会返回此代码，以及两个请求的差异列表。">409（冲突） 服务器在完成请求时发生冲突。服务器必须在响应中包含有关冲突的信息。服务器在响应与前一个请求相冲突的 PUT 请求时可能会返回此代码，以及两个请求的差异列表。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-64" title="410（已删除） 请求的资源永久删除后，服务器返回此响应。该代码与 404（未找到）代码相似，但在资源以前存在而现在不存在的情况下，有时会用来替代 404 代码。如果资源已永久删除，您应当使用 301 指定资源的新位置。">410（已删除） 请求的资源永久删除后，服务器返回此响应。该代码与 404（未找到）代码相似，但在资源以前存在而现在不存在的情况下，有时会用来替代 404 代码。如果资源已永久删除，您应当使用 301 指定资源的新位置。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-65" title="411（需要有效长度） 服务器不接受不含有效内容长度标头字段的请求。">411（需要有效长度） 服务器不接受不含有效内容长度标头字段的请求。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-66" title="412（未满足前提条件） 服务器未满足请求者在请求中设置的其中一个前提条件。">412（未满足前提条件） 服务器未满足请求者在请求中设置的其中一个前提条件。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-67" title="413（请求实体过大） 服务器无法处理请求，因为请求实体过大，超出服务器的处理能力。">413（请求实体过大） 服务器无法处理请求，因为请求实体过大，超出服务器的处理能力。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-68" title="414（请求的 URI 过长） 请求的 URI（通常为网址）过长，服务器无法处理。">414（请求的 URI 过长） 请求的 URI（通常为网址）过长，服务器无法处理。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-69" title="415（不支持的媒体类型） 请求的格式不受请求页面的支持。">415（不支持的媒体类型） 请求的格式不受请求页面的支持。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-70" title="416（请求范围不符合要求） 如果页面无法提供请求的范围，则服务器会返回此状态码。">416（请求范围不符合要求） 如果页面无法提供请求的范围，则服务器会返回此状态码。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-71" title="417（未满足期望值） 服务器未满足&quot;期望&quot;请求标头字段的要求。">417（未满足期望值） 服务器未满足"期望"请求标头字段的要求。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-72" title="500（服务器内部错误）  服务器遇到错误，无法完成请求。">500（服务器内部错误）  服务器遇到错误，无法完成请求。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-73" title="501（尚未实施） 服务器不具备完成请求的功能。例如，当服务器无法识别请求方法时，服务器可能会返回此代码。">501（尚未实施） 服务器不具备完成请求的功能。例如，当服务器无法识别请求方法时，服务器可能会返回此代码。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-74" title="502（错误网关） 服务器作为网关或代理，从上游服务器收到了无效的响应。">502（错误网关） 服务器作为网关或代理，从上游服务器收到了无效的响应。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-75" title="503（服务不可用） 目前无法使用服务器（由于超载或进行停机维护）。通常，这只是一种暂时的状态。">503（服务不可用） 目前无法使用服务器（由于超载或进行停机维护）。通常，这只是一种暂时的状态。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-76" title="504（网关超时）  服务器作为网关或代理，未及时从上游服务器接收请求。">504（网关超时）  服务器作为网关或代理，未及时从上游服务器接收请求。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-77" title="505（HTTP 版本不受支持） 服务器不支持请求中所使用的 HTTP 协议版本。">505（HTTP 版本不受支持） 服务器不支持请求中所使用的 HTTP 协议版本。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-78" title="1.alloc       创建对象，分配空间。">1.alloc       创建对象，分配空间。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-79" title="2.init       初始化对象，初始化数据。">2.init       初始化对象，初始化数据。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-80" title="3.loadView                            从nib载入视图，通常这一步不需要去干涉。除非你没有使用xib文件创建视图">3.loadView                            从nib载入视图，通常这一步不需要去干涉。除非你没有使用xib文件创建视图</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-81" title="4.viewDidLoad   载入完成，可以进行自定义数据以及动态的创建其他空间。">4.viewDidLoad   载入完成，可以进行自定义数据以及动态的创建其他空间。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-82" title="5.viewWillAppear  视图将出现在屏幕之前。">5.viewWillAppear  视图将出现在屏幕之前。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-83" title="6.viewDidAppear  视图在屏幕上渲染完成。">6.viewDidAppear  视图在屏幕上渲染完成。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-84" title="1.viewWillDisappear  视图被移除之前。">1.viewWillDisappear  视图被移除之前。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-85" title="2.viewDidDisappear   视图被移除之后。">2.viewDidDisappear   视图被移除之后。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-86" title="3.dealloc        销毁视图。">3.dealloc        销毁视图。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-87" title="1. 在ViewContoller的viewWillDisappear生命周期中注销Timer。">1. 在ViewContoller的viewWillDisappear生命周期中注销Timer。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-88" title="2. 引入第三方NSObject(如HWWeakTimer)管理和持有Timer，让Timer持有第三方的成员变量。这样就打破了互相引用的循环关系。">2. 引入第三方NSObject(如HWWeakTimer)管理和持有Timer，让Timer持有第三方的成员变量。这样就打破了互相引用的循环关系。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-89" title="1. Carthage只支持iOS 8及以上版本使用。">1. Carthage只支持iOS 8及以上版本使用。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-90" title="2. CocoaPods默认会自动创建并更新你的应用程序和所有依赖的Xcode workspace。Carthage使用xcodebuild来编译框架的二进制文件，但如何集成它们将交由用户自己判断。CocoaPods的方法更易于使用，但Carthage更灵活并且是非侵入性的。">2. CocoaPods默认会自动创建并更新你的应用程序和所有依赖的Xcode workspace。Carthage使用xcodebuild来编译框架的二进制文件，但如何集成它们将交由用户自己判断。CocoaPods的方法更易于使用，但Carthage更灵活并且是非侵入性的。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-91" title="我们创建Carthage的原因是想要一种尽可能简单的工具——一个只关心本职工作的依赖管理器，而不是取代部分Xcode的功能，或者需要让框架作者做一些额外的工作。CocoaPods提供的一些特性很棒，但由于附加的复杂性，它们将不会被包含在Carthage当中。">我们创建Carthage的原因是想要一种尽可能简单的工具——一个只关心本职工作的依赖管理器，而不是取代部分Xcode的功能，或者需要让框架作者做一些额外的工作。CocoaPods提供的一些特性很棒，但由于附加的复杂性，它们将不会被包含在Carthage当中。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-92" title="1. 每个应用程序都有自己的存储空间。">1. 每个应用程序都有自己的存储空间。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-93" title="2. 每个应用程序都不可以翻过自己的围墙去访问别的存储空间的内容。(已经越狱的除外）">2. 每个应用程序都不可以翻过自己的围墙去访问别的存储空间的内容。(已经越狱的除外）</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-94" title="3. 在访问别人沙盒内的数据时需要访问权限。">3. 在访问别人沙盒内的数据时需要访问权限。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-95" title="Documents：保存应用运行时生成的需要持久化的数据iTunes会自动备份该目录。苹果建议将在应用程序中浏览到的文件数据保存在该目录下。">Documents：保存应用运行时生成的需要持久化的数据iTunes会自动备份该目录。苹果建议将在应用程序中浏览到的文件数据保存在该目录下。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-96" title="Library/Caches：一般存储的是缓存文件，例如图片视频等，此目录下的文件不会再应用程序退出时删除，在手机备份的时候，iTunes不会备份该目录。">Library/Caches：一般存储的是缓存文件，例如图片视频等，此目录下的文件不会再应用程序退出时删除，在手机备份的时候，iTunes不会备份该目录。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-97" title="Library/Preferences：保存应用程序的所有偏好设置iOS的Settings(设置)，我们不应该直接在这里创建文件，而是需要通过NSUserDefault这个类来访问应用程序的偏好设置。iTunes会自动备份该文件目录下的内容。">Library/Preferences：保存应用程序的所有偏好设置iOS的Settings(设置)，我们不应该直接在这里创建文件，而是需要通过NSUserDefault这个类来访问应用程序的偏好设置。iTunes会自动备份该文件目录下的内容。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-98" title="tmp：临时文件目录，在程序重新运行的时候，和开机的时候，会清空tmp文件夹。">tmp：临时文件目录，在程序重新运行的时候，和开机的时候，会清空tmp文件夹。</a><!----></li><li class="item d2"><a href="https://juejin.im/post/5b03936a6fb9a07ac162bfe0#heading-99" title="以上是Fabric自己总结的一些面试心经，有兴趣的朋友可以加我微信共同讨论：justlikeitRobert。各位老铁看了我这篇文章之后，如果找到了满意的工作，别忘了和Fabric一起分享成功喜悦，一分也是爱，哈哈！">以上是Fabric自己总结的一些面试心经，有兴趣的朋友可以加我微信共同讨论：justlikeitRobert。各位老铁看了我这篇文章之后，如果找到了满意的工作，别忘了和Fabric一起分享成功喜悦，一分也是爱，哈哈！</a><!----></li></ul></li></ul></div></nav></div></div></div><div data-v-55bafd09="" data-v-55484a2b="" class="article-suspended-panel article-suspended-panel" data-v-93a60a52=""><div data-v-55bafd09="" class="like-btn panel-btn like-adjust with-badge" badge="406"></div><div data-v-55bafd09="" class="comment-btn panel-btn comment-adjust with-badge" badge="41"></div><div data-v-55bafd09="" class="collect-btn panel-btn"><!----></div><div data-v-55bafd09="" class="share-title">分享</div><div data-v-55bafd09="" class="weibo-btn share-btn panel-btn"></div><div data-v-55bafd09="" class="qq-btn share-btn panel-btn"></div><div data-v-55bafd09="" class="wechat-btn share-btn panel-btn"><img data-v-55bafd09="" src="https://juejin.im/post/5b03936a6fb9a07ac162bfe0" class="wechat-qr-code-img shadow" style="display: none;"></div></div><div data-v-cf1367a0="" data-v-55484a2b="" class="image-viewer-box" data-v-93a60a52=""><!----></div><!----></div></main></div><!----></div>
+      
+      
+      
+      <script type="text/javascript" src="./iOS面试珠玑 - 掘金_files/runtime.a270a7eb982dd2b83949.js"></script><script type="text/javascript" src="./iOS面试珠玑 - 掘金_files/0.6827af1fb82c7622a74b.js"></script><script type="text/javascript" src="./iOS面试珠玑 - 掘金_files/1.66e4769986aa6850d0b4.js"></script>
+    </body></html>
