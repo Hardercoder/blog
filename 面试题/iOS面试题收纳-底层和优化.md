@@ -579,7 +579,7 @@ int main(int argc, const char *argv[]){
   - `@property (strong, nonatomic) void (^block)(void);`
   - `@property (copy, nonatomic) void (^block)(void);`
 
-#### __weak的作用是什么？有什么使用注意点？
+#### __weak的作用是什么？
 
 - __weak 是一个修饰符
 
@@ -598,7 +598,7 @@ int main(int argc, const char *argv[]){
     - dispose函数会调用源码中的 _Block_object_dispose函数
     - _Block_object_dispose函数会自动释放auto变量（release）
 
-#### __block的作用是什么？有什么使用注意点？
+#### __block的作用是什么？
 
 - 如果需要在 block 内部修改外部的 局部变量的值,就需要使用block 修饰(全局变量和静态变量不需要加block 可以修改)
 - **block 修饰以后,局部变量的数据结构就会发生改变,底层会变成一个结构体的对象**,结构内部会声明一个 block修饰变量的成员, 并且将 __block修饰变量的地址保存到堆内存中. 后面如果修改这个变量的值,可以通过 isa 指针找到这个结构体,进来修改这个变量的值;

@@ -87,6 +87,28 @@ ARC会自动插入`retain`和`release`语句。ARC编译器有两部分，分别
   - 添加引用时：objc_initWeak函数会调用 storeWeak() 函数， storeWeak() 的作用是更新指针指向，创建对应的弱引用表
   - 释放时,调用clearDeallocating函数。clearDeallocating函数首先根据对象地址获取所有weak指针地址的数组，然后遍历这个数组把其中的数据设为nil，最后把这个entry从weak表中删除，最后清理对象的记录
 
+```cpp
+struct SideTable {
+    // 保证原子操作的自旋锁
+    spinlock_t slock;
+    // 引用计数的 hash 表
+    RefcountMap refcnts;
+    // weak 引用全局 hash 表
+    weak_table_t weak_table;
+}
+
+struct weak_table_t {
+    // 保存了所有指向指定对象的 weak 指针
+    weak_entry_t *weak_entries;
+    // 存储空间
+    size_t    num_entries;
+    // 参与判断引用计数辅助量
+    uintptr_t mask;
+    // hash key 最大偏移值
+    uintptr_t max_hash_displacement;
+};
+```
+
 #### 方法里有局部对象， 出了方法后会立即释放吗
 
 - 如果是普通的局部对象，会立即释放
