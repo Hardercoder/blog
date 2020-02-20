@@ -551,3 +551,33 @@
 }
 ```
 
+#### 返回正整数N的二进制周期，如果没有周期就返回-1
+
+```swift
+func getBinaryPeriodForInt(_ n: Int) -> Int {
+    var nn = n
+    var d = [Int]()
+    var l = 0, res = -1
+    while l > 0 {
+        d[l] = nn % 2
+        nn /= 2
+        l += 1
+    }
+    for p in 1..<l {
+        if p < l / 2 {
+            var ok = true
+            for i in 0..<l-p {
+                if d[i] != d[i+p] {
+                    ok = false
+                    break
+                }
+            }
+            if ok {
+                res = p
+            }
+        }
+    }
+    return res
+}
+```
+

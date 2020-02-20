@@ -304,7 +304,7 @@ Cocoa Touch提供了4种CoreAnimation过渡类型，分别为：交叉淡化、�
 
 - layoutIfNeeded：方法调用后，在主线程对当前视图及其所有子视图立即强制更新布局
 - layoutSubviews：方法只能重写，我们不能主动调用，在屏幕旋转、滑动或触摸界面、子视图修改时被系统自动调用，用来调整自定义视图的布局
-- setNeedsLayout：方法与layoutIfNeeded相似，不同的是方法被调用后不会立即强制更新布局，而是在下一个布局周期进行更新。
+- setNeedsLayout：方法与layoutIfNeeded相似，不同的是方法被调用后不会立即强制更新布局，而是在下一个布局周期进行更新
 
 
 #### 渲染以及图像显示原理过程
