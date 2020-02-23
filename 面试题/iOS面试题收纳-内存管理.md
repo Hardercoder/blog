@@ -296,6 +296,8 @@ struct weak_table_t {
 
 - 栈区（stack）：由编译器自动分配和释放，一般存放函数的参数值，局部变量等，是连续的，高地址往低地址扩展，容量小速度快，有序
 
+![](./reviewimgs/objc_memory_area.png)
+
 #### 堆和栈的区别
 
 - `栈区(stack)`由编译器自动分配释放 ，存放方法(函数)的参数值，局部变量的值等，栈是向低地址扩展的数据结构，是一块连续的内存的区域。即栈顶的地址和栈的最大容量是系统预先规定好的
@@ -673,6 +675,8 @@ objc_object::sidetable_release(bool performDealloc)
 - retain: 经过两次哈希查找，找到其对应引用计数值，然后将引用计数加1(实际是加偏移量)
 - release：和retain相反，经过两次哈希查找，找到其对应引用计数值，然后将引用计数减1
 - dealloc: _rootDealloc->rootDealloc->objc_dispose->objc_destructInstance->`clearDeallocating
+
+![](./reviewimgs/objc_dealloc_map.png)
 
 **4、弱引用管理：**
 

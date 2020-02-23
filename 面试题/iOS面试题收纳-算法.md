@@ -663,3 +663,25 @@ int findKey(int *arr, int length, int key) {
     return -1;
 }
 ```
+
+#### 将一个字符串进行反转(考虑系统表情符号)
+
+```objective-c
+- (NSString*)reverseString:(NSString*)str {
+    NSMutableString *reverString = [NSMutableString stringWithCapacity:str.length];
+    NSMutableArray  *strRanges = [NSMutableArray arrayWithCapacity:str.length];
+    NSRange range;
+    for(NSInteger i = 0; i < str.length; i += range.length) {
+        range = [str rangeOfComposedCharacterSequenceAtIndex:i];
+        [strRanges addObject:[NSValue valueWithRange:NSMakeRange(i, range.length)]];
+    }
+    
+    for (NSInteger i = strRanges.count - 1; i >= 0; i -= 1) {
+        range = [[strRanges objectAtIndex:i] rangeValue];
+        [reverString appendString:[str substringWithRange:range]];
+    }
+    
+    return [reverString copy];
+}
+```
+

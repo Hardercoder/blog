@@ -67,6 +67,8 @@ isa` 等价于 `is kind of
 
 `isa` 有两种类型
 
+![](./reviewimgs/objc_isa_map.png)
+
 - 纯指针，指向内存地址
 - `NON_POINTER_ISA`，除了内存地址，还存有一些其他信息
 
@@ -211,15 +213,20 @@ KVO是观察者模式的另一实现。使用了isa混写(isa-swizzling)来实�
 使用setter方法改变值KVO会生效，使用setValue:forKey即KVC改变值KVO也会生效，因为KVC会去调用setter方法
 
 ```csharp
-- (void)setValue:(id)value
-{
+- (void)setValue:(id)value {
     [self willChangeValueForKey:@"key"];
-    
     [super setValue:value];
-    
     [self didChangeValueForKey:@"key"];
 }
 ```
+
+
+
+
+
+
+
+![](./reviewimgs/objc_kvo_map.png)
 
 #### iOS用什么方式实现对一个对象的KVO？（KVO的本质是什么？）
 
@@ -863,9 +870,9 @@ struct class_ro_t {
 - 消息发送阶段
   - 给当前类发送一条消息，判断消息是否认要忽略。比如 Mac OS X 开发，有了垃圾回收就不理会 retain，release 这些函数
   - 判断对象是否为nil，若为nil直接退出消息发送，返回对应类型的默认值
-  - 从当前的类中的缓存查找
-  - 如果没有去遍历 class_rw_t 方法列表查找
-  - 如果没有再去父类的缓存查找
+  - 从当前的类中的缓存查找（缓存查找：给定值SEL,目标是查找对应bucket_t中的IMP，哈希查找）
+  - 如果没有去遍历 class_rw_t 方法列表查找（当前类中查找：对于已排序好的方法列表，采用二分查找，对于没有排序好的列表，采用一般遍历）
+  - 如果没有再去父类的缓存查找（父类逐级查找：先判断父类是否为nil，为nil则结束，否则就继续进行缓存查找-->当前类查找-->父类逐级查找的流程）
   - 如果没有再去父类的class_rw_t方法列表中查找
   - 循环反复，如果找到，调用方法， 并且将方法缓存到方法调用者的方法缓存中
   - 如果一直没有，转到下一个阶段：动态解析阶段
@@ -883,11 +890,13 @@ struct class_ro_t {
   - 第二种： 没有实现forwardingTargetForSelector
     - 会去调用 methodSignatureForSelector 方法，在这个方法添加方法签名
     - 之后会调用forwardInvocation 方法， 在这个方法中我们 [anInvocation invokeWithTarget:类对象];
-    - 或者其他操作都可以，这里没有什么限制。
+    - 或者其他操作都可以，这里没有什么限制
+
+![](./reviewimgs/objc_method_forward_map.png)
 
 #### 说一下 `Runtime` 的方法缓存？存储的形式、数据结构以及查找的过程
 
-`cache_t` 是一种增量扩展的哈希表结构。哈希表内部存储的是 `bucket_t`
+`cache_t` 用于快速查找方法执行函数，是可增量扩展的哈希表结构，是局部性原理的最佳运用。哈希表内部存储的是 `bucket_t`
 
 `bucket_t` 中存储的是 `SEL` 和 `IMP`的键值对
 
@@ -897,14 +906,12 @@ struct class_ro_t {
 ```objc
 // 缓存曾经调用过的方法，提高查找速率
 struct cache_t {
-    struct bucket_t *_buckets; // 散列表
-    mask_t _mask; //散列表的长度 - 1
-    mask_t _occupied; // 已经缓存的方法数量，散列表的长度是大于已经缓存的数量的。
+    struct bucket_t *_buckets;//一个散列表，用来方法缓存，bucket_t类型，包含key以及方法实现IMP
+    mask_t _mask;//分配用来缓存bucket的总数
+    mask_t _occupied;//表明目前实际占用的缓存bucket的个数
     //...
 }
-```
 
-```objc
 struct bucket_t {
 private:
     // IMP-first is better for arm64e ptrauth and no worse for arm64.
@@ -973,7 +980,7 @@ bucket_t * cache_t::find(SEL s, id receiver)
 调用 free()
 ```
 
-#### 实例对象的数据结构？
+#### 实例对象的数据结构
 
 具体可以参看 `Runtime` 源代码，在文件 `objc-private.h`中有定义
 
@@ -986,6 +993,8 @@ private:
 ```
 
 本质上 `objc_object` 的私有属性只有一个 `isa` 指针。指向 `类对象` 的内存地址
+
+和isa相关的操作，弱引用，关联对象，内存管理
 
 #### 什么是method swizzling（俗称黑魔法)
 
@@ -1058,6 +1067,8 @@ private:
 ```
 
 #### 类对象的数据结构
+
+![](./reviewimgs/objc_object_structure.png)
 
 具体可以参看 `Runtime` 源代码
 

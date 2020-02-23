@@ -337,9 +337,14 @@ Cocoa Touch提供了4种CoreAnimation过渡类型，分别为：交叉淡化、�
 #### 渲染以及图像显示原理过程
 
 - 每一个UIView都有一个layer，每一个layer都有个content，这个content指向的是一块缓存，叫做backing store
+
 - UIView的绘制和渲染是两个过程，当UIView被绘制时，CPU执行drawRect，通过context将数据写入backing store
+
 - 当backing store写完后，通过render server交给GPU去渲染，将backing store中的bitmap数据显示在屏幕上
+
 - 说到底CPU就是做绘制的操作，把内容放到缓存里，GPU负责从缓存里读取数据然后渲染到屏幕上
+
+  ![](./reviewimgs/objc_image_show_detail.png)
 
 #### 利用 `runloop` 解释一下页面的渲染的过程？
 
@@ -359,10 +364,23 @@ Cocoa Touch提供了4种CoreAnimation过渡类型，分别为：交叉淡化、�
 
 至此绘制的过程结束
 
+![](./reviewimgs/objc_ui_yuanli.png)
+
+![](./reviewimgs/objc_ui_yuanli1.png)
+
+*异步绘制：*
+[self.layer.delegate displayLayer: ]
+代理负责生成对应的bitmap
+设置该bitmap作为该layer.contents属性的值
+
+![](./reviewimgs/objc_ui_yuanli_async.png)
+
 #### UI卡顿掉帧原因
 
 iOS设备的硬件时钟会发出Vsync（垂直同步信号），然后App的CPU会去计算屏幕要显示的内容，之后将计算好的内容提交到GPU去渲染。随后，GPU将渲染结果提交到帧缓冲区，等到下一个VSync到来时将缓冲区的帧显示到屏幕上。也就是说，一帧的显示是由CPU和GPU共同决定的。
  一般来说，页面滑动流畅是60fps，也就是1s有60帧更新，即每隔16.7ms就要产生一帧画面，而如果CPU和GPU加起来的处理时间超过了16.7ms，就会造成掉帧甚至卡顿
+
+![](./reviewimgs/objc_ui_kadun.png)
 
 #### 离屏渲染是什么
 
@@ -413,6 +431,8 @@ iOS设备的硬件时钟会发出Vsync（垂直同步信号），然后App的CPU
 
   - 寻找事件的命中视图是通过对视图调用hitTest和pointInside完成的，hitTest的调用顺序是从UIWindow开始，对视图的每个子视图依次调用，直到找到命中视图
 
+    ![](./reviewimgs/objc_eventchin_find_code.png)
+
 - **响应链传递**
   - 找到命中者任务并未完成，因为命中者不一定是事件的响应者。所谓响应就是开发中为事件绑定一个触发函数，事件发生后，执行响应函数里的代码
   - 找到命中视图后，事件会从此视图开始沿着响应链nextResponder传递，直到找到处理事件的响应视图，如果没有处理的事件会被丢弃（UIControl子类不适用）
@@ -426,6 +446,8 @@ iOS设备的硬件时钟会发出Vsync（垂直同步信号），然后App的CPU
   - 子视图超出父视图的部分
   
 - UIControl的子类和UIGestureRecognizer优先级较高，会打断响应链
+
+  
 
 #### 解释一下 `手势识别` 的过程？
 
