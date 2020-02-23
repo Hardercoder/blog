@@ -16,10 +16,36 @@ typedef struct objc_class *Class;
 
 #### 一个NSObject对象占用多少内存
 
-- 系统分配了16个字节给NSObject对象（通过malloc_size函数获得）
-- 但NSObject对象内部只使用了8个字节的空间（64bit环境下，可以通过`class_getInstanceSize`函数获得）
+- 受限于内存分配的机制，一个 `NSObject`对象都会分配 `16byte` 的内存空间（malloc_size函数）
 
-#### 对象的isa指针指向哪里
+- 但是实际上在 64位 下，只使用了 `8byte`，在32位下，只使用了 `4byte`（`class_getInstanceSize`函数）
+
+- 一个 NSObject 实例对象成员变量所占的大小，实际上是 8 字节
+
+  ```objc
+  #import <Objc/Runtime>
+  Class_getInstanceSize([NSObject Class])
+  ```
+
+  本质是
+
+  ```objc
+  size_t class_getInstanceSize(Class cls) {
+      if (!cls) return 0;
+      return cls->alignedInstanceSize();
+  }
+  ```
+
+  获取 Obj-C 指针所指向的内存的大小，实际上是16 字节
+
+  ```objc
+  #import <malloc/malloc.h>
+  malloc_size((__bridge const void *)obj); 
+  ```
+
+  对象在分配内存空间时，会进行内存对齐，所以在 iOS 中，分配内存空间都是 16字节 的倍数
+
+#### 对象的isa指针指向哪里，有什么作用
 
 - 在Objective-C中，任何类的定义都是对象。类和类的实例（对象）没有任何本质上的区别。任何对象都有 `isa` 指针
 
@@ -28,49 +54,73 @@ typedef struct objc_class *Class;
 ![](./reviewimgs/objc_isa)
 
 - instance对象的isa指向class对象
+- class对象的isa指向meta-class对象 
+- meta-class对象的isa指向基类的meta-class对象(NSObject meta class)，基类meta-class对象的isa指向自己，也就是NSObject。
+- 基类meta-class的superClass是基类NSObject，这样就形成了一个闭环。
+- isa主要的作用在于从它所属的类/元类对象上查找方法
 
--  class对象的isa指向meta-class对象 
+#### 说一下对 `isa` 指针的理解， `isa` 指针有哪两种类型？
 
-- meta-class对象的isa指向基类的meta-class对象(NSObject meta class)，基类meta-class对象的isa指向NSObject
+```
+isa` 等价于 `is kind of
+```
 
-- isa的优化
+`isa` 有两种类型
 
-  - 在arm64构架之前，isa的值就是**类对象的地址值**。
+- 纯指针，指向内存地址
+- `NON_POINTER_ISA`，除了内存地址，还存有一些其他信息
 
-  - 在arm64构架开始的时候，采用了 isa优化的策略， 使用了共用体的技术。将64位的内存地址存储了很多东西，其中33位存储的是isa具体的地址值。因为共用体中 前三位有存储的东西，所以&isa_mask出来的类对象地址值的二进制后面三位永远都是000， 十六进制就是8 或者0结尾的地址值
+- 在Runtime源码查看isa_t的简化结构如下：
+  - 在arm64构架之前，isa的值就是**类对象的地址值**
 
-    ```objective-c
-     union isa_t {
-        isa_t() { }
-        isa_t(uintptr_t value) : bits(value) { }
-        Class cls;
-        uintptr_t bits;   // typedef unsigned long
-    	  struct {
-            // ISA_BITFIELD 展开
-    	      // 0 代表普通指针，存储着Class、MetaClass对象的内存地址
-            // 1 代表优化过，使用位域存储更多信息
-            uintptr_t nonpointer        : 1; 
-    	      // 是否有设置过关联对象，如果没有，释放时会更快
-            uintptr_t has_assoc         : 1;
-    	      // 是否有C++的析构函数（.cxx_destruct）,如果没有，释放会更快
-            uintptr_t has_cxx_dtor      : 1;
-            // 存储着Class、MetaClass的内存地址
-            uintptr_t shiftcls          : 33; // MACH_VM_MAX_ADDRESS 0x1000000000
-            // 用于在调试时分辨率是否未完成初始化
-            uintptr_t magic             : 6;
-            // 是否被弱指针指向过？ 如果没有，释放会更快
-            uintptr_t weakly_referenced : 1;
-            // 对象是否正在释放
-            uintptr_t deallocating      : 1;
-    			  // 引用计数器是否过大？无法存储在isa中
-    	      // 如果为1，那么引用计数会存储在一个叫 side table的类属性中	
-            uintptr_t has_sidetable_rc  : 1;
-    				// 里面存储的值是引用计数器减1
-            uintptr_t extra_rc          : 19;
-        };
-       ...
-     }
-    ```
+  - 在arm64构架开始的时候，采用了 isa优化的策略， 使用了联合的技术。将64位的内存地址存储了很多东西，其中33位存储的是isa具体的地址值。因为联合体中 前三位有存储的东西，所以&isa_mask出来的类对象地址值的二进制后面三位永远都是000， 十六进制就是8 或者0结尾的地址值
+
+  ```objective-c
+  union isa_t  {
+      Class cls;
+      uintptr_t bits;
+      # if __arm64__ // arm64架构
+  #   define ISA_MASK        0x0000000ffffffff8ULL //用来取出33位内存地址使用（&）操作
+  #   define ISA_MAGIC_MASK  0x000003f000000001ULL
+  #   define ISA_MAGIC_VALUE 0x000001a000000001ULL
+      struct {
+          uintptr_t nonpointer        : 1; //0：代表普通指针，1：表示优化过的，可以存储更多信息。
+          uintptr_t has_assoc         : 1; //是否设置过关联对象。如果没设置过，释放会更快
+          uintptr_t has_cxx_dtor      : 1; //是否有C++的析构函数
+          uintptr_t shiftcls          : 33; // MACH_VM_MAX_ADDRESS 0x1000000000 内存地址值
+          uintptr_t magic             : 6; //用于在调试时分辨对象是否未完成初始化
+          uintptr_t weakly_referenced : 1; //是否有被弱引用指向过
+          uintptr_t deallocating      : 1; //是否正在释放
+          uintptr_t has_sidetable_rc  : 1; //引用计数器是否过大无法存储在ISA中。如果为1，那么引用计数会存储在一个叫做SideTable的类的属性中
+          uintptr_t extra_rc          : 19; //里面存储的值是引用计数器减1
+  
+  #       define RC_ONE   (1ULL<<45)
+  #       define RC_HALF  (1ULL<<18)
+      };
+  
+  # elif __x86_64__ // arm86架构,模拟器是arm86
+  #   define ISA_MASK        0x00007ffffffffff8ULL
+  #   define ISA_MAGIC_MASK  0x001f800000000001ULL
+  #   define ISA_MAGIC_VALUE 0x001d800000000001ULL
+      struct {
+          uintptr_t nonpointer        : 1;
+          uintptr_t has_assoc         : 1;
+          uintptr_t has_cxx_dtor      : 1;
+          uintptr_t shiftcls          : 44; // MACH_VM_MAX_ADDRESS 0x7fffffe00000
+          uintptr_t magic             : 6;
+          uintptr_t weakly_referenced : 1;
+          uintptr_t deallocating      : 1;
+          uintptr_t has_sidetable_rc  : 1;
+          uintptr_t extra_rc          : 8;
+  #       define RC_ONE   (1ULL<<56)
+  #       define RC_HALF  (1ULL<<7)
+      };
+  
+  # else
+  #   error unknown architecture for packed isa
+  # endif
+  }
+  ```
 
 #### OC类的信息存储在哪里？
 
@@ -95,7 +145,8 @@ typedef struct objc_class *Class;
 
 - 不能向编译后得到的类中增加实例变量
 - 能向运行时创建的类中添加实例变量
-- 因为编译后的类已经注册在 runtime 中，类结构体中的 objc_ivar_list 实例变量的链表 和 instance_size 实例变量的内存大小已经确定，同时runtime 会调用 class_setIvarLayout 或 class_setWeakIvarLayout 来处理 strong weak 引用。所以不能向存在的类中添加实例变量运行时创建的类是可以添加实例变量，调用 class_addIvar 函数。但是得在调用 objc_allocateClassPair 之后，objc_registerClassPair 之前，原因同上。
+- 因为编译后的类已经注册在 runtime 中，类结构体中的 objc_ivar_list 实例变量的链表 和 instance_size 实例变量的内存大小已经确定，同时runtime 会调用 class_setIvarLayout 或 class_setWeakIvarLayout 来处理 strong weak 引用。所以不能向存在的类中添加实例变量
+- 运行时创建的类是可以添加实例变量，调用 class_addIvar 函数。但是得在调用 objc_allocateClassPair 之后，objc_registerClassPair 之前，原因同上。
 
 #### 在运行时创建类的方法objc_allocateClassPair的方法名尾部为什么是pair（成对的意思）
 
@@ -119,9 +170,10 @@ objc_disposeClassPair函数用于销毁一个类，不过需要注意的是，�
 #### objc中向一个nil对象发送消息将会发生什么？（返回值是对象，是标量，结构体）
 
 - 向 nil 发送消息并不会引起程序crash,只是在运行时不会有任何作用。但是对`[NSNull null]`对象发送消息时,是会crash的。
-- 当方法返回值为对象的时候, 给nil发消息返回nil
-- 当方法返回值为结构体的时候,给nil发消息返回0,结构体中的各个参数也是0
-- 当方法返回值为指针类型的时候, 给nil发消息返回0
+- 如果一个方法返回值是一个对象，那么发送给nil的消息将返回0(nil)
+- 如果方法返回值为指针类型，其指针大小为小于或者等于sizeof(void*) ，float，double，long double 或者long long的整型标量，发送给nil的消息将返回0
+- 如果方法返回值为结构体,发送给nil的消息将返回0。结构体中各个字段的值将都是0
+- 如果方法的返回值不是上述提到的几种情况，那么发送给nil的消息的返回值将是未定义的
 
 #### 写出调用以下方法的几种方式
 
@@ -151,6 +203,23 @@ NSString * s = @"invocationname";
 ```
 
 ## KVO
+
+#### KVO (Key-value observing)
+
+KVO是观察者模式的另一实现。使用了isa混写(isa-swizzling)来实现KVO
+
+使用setter方法改变值KVO会生效，使用setValue:forKey即KVC改变值KVO也会生效，因为KVC会去调用setter方法
+
+```csharp
+- (void)setValue:(id)value
+{
+    [self willChangeValueForKey:@"key"];
+    
+    [super setValue:value];
+    
+    [self didChangeValueForKey:@"key"];
+}
+```
 
 #### iOS用什么方式实现对一个对象的KVO？（KVO的本质是什么？）
 
@@ -189,6 +258,39 @@ NSString * s = @"invocationname";
 self->_myBool,不会触发KVO，必须通过KVC或者setter方法才会触发
 
 ## KVC
+
+#### KVC(Key-value coding)
+
+```objectivec
+-(id)valueForKey:(NSString *)key;
+
+-(void)setValue:(id)value forKey:(NSString *)key;
+```
+
+KVC就是指iOS的开发中，可以允许开发者通过Key名直接访问对象的属性，或者给对象的属性赋值。而不需要调用明确的存取方法。这样就可以在运行时动态地访问和修改对象的属性。而不是在编译时确定，这也是iOS开发中的黑魔法之一。很多高级的iOS开发技巧都是基于KVC实现的
+
+**当调用setValue：属性值forKey：@”name“的代码时，，底层的执行机制如下：**
+
+- 程序优先调用set<Key>:属性值方法，代码通过setter方法完成设置。注意，这里的<key>是指成员变量名，首字母大小写要符合KVC的命名规则，下同
+- 如果没有找到setName：方法，KVC机制会检查+ (BOOL)accessInstanceVariablesDirectly方法有没有返回YES，默认该方法会返回YES，如果你重写了该方法让其返回NO的话，那么在这一步KVC会执行setValue：forUndefinedKey：方法，不过一般开发者不会这么做。所以KVC机制会搜索该类里面有没有名为<key>的成员变量，无论该变量是在类接口处定义，还是在类实现处定义，也无论用了什么样的访问修饰符，只在存在以<key>命名的变量，KVC都可以对该成员变量赋值。
+- 如果该类即没有set<key>：方法，也没有_<key>成员变量，KVC机制会搜索_is<Key>的成员变量。
+- 和上面一样，如果该类即没有set<Key>：方法，也没有_<key>和_is<Key>成员变量，KVC机制再会继续搜索<key>和is<Key>的成员变量。再给它们赋值。
+- 如果上面列出的方法或者成员变量都不存在，系统将会执行该对象的setValue：forUndefinedKey：方法，默认是抛出异常。
+
+即如果没有找到Set<Key>方法的话，会按照_key，_iskey，key，iskey的顺序搜索成员并进行赋值操作。
+
+如果开发者想让这个类禁用KVC，那么重写+ (BOOL)accessInstanceVariablesDirectly方法让其返回NO即可，这样的话如果KVC没有找到set<Key>:属性名时，会直接用setValue：forUndefinedKey：方法。
+
+**当调用valueForKey：@”name“的代码时，KVC对key的搜索方式不同于setValue：属性值 forKey：@”name“，其搜索方式如下：**
+
+- 首先按get<Key>,<key>,is<Key>的顺序方法查找getter方法，找到的话会直接调用。如果是BOOL或者Int等值类型， 会将其包装成一个NSNumber对象。
+- 如果上面的getter没有找到，KVC则会查找countOf<Key>,objectIn<Key>AtIndex或<Key>AtIndexes格式的方法。如果countOf<Key>方法和另外两个方法中的一个被找到，那么就会返回一个可以响应NSArray所有方法的代理集合(它是NSKeyValueArray，是NSArray的子类)，调用这个代理集合的方法，或者说给这个代理集合发送属于NSArray的方法，就会以countOf<Key>,objectIn<Key>AtIndex或<Key>AtIndexes这几个方法组合的形式调用。还有一个可选的get<Key>:range:方法。所以你想重新定义KVC的一些功能，你可以添加这些方法，需要注意的是你的方法名要符合KVC的标准命名方法，包括方法签名。
+- 如果上面的方法没有找到，那么会同时查找countOf<Key>，enumeratorOf<Key>,memberOf<Key>格式的方法。如果这三个方法都找到，那么就返回一个可以响应NSSet所的方法的代理集合，和上面一样，给这个代理集合发NSSet的消息，就会以countOf<Key>，enumeratorOf<Key>,memberOf<Key>组合的形式调用。
+- 如果还没有找到，再检查类方法+
+
+------
+
+(BOOL)accessInstanceVariablesDirectly,如果返回YES(默认行为)，那么和先前的设值一样，会按_<key>,_is<Key>,<key>,is<Key>的顺序搜索成员变量名，这里不推荐这么做，因为这样直接访问实例变量破坏了封装性，使代码更脆弱。如果重写了类方法+ (BOOL)accessInstanceVariablesDirectly返回NO的话，那么会直接调用valueForUndefinedKey:方法，默认是抛出异常
 
 #### 使用KVC会不会调用KVO
 
@@ -454,6 +556,15 @@ struct category_t {
   objc_getAssociatedObject
   ```
 
+#### `Category` 在编译过后，是在什么时机与原有的类合并到一起的
+
+1. 程序启动，通过编译之后，Runtime 会进行初始化，调用 `_objc_init`
+2. 然后会 `map_images`
+3. 接下来调用 `map_images_nolock`
+4. 再然后就是 `read_images`，这个方法会读取所有的类的相关信息
+5. 最后是调用 `reMethodizeClass:`，这个方法是重新方法化的意思
+6. 在 `reMethodizeClass:` 方法内部会调用 **`attachCategories:`** ，这个方法会传入 Class 和 Category ，会将方法列表，协议列表等与原有的类合并。最后加入到 **`class_rw_t`** 结构体中
+
 ## Block
 
 #### block的原理是怎样的？本质是什么
@@ -677,6 +788,71 @@ self.block = ^{
 
 ## Runtime
 
+#### 说一下对 `class_rw_t` 的理解
+
+`rw`代表可读可写。
+
+`ObjC` 类中的属性、方法还有遵循的协议等信息都保存在 `class_rw_t` 中：
+
+```objc
+// 可读可写
+struct class_rw_t {
+    // Be warned that Symbolication knows the layout of this structure.
+    uint32_t flags;
+    uint32_t version;
+
+    const class_ro_t *ro; // 指向只读的结构体,存放类初始信息
+
+    /*
+     这三个都是二维数组，是可读可写的，包含了类的初始内容、分类的内容。
+     methods中，存储 method_list_t ----> method_t
+     二维数组，method_list_t --> method_t
+     这三个二维数组中的数据有一部分是从class_ro_t中合并过来的。
+     */
+    method_array_t methods; // 方法列表（类对象存放对象方法，元类对象存放类方法）
+    property_array_t properties; // 属性列表
+    protocol_array_t protocols; //协议列表
+
+    Class firstSubclass;
+    Class nextSiblingClass;
+  
+    char *demangledName;
+
+#if SUPPORT_INDEXED_ISA
+    uint32_t index;
+#endif
+    //...
+}
+```
+
+#### 说一下对 `class_ro_t` 的理解
+
+存储了当前类在编译期就已经确定的属性、方法以及遵循的协议。
+
+```objc
+struct class_ro_t {
+    uint32_t flags;
+    uint32_t instanceStart;
+    uint32_t instanceSize;
+#ifdef __LP64__
+    uint32_t reserved;
+#endif
+
+    const uint8_t * ivarLayout;
+    
+    const char * name;
+    method_list_t * baseMethodList;
+    protocol_list_t * baseProtocols;
+    const ivar_list_t * ivars;
+
+    const uint8_t * weakIvarLayout;
+    property_list_t *baseProperties;
+	  //...
+}
+```
+
+`baseMethodList`，`baseProtocols`，`ivars`，`baseProperties`三个都是一维数组
+
 #### 讲一下OC的消息机制
 
 - OC中的方法调用最后都是objc_msgSend函数调用，给receiver(方法调用者)发送了一条消息(selector方法名)
@@ -709,13 +885,137 @@ self.block = ^{
     - 之后会调用forwardInvocation 方法， 在这个方法中我们 [anInvocation invokeWithTarget:类对象];
     - 或者其他操作都可以，这里没有什么限制。
 
-#### unrecognized selector sent to instance 错误
+#### 说一下 `Runtime` 的方法缓存？存储的形式、数据结构以及查找的过程
+
+`cache_t` 是一种增量扩展的哈希表结构。哈希表内部存储的是 `bucket_t`
+
+`bucket_t` 中存储的是 `SEL` 和 `IMP`的键值对
+
+- 如果是有序方法列表，采用二分查找
+- 如果是无序方法列表，直接遍历查找
+
+```objc
+// 缓存曾经调用过的方法，提高查找速率
+struct cache_t {
+    struct bucket_t *_buckets; // 散列表
+    mask_t _mask; //散列表的长度 - 1
+    mask_t _occupied; // 已经缓存的方法数量，散列表的长度是大于已经缓存的数量的。
+    //...
+}
+```
+
+```objc
+struct bucket_t {
+private:
+    // IMP-first is better for arm64e ptrauth and no worse for arm64.
+    // SEL-first is better for armv7* and i386 and x86_64.
+#if __arm64__
+    uintptr_t _imp;// 函数的内存地址
+    SEL _sel;//SEL作为Key @selector()
+#else
+    SEL _sel;
+    uintptr_t _imp;
+#endif
+  //...
+}
+```
+
+散列表查找过程，在`objc-cache.mm`文件中
+
+```objc
+// 查询散列表，k
+bucket_t * cache_t::find(SEL s, id receiver) 
+{
+    assert(k != 0); // 断言
+
+    bucket_t *b = buckets(); // 获取散列表
+    mask_t m = mask(); // 散列表长度 - 1
+    mask_t begin = cache_hash(s, m); // & 操作
+    mask_t i = begin; // 索引值
+    do {
+        if (b[i].sel() == 0  ||  b[i].sel() == s) {
+            return &b[i];
+        }
+    } while ((i = cache_next(i, m)) != begin);
+    // i 的值最大等于mask,最小等于0。
+
+	 // hack
+    Class cls = (Class)((uintptr_t)this - offsetof(objc_class, cache));
+    cache_t::bad_cache(receiver, (SEL)s, cls);
+}
+```
+
+上面是查询散列表函数，其中`cache_hash(k, m)`是静态内联方法，将传入的`sel和`mask`进行`&`操作返回`uint32_t`索引值。`do-while`循环查找过程，当发生冲突`cache_next`方法将索引值减1
+
+#### 使用runtime Associate方法关联的对象，需要在主对象dealloc的时候释放么
+
+无论在MRC下还是ARC下均不需要，被关联的对象在生命周期内要比对象本身释放的晚很多，它们会在被 NSObject -dealloc 调用的object_dispose()方法中释放
+
+```objectivec
+1、调用 -release ：引用计数变为零
+对象正在被销毁，生命周期即将结束. 
+不能再有新的 __weak 弱引用，否则将指向 nil.
+调用 [self dealloc]
+
+2、 父类调用 -dealloc 
+继承关系中最直接继承的父类再调用 -dealloc 
+如果是 MRC 代码 则会手动释放实例变量们（iVars）
+继承关系中每一层的父类 都再调用 -dealloc
+
+>3、NSObject 调 -dealloc 
+只做一件事：调用 Objective-C runtime 中object_dispose() 方法
+
+>4. 调用 object_dispose()
+为 C++ 的实例变量们（iVars）调用 destructors
+为 ARC 状态下的 实例变量们（iVars） 调用 -release 
+解除所有使用 runtime Associate方法关联的对象 
+解除所有 __weak 引用 
+调用 free()
+```
+
+#### 实例对象的数据结构？
+
+具体可以参看 `Runtime` 源代码，在文件 `objc-private.h`中有定义
+
+```cpp
+struct objc_object {
+private:
+    isa_t isa;
+  //...
+}
+```
+
+本质上 `objc_object` 的私有属性只有一个 `isa` 指针。指向 `类对象` 的内存地址
+
+#### 什么是method swizzling（俗称黑魔法)
+
+简单说就是进行方法交换
+
+在Objective-C中调用一个方法，其实是向一个对象发送消息，查找消息的唯一依据是selector的名字。利用Objective-C的动态特性，可以实现在运行时偷换selector对应的方法实现，达到给方法挂钩的目的。
+ 每个类都有一个方法列表，存放着方法的名字和方法实现的映射关系，selector的本质其实就是方法名，IMP有点类似函数指针，指向具体的Method实现，通过selector就可以找到对应的IMP。
+ 换方法的几种实现方式
+
+- 利用 method_exchangeImplementations 交换两个方法的实现
+
+- 利用 class_replaceMethod替换方法的实现
+
+- 利用 method_setImplementation 来直接设置某个方法的IMP
+
+  ![img](./reviewimgs/objc_method_swizzling.png)
+
+#### 什么时候会报unrecognized selector的异常
 
 - 该错误是基于OC的消息机制:
   - 在方法列表中未找到方法实现
   - 尝试动态方法解析，也未绑定方法
   - 进行消息转发，也未处理
   - 最后进行报错
+
+#### 如何给 `Category` 添加属性？关联对象以什么形式进行存储
+
+可以使用运行时objc_setAssociatedObject和objc_getAssociatedObject添加
+
+![关联对象](./reviewimgs/objc_association_img)
 
 #### 如果向一个nil对象发消息不会crash的话,那么message sent to deallocated instance的错误是怎么回事？
 
@@ -757,7 +1057,127 @@ self.block = ^{
 形成一个闭环:viewwillAppAppear 也只会调用一次
 ```
 
-#### iskindOfClass 和 isMemberOfClass的区别？
+#### 类对象的数据结构
+
+具体可以参看 `Runtime` 源代码
+
+```cpp
+struct objc_class : objc_object {
+    // Class ISA;
+    Class superclass; //父类指针
+    cache_t cache;             // formerly cache pointer and vtable 方法缓存
+    class_data_bits_t bits;    // class_rw_t * plus custom rr/alloc flags 用于获取地址
+
+    class_rw_t *data() { 
+        return bits.data(); // &FAST_DATA_MASK 获取地址值
+    }
+```
+
+它的结构相对丰富一些。继承自`objc_object`结构体，所以包含`isa`指针
+
+- `isa`：指向元类
+- `superClass`: 指向父类
+- `Cache`: 方法的缓存列表
+- `data`: 顾名思义，就是数据。是一个被封装好的 `class_rw_t`
+
+#### runtime如何通过selector找到对应的IMP地址
+
+每一个类对象中都一个方法列表，方法列表中记录着方法的名称、方法实现以及参数类型，其实selector本质就是方法名称，通过这个方法名称就可以在方法列表中找到对应的方法实现
+
+#### runtime如何实现weak变量的自动置nil？知道SideTable吗
+
+> runtime 对注册的类会进行布局，对于 weak 修饰的对象会放入一个 hash 表中。 用 weak 指向的对象内存地址作为key，当此对象的引用计数为0的时候会调用 dealloc，假如 weak 指向的对象内存地址是a，那么就会以a为键， 在这个 weak表中搜索，找到所有以a为键的 weak 对象，从而设置为 nil
+
+SideTable结构体是负责管理类的引用计数表和weak表
+
+**具体过程**
+
+1. 初始化时：runtime会调用objc_initWeak函数，初始化一个新的weak指针指向对象的地址
+
+```objectivec
+{
+    NSObject *obj = [[NSObject alloc] init];
+    id __weak obj1 = obj;
+}
+```
+
+当我们初始化一个weak变量时，runtime会调用 NSObject.mm 中的objc_initWeak函数
+
+```objectivec
+// 编译器的模拟代码
+ id obj1;
+ objc_initWeak(&obj1, obj);
+/*obj引用计数变为0，变量作用域结束*/
+ objc_destroyWeak(&obj1);
+```
+
+通过objc_initWeak函数初始化“附有weak修饰符的变量（obj1）”，在变量作用域结束时通过objc_destoryWeak函数释放该变量（obj1）
+
+2. 添加引用时：objc_initWeak函数会调用objc_storeWeak() 函数， objc_storeWeak()的作用是更新指针指向，创建对应的弱引用表
+
+objc_initWeak函数将“附有weak修饰符的变量（obj1）”初始化为0（nil）后，会将“赋值对象”（obj）作为参数，调用objc_storeWeak函数。
+
+```undefined
+obj1 = 0；
+obj_storeWeak(&obj1, obj);
+```
+
+**也就是说：**
+
+weak 修饰的指针默认值是 nil （在Objective-C中向nil发送消息是安全的）
+
+然后obj_destroyWeak函数将0（nil）作为参数，调用objc_storeWeak函数
+
+```undefined
+objc_storeWeak(&obj1, 0);
+```
+
+前面的源代码与下列源代码相同
+
+```objectivec
+// 编译器的模拟代码
+id obj1;
+obj1 = 0;
+objc_storeWeak(&obj1, obj);
+/* ... obj的引用计数变为0，被置nil ... */
+objc_storeWeak(&obj1, 0);
+```
+
+objc_storeWeak函数把第二个参数的赋值对象（obj）的内存地址作为键值，将第一个参数__weak修饰的属性变量（obj1）的内存地址注册到 weak 表中。如果第二个参数（obj）为0（nil），那么把变量（obj1）的地址从weak表中删除。
+
+由于一个对象可同时赋值给多个附有__weak修饰符的变量中，所以对于一个键值，可注册多个变量的地址。
+
+可以把objc_storeWeak(&a, b)理解为：objc_storeWeak(value, key)，并且当key变nil，将value置nil。在b非nil时，a和b指向同一个内存地址，在b变nil时，a变nil。此时向a发送消息不会崩溃：在Objective-C中向nil发送消息是安全的
+
+3. 释放时,调用clearDeallocating函数。clearDeallocating函数首先根据对象地址获取所有weak指针地址的数组，然后遍历这个数组把其中的数据设为nil，最后把这个entry从weak表中删除，最后清理对象的记录
+
+当weak引用指向的对象被释放时，又是如何去处理weak指针的呢？当释放对象时，其基本流程如下：
+
+	- 调用objc_release
+	- 因为对象的引用计数为0，所以执行dealloc
+ - 在dealloc中，调用了_objc_rootDealloc函数_
+ - _在_objc_rootDealloc中，调用了object_dispose函数
+ - 调用objc_destructInstance
+ - 最后调用objc_clear_deallocating
+
+对象被释放时调用的objc_clear_deallocating函数:
+
+- 从weak表中获取废弃对象的地址为键值的记录
+- 将包含在记录中的所有附有 weak修饰符变量的地址，赋值为nil
+- 将weak表中该记录删除
+- 从引用计数表中删除废弃对象的地址为键值的记录
+
+**总结:**
+
+其实Weak表是一个hash（哈希）表，Key是weak所指对象的地址，Value是weak指针的地址（这个地址的值是所指对象指针的地址）数组
+
+#### _objc_msgForward 函数是做什么的?直接 调用它将会发生什么?
+
+- `_objc_msgForward`是一个函数指针（和 IMP 的类型一样），是用于消息转发的：当向一个对象发送一条消息，但它并没有实现的时候`，_objc_msgForward`会尝试做消息转发
+- 直接调用_objc_msgForward 是非常危险的事，这是把双刃刀，如果用不好会直接导致程序 Crash，但是如果用得好，能做很多非常酷的事
+- JSPatch 就是直接调用_objc_msgForward 来实现其核心功能的
+
+#### iskindOfClass 和 isMemberOfClass的区别
 
 - isMemberOfClass源码：
 
@@ -807,10 +1227,46 @@ self.block = ^{
 
 ## Runloop
 
+#### RunLoop概念
+
+RunLoop是通过内部维护的`事件循环(Event Loop)`来对`事件/消息进行管理`的一个对象。
+
+1、没有消息处理时，休眠已避免资源占用，由用户态切换到内核态(CPU-内核态和用户态)
+ 2、有消息需要处理时，立刻被唤醒，由内核态切换到用户态
+
+**为什么main函数不会退出？**
+
+```objectivec
+int main(int argc, char * argv[]) {
+    @autoreleasepool {
+       return UIApplicationMain(argc, argv, nil, NSStringFromClass([AppDelegate class]));
+    }
+}
+```
+
+UIApplicationMain内部默认开启了主线程的RunLoop，并执行了一段无限循环的代码（不是简单的for循环或while循环）
+
+```objectivec
+//无限循环代码模式(伪代码)
+int main(int argc, char * argv[]) {        
+    BOOL running = YES;
+    do {
+        // 执行各种任务，处理各种事件
+        // ......
+    } while (running);
+
+    return 0;
+}
+```
+
+UIApplicationMain函数一直没有返回，而是不断地接收处理消息以及等待休眠，所以运行程序之后会保持持续运行状态
+
 #### 讲讲Runloop在项目中的应用
 
 - runloop运行循环，保证程序一直运行,主线程默认开启
+
 - 用于处理线程上的各种事件,定时器等
+
 - 可以提高程序性能，节约CPU资源，有事情做就做，没事情做就让线程休眠
 
   应用范畴:
@@ -818,16 +1274,113 @@ self.block = ^{
 
 #### runloop内部实现逻辑
 
+对于RunLoop而言，最核心的事情就是保证线程在没有消息的时候休眠，在有消息时唤醒，以提高程序性能。RunLoop这个机制是依靠系统内核来完成的（苹果操作系统核心组件Darwin中的Mach）。
+
+RunLoop通过`mach_msg()`函数接收、发送消息。它的本质是调用函数`mach_msg_trap()`，相当于是一个系统调用，会触发内核状态切换。在用户态调用 `mach_msg_trap()`时会切换到内核态；内核态中内核实现的`mach_msg()`函数会完成实际的工作。
+ 即基于port的source1，监听端口，端口有消息就会触发回调；而source0，要手动标记为待处理和手动唤醒RunLoop
+
+[Mach消息发送机制](https://www.jianshu.com/p/a764aad31847)
+ 大致逻辑为：
+ 1、通知观察者 RunLoop 即将启动。
+ 2、通知观察者即将要处理Timer事件。
+ 3、通知观察者即将要处理source0事件。
+ 4、处理source0事件。
+ 5、如果基于端口的源(Source1)准备好并处于等待状态，进入步骤9。
+ 6、通知观察者线程即将进入休眠状态。
+ 7、将线程置于休眠状态，由用户态切换到内核态，直到下面的任一事件发生才唤醒线程。
+
+- 一个基于 port 的Source1 的事件(图里应该是source0)。
+- 一个 Timer 到时间了。
+- RunLoop 自身的超时时间到了。
+- 被其他调用者手动唤醒。
+
+8、通知观察者线程将被唤醒。
+9、处理唤醒时收到的事件。
+
+- 如果用户定义的定时器启动，处理定时器事件并重启RunLoop。进入步骤2。
+- 如果输入源启动，传递相应的消息。
+- 如果RunLoop被显示唤醒而且时间还没超时，重启RunLoop。进入步骤2
+
+10、通知观察者RunLoop结束
+
 ![](./reviewimgs/objc_runloop)
 
 #### runloop和线程的关系
 
 - 每条线程都有唯一的一个与之对应的RunLoop对象
+
 - RunLoop保存在一个全局的Dictionary里，线程作为key，RunLoop作为value
+
 - 线程刚创建时并没有RunLoop对象，RunLoop会在第一次获取它时创建
+
 - 主线程的RunLoop已经自动获取（创建），子线程默认没有开启RunLoop
 
-#### timer 与 runloop 的关系
+  ##### 怎么创建一个常驻线程
+
+  1. 为当前线程开启一个RunLoop（第一次调用 [NSRunLoop currentRunLoop]方法时实际是会先去创建一个RunLoop）
+  2. 向当前RunLoop中添加一个Port/Source等维持RunLoop的事件循环（如果RunLoop的mode中一个item都没有，RunLoop会退出）
+  3. 启动该RunLoop
+
+  ```objectivec
+  @autoreleasepool {
+      NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
+      [[NSRunLoop currentRunLoop] addPort:[NSMachPort port] forMode:NSDefaultRunLoopMode];
+      [runLoop run];
+  }
+  ```
+
+  ##### 输出下边代码的执行顺序
+
+  ```objectivec
+  NSLog(@"1");
+  dispatch_async(dispatch_get_global_queue(0, 0), ^{
+      NSLog(@"2");
+      [self performSelector:@selector(test) withObject:nil afterDelay:10];
+      NSLog(@"3");
+  });
+  NSLog(@"4");
+  
+  - (void)test {
+      NSLog(@"5");
+  }
+  ```
+
+  答案是1423，test方法并不会执行。
+   原因是如果是带afterDelay的延时函数，会在内部创建一个 NSTimer，然后添加到当前线程的RunLoop中。也就是如果当前线程没有开启RunLoop，该方法会失效。
+   那么我们改成
+
+  ```objectivec
+  dispatch_async(dispatch_get_global_queue(0, 0), ^{        
+      NSLog(@"2");
+      [[NSRunLoop currentRunLoop] run];
+      [self performSelector:@selector(test) withObject:nil afterDelay:10];
+      NSLog(@"3");
+  });
+  ```
+
+  然而test方法依然不执行。
+   原因是如果RunLoop的mode中一个item都没有，RunLoop会退出。即在调用RunLoop的run方法后，由于其mode中没有添加任何item去维持RunLoop的时间循环，RunLoop随即还是会退出。
+   所以我们自己启动RunLoop，一定要在添加item后
+
+  ```objectivec
+  dispatch_async(dispatch_get_global_queue(0, 0), ^{        
+      NSLog(@"2");
+      [self performSelector:@selector(test) withObject:nil afterDelay:10];
+      [[NSRunLoop currentRunLoop] run];
+      NSLog(@"3");
+  });
+  ```
+
+  ##### 怎样保证子线程数据回来更新UI的时候不打断用户的滑动操作
+
+  当我们在子请求数据的同时滑动浏览当前页面，如果数据请求成功要切回主线程更新UI，那么就会影响当前正在滑动的体验。
+   我们就可以将更新UI事件放在主线程的`NSDefaultRunLoopMode`上执行即可，这样就会等用户不再滑动页面，主线程RunLoop由`UITrackingRunLoopMode`切换到`NSDefaultRunLoopMode`时再去更新UI
+
+  ```objectivec
+  [self performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:NO modes:@[NSDefaultRunLoopMode]];
+  ```
+
+#### mode 与 runloop 的关系
 
 - 一个RunLoop包含若干个Mode，每个Mode又包含若干个Source0/Source1/Timer/Observer
 - RunLoop启动时只能选择其中一个Mode，作为currentMode
@@ -835,6 +1388,22 @@ self.block = ^{
 - 不同组的Source0/Source1/Timer/Observer能分隔开来，互不影响
 - 如果Mode里没有任何Source0/Source1/Timer/Observer，RunLoop会立马退出
 - OS 中公开暴露出来的只有 `NSDefaultRunLoopMode` 和 `NSRunLoopCommonModes`。 `NSRunLoopCommonModes` 实际上是一个 Mode 的集合，默认包括 `NSDefaultRunLoopMode` 和 `NSEventTrackingRunLoopMode`
+- 如果视图滑动会切换到  UITrackingRunLoopMode,如果需要在多种 mode 下运行则需要手动设置 kCFRunLoopCommonModes;
+  - kCFRunLoopDefaultMode：App的默认Mode，通常主线程是在这个Mode下运行
+  - UITrackingRunLoopMode：界面跟踪 Mode，用于 ScrollView 追踪触摸滑动，保证界面滑动时不受其他 Mode 影响
+  - UIInitializationRunLoopMode: 在刚启动 App 时第进入的第一个 Mode，启动完成后就不再使用，会切换到kCFRunLoopDefaultMode
+  - GSEventReceiveRunLoopMode: 接受系统事件的内部 Mode，通常用不
+  - kCFRunLoopCommonModes: 这是一个占位用的Mode，作为标记kCFRunLoopDefaultMode和UITrackingRunLoopMode用，并不是一种真正的Mode
+
+#### 解释一下 `NSTimer`。
+
+`NSTimer` 其实就是 `CFRunLoopTimerRef`，他们之间是 `toll-free bridged` 的。一个 `NSTimer` 注册到 `RunLoop` 后，`RunLoop` 会为其重复的时间点注册好事件。例如 `10:00`, `10:10`, `10:20` 这几个时间点。`RunLoop` 为了节省资源，并不会在非常准确的时间点回调这个`Timer`。`Timer` 有个属性叫做 `Tolerance` (宽容度)，标示了当时间点到后，容许有多少最大误差。
+
+如果某个时间点被错过了，例如执行了一个很长的任务，则那个时间点的回调也会跳过去，不会延后执行。就比如等公交，如果 10:10 时我忙着玩手机错过了那个点的公交，那我只能等 10:20 这一趟了。
+
+```
+CADisplayLink` 是一个和屏幕刷新率一致的定时器（但实际实现原理更复杂，和 NSTimer 并不一样，其内部实际是操作了一个 `Source`）。如果在两次屏幕刷新之间执行了一个长任务，那其中就会有一帧被跳过去（和 `NSTimer` 相似），造成界面卡顿的感觉。在快速滑动 `TableView` 时，即使一帧的卡顿也会让用户有所察觉。`Facebook` 开源的 `AsyncDisplayLink` 就是为了解决界面卡顿的问题，其内部也用到了 `RunLoop
+```
 
 #### 程序中添加每3秒响应一次的NSTimer，当拖动tableview时timer可能无法响应要怎么解决？
 
@@ -846,18 +1415,6 @@ self.block = ^{
   NSTimer *timer = [NSTimer timerWithTimeInterval:1 repeats:YES block:nil];
   [[NSRunLoop currentRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
   ```
-
-#### runloop的mode作用是什么？
-
-- runloop 只能在一种 mode 下运行
--  做不同的事情,runloop 会切换到对应的 mode下执行
-- 默认是  kCFRunLoopDefaultMode
-- 如果视图滑动会切换到  UITrackingRunLoopMode,如果需要在多种 mode 下运行则需要手动设置 kCFRunLoopCommonModes;
-  - kCFRunLoopDefaultMode：App的默认Mode，通常主线程是在这个Mode下运行
-  - UITrackingRunLoopMode：界面跟踪 Mode，用于 ScrollView 追踪触摸滑动，保证界面滑动时不受其他 Mode 影响
-  - UIInitializationRunLoopMode: 在刚启动 App 时第进入的第一个 Mode，启动完成后就不再使用，会切换到kCFRunLoopDefaultMode
-  - GSEventReceiveRunLoopMode: 接受系统事件的内部 Mode，通常用不
-  - kCFRunLoopCommonModes: 这是一个占位用的Mode，作为标记kCFRunLoopDefaultMode和UITrackingRunLoopMode用，并不是一种真正的Mode 
 
 #### 在子线程中怎么开启和关闭runloop
 
@@ -942,11 +1499,68 @@ self.block = ^{
   }
   ```
 
-#### _objc_msgForward 函数是做什么的?直接 调用它将会发生什么?
+#### `PerformSelector` 的实现原理
 
-- `_objc_msgForward`是一个函数指针（和 IMP 的类型一样），是用于消息转发的：当向一个对象发送一条消息，但它并没有实现的时候`，_objc_msgForward`会尝试做消息转发
-- 直接调用_objc_msgForward 是非常危险的事，这是把双刃刀，如果用不好会直接导致程序 Crash，但是如果用得好，能做很多非常酷的事
-- JSPatch 就是直接调用_objc_msgForward 来实现其核心功能的
+当调用 NSObject 的 performSelecter:afterDelay: 后，实际上其内部会创建一个 Timer 并添加到当前线程的 RunLoop 中。所以如果当前线程没有 RunLoop，则这个方法会失效。
+
+当调用 performSelector:onThread: 时，实际上其会创建一个 Timer 加到对应的线程去，同样的，如果对应线程没有 RunLoop 该方法也会失效
+
+#### RunLoop的数据结构
+
+`NSRunLoop(Foundation)`是`CFRunLoop(CoreFoundation)`的封装，提供了面向对象的API
+ RunLoop 相关的主要涉及五个类：
+
+`CFRunLoop`：RunLoop对象
+ `CFRunLoopMode`：运行模式
+ `CFRunLoopSource`：输入源/事件源
+ `CFRunLoopTimer`：定时源
+ `CFRunLoopObserver`：观察者
+
+**1、CFRunLoop**
+
+由`pthread`(线程对象，说明RunLoop和线程是一一对应的)、`currentMode`(当前所处的运行模式)、`modes`(多个运行模式的集合)、`commonModes`(模式名称字符串集合)、`commonModelItems`(Observer,Timer,Source集合)构成
+
+**2、CFRunLoopMode**
+
+由name、source0、source1、observers、timers构成
+
+**3、CFRunLoopSource**
+
+分为source0和source1两种
+
+- `source0:`
+   即非基于port的，也就是用户触发的事件。需要手动唤醒线程，将当前线程从内核态切换到用户态
+
+- `source1:`
+   基于port的，包含一个 mach_port 和一个回调，可监听系统端口和通过内核和其他线程发送的消息，能主动唤醒RunLoop，接收分发系统事件。
+   具备唤醒线程的能力
+
+**4、CFRunLoopTimer**
+
+基于时间的触发器，基本上说的就是NSTimer。在预设的时间点唤醒RunLoop执行回调。因为它是基于RunLoop的，因此它不是实时的（就是NSTimer 是不准确的。 因为RunLoop只负责分发源的消息。如果线程当前正在处理繁重的任务，就有可能导致Timer本次延时，或者少执行一次）。
+
+**5、CFRunLoopObserver**
+
+监听以下时间点:`CFRunLoopActivity`
+
+- `kCFRunLoopEntry`             
+   RunLoop准备启动
+- `kCFRunLoopBeforeTimers`      
+   RunLoop将要处理一些Timer相关事件
+- `kCFRunLoopBeforeSources`     
+   RunLoop将要处理一些Source事件
+- `kCFRunLoopBeforeWaiting`        
+   RunLoop将要进行休眠状态,即将由用户态切换到内核态
+- `kCFRunLoopAfterWaiting`
+   RunLoop被唤醒，即从内核态切换到用户态后
+- `kCFRunLoopExit`
+   RunLoop退出
+- `kCFRunLoopAllActivities`
+   监听所有状态
+
+**6、各数据结构之间的联系**
+
+线程和RunLoop一一对应， RunLoop和Mode是一对多的，Mode和source、timer、observer也是一对多的
 
 #### 看代码解释原因
 
@@ -1210,9 +1824,9 @@ for (int i= 0; i< 1000000; i++) {
 - 离屏渲染消耗性能原因：
 
   - 需要创建新的缓冲区
-  - 离屏渲染的整个过程，需要多次切换上下文环境，先是从当前屏幕（On-Screen）切换到离屏（Off-Screen）；等到离屏渲染结束后，将离屏缓冲区的渲染结果显示到屏幕上，有需要将上下文环境从离屏切换到当前屏幕。
+  - 离屏渲染的整个过程，需要多次切换上下文环境，先是从当前屏幕（On-Screen）切换到离屏（Off-Screen）；等到离屏渲染结束后，将离屏缓冲区的渲染结果显示到屏幕上，有需要将上下文环境从离屏切换到当前屏幕
 
-- 哪些操作会触发离屏渲染？
+- 哪些操作会触发离屏渲染
 
   - 光栅化  layer.shouldRasterize = YES;
 
@@ -1276,6 +1890,63 @@ for (int i= 0; i< 1000000; i++) {
   
     - 如果设置了layer.shadowPath就不会产生
 
+#### 如果检测离屏渲染
+
+- 模拟器debug-选中color Offscreen - Renderd离屏渲染的图层高亮成黄 可能存在性能问题
+- 真机Instrument-选中Core Animation-勾选Color Offscreen-Rendered Yellow
+
+**离屏渲染的触发方式**
+
+设置了以下属性时，都会触发离屏绘制：
+
+1、layer.shouldRasterize（光栅化）
+
+光栅化概念：将图转化为一个个栅格组成的图象
+
+光栅化特点：每个元素对应帧缓冲区中的一像素
+
+2、masks（遮罩）
+
+3、shadows（阴影）
+
+4、edge antialiasing（抗锯齿）
+
+5、group opacity（不透明）
+
+6、复杂形状设置圆角等
+
+7、渐变
+
+8、drawRect
+
+例如我们日程经常打交道的TableViewCell,因为TableViewCell的重绘是很频繁的（因为Cell的复用）,如果Cell的内容不断变化,则Cell需要不断重绘,如果此时设置了cell.layer可光栅化。则会造成大量的离屏渲染,降低图形性能。
+
+如果将不在GPU的当前屏幕缓冲区中进行的渲染都称为离屏渲染，那么就还有另一种特殊的“离屏渲染”方式：CPU渲染。如果我们重写了drawRect方法，并且使用任何Core Graphics的技术进行了绘制操作，就涉及到了CPU渲染。整个渲染过程由CPU在App内同步地完成，渲染得到的bitmap最后再交由GPU用于显示。
+
+现在摆在我们面前得有三个选择：当前屏幕渲染、离屏渲染、CPU渲染，该用哪个呢？这需要根据具体的使用场景来决定。
+
+**尽量使用当前屏幕渲染**
+
+鉴于离屏渲染、CPU渲染可能带来的性能问题，一般情况下，我们要尽量使用当前屏幕渲染。
+
+**离屏渲染 VS CPU渲染**
+
+由于GPU的浮点运算能力比CPU强，CPU渲染的效率可能不如离屏渲染；但如果仅仅是实现一个简单的效果，直接使用CPU渲染的效率又可能比离屏渲染好，毕竟离屏渲染要涉及到缓冲区创建和上下文切换等耗时操作
+
+UIButton 的 masksToBounds = YES又设置setImage、setBackgroundImage、[button setBackgroundColor:[UIColor colorWithPatternImage:[UIImage imageNamed:@"btn_selected"]]];
+
+下发生离屏渲染，但是[button setBackgroundColor:[UIColor redColor]];是不会出现离屏渲染的
+
+关于 UIImageView,现在测试发现(现版本: iOS10),在性能的范围之内,给UIImageView设置圆角是不会触发离屏渲染的,但是同时给UIImageView设置背景色则肯定会触发.触发离屏渲染跟 png.jpg格式并无关联
+
+日常我们使用layer的两个属性，实现圆角
+
+imageView.layer.cornerRaidus = CGFloat(10);
+
+imageView.layer.masksToBounds = YES;
+
+这样处理的渲染机制是GPU在当前屏幕缓冲区外新开辟一个渲染缓冲区进行工作，也就是离屏渲染，这会给我们带来额外的性能损耗。如果这样的圆角操作达到一定数量，会触发缓冲区的频繁合并和上下文的的频繁切换，性能的代价会宏观地表现在用户体验上——掉帧
+
 #### 卡顿检测
 
 - 平时所说的“卡顿”主要是因为在主线程执行了比较耗时的操作
@@ -1303,8 +1974,8 @@ for (int i= 0; i< 1000000; i++) {
 
 - 网络优化
 
-  - 减少，压缩网络数据
-  - 多次请求结果相同，尽量使用缓存
+  - 减少压缩网络数据 （XML -> JSON -> ProtoBuf），如果可能建议使用 ProtoBuf
+  - 如果请求的返回数据相同，可以使用 NSCache 进行缓存
   - 使用断点续传，否则网络不稳定时可能多次传输相同的内容
   - 网络不可用时尽量不要尝试执行网络请求
   - 让用户可以取消长时间运行或者网络速度很慢的网络操作，设置合理的超时时间
@@ -1312,10 +1983,11 @@ for (int i= 0; i< 1000000; i++) {
 
 - 定位优化
 
-  - 如果只需要快速确定用户位置，最好用CLLocationManager的requestLocation方法。定位完成之后，会自动让定位硬件断电。
+  - 如果只需要快速确定用户位置，最好用CLLocationManager的requestLocation方法。定位完成之后，会自动让定位硬件断电
   - 如果不是导航应用，尽量不要实时更新位置，定位完毕之后就关掉定位服务
   - 尽量降低定位的精准度，如果没有需求的话尽量使用低精准度的定位。随软件自身要求
   - 如果需要后台定位，尽量设置pausesLocationUpdatasAutomatically为YES，如果用户不太可能移动的时候系统会自动暂停位置更新
+  - 尽量不要使用 startMonitoringSignificantLocationChanges，优先考虑 startMonitoringForRegion
 
 
 #### 安装包瘦身

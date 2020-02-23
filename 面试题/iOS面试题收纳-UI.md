@@ -170,6 +170,18 @@ Cocoa Touch提供了4种CoreAnimation过渡类型，分别为：交叉淡化、�
 - UIView 是 CALayer 用于交互的抽象。UIView 是 UIResponder 的子类（ UIResponder 是 NSObject 的子类），提供了很多 CALayer 所没有的交互上的接口，主要负责处理用户触发的种种操作
 - CALayer 在图像和动画渲染上性能更好。这是因为 UIView 有冗余的交互接口，而且相比 CALayer 还有层级之分。CALayer 在无需处理交互时进行渲染可以节省大量时间
 - CALayer的动画要通过逻辑树、动画树和显示树来实现
+  - <单一职责原则>
+    UIView为CALayer提供内容，以及负责处理触摸等事件，参与响应链
+    CALayer负责显示内容contents
+
+#### 什么是异步绘制
+
+> 异步绘制，就是可以在子线程把需要绘制的图形，提前在子线程处理好。将准备好的图像数据直接返给主线程使用，这样可以降低主线程的压力。
+
+要通过系统的 `[view.delegate displayLayer:]` 这个入口来实现异步绘制。
+
+- 代理负责生成对应的 Bitmap
+- 设置该 Bitmap 为 layer.contents 属性的值
 
 #### UIView 的frame、bounds、center
 
@@ -235,6 +247,21 @@ Cocoa Touch提供了4种CoreAnimation过渡类型，分别为：交叉淡化、�
 - Content Compression Resistance 抗压缩优先级优先级越小，越先被压缩
 
 #### 怎么高效的实现控件的圆角效果
+
+- > 视图和圆角的大小对帧率并没有什么卵影响，数量才是伤害的核心输出
+
+  ```objc
+  label.layer.cornerRadius = 5
+  label.layer.masksToBounds = true
+  ```
+  
+  首先上面的方式是不可取的，会触发离屏渲染。
+  
+  - 如果能够只用 `cornerRadius` 解决问题，就不用优化。
+  - 如果必须设置 `masksToBounds`，可以参考圆角视图的数量，如果数量较少（一页只有几个）也可以考虑不用优化。
+  - `UIImageView` 的圆角通过直接截取图片实现，其它视图的圆角可以通过 `Core Graphics` 画出圆角矩形实现
+  
+  ![](./reviewimgs/gpu_render.png)
 
 - 直接对图片进行重绘 (使用Core Graphics)，实际开发加异步处理，也可以给 SDWebImage 做扩展
 
@@ -314,6 +341,29 @@ Cocoa Touch提供了4种CoreAnimation过渡类型，分别为：交叉淡化、�
 - 当backing store写完后，通过render server交给GPU去渲染，将backing store中的bitmap数据显示在屏幕上
 - 说到底CPU就是做绘制的操作，把内容放到缓存里，GPU负责从缓存里读取数据然后渲染到屏幕上
 
+#### 利用 `runloop` 解释一下页面的渲染的过程？
+
+当我们调用 `[UIView setNeedsDisplay]` 时，这时会调用当前 `View.layer` 的 `[view.layer setNeedsDisplay]`方法。
+
+这等于给当前的 `layer` 打上了一个脏标记，而此时并没有直接进行绘制工作。而是会到当前的 `Runloop` 即将休眠，也就是 `beforeWaiting` 时才会进行绘制工作。
+
+紧接着会调用 `[CALayer display]`，进入到真正绘制的工作。`CALayer` 层会判断自己的 `delegate` 有没有实现异步绘制的代理方法 `displayer:`，这个代理方法是异步绘制的入口，如果没有实现这个方法，那么会继续进行系统绘制的流程，然后绘制结束。
+
+`CALayer` 内部会创建一个 `Backing Store`，用来获取图形上下文。接下来会判断这个 `layer` 是否有 delegate。
+
+如果有的话，会调用 `[layer.delegate drawLayer:inContext:]`，并且会返回给我们 `[UIView DrawRect:]` 的回调，让我们在系统绘制的基础之上再做一些事情。
+
+如果没有 `delegate`，那么会调用 `[CALayer drawInContext:]`。
+
+以上两个分支，最终 `CALayer` 都会将位图提交到 `Backing Store`，最后提交给 `GPU`。
+
+至此绘制的过程结束
+
+#### UI卡顿掉帧原因
+
+iOS设备的硬件时钟会发出Vsync（垂直同步信号），然后App的CPU会去计算屏幕要显示的内容，之后将计算好的内容提交到GPU去渲染。随后，GPU将渲染结果提交到帧缓冲区，等到下一个VSync到来时将缓冲区的帧显示到屏幕上。也就是说，一帧的显示是由CPU和GPU共同决定的。
+ 一般来说，页面滑动流畅是60fps，也就是1s有60帧更新，即每隔16.7ms就要产生一帧画面，而如果CPU和GPU加起来的处理时间超过了16.7ms，就会造成掉帧甚至卡顿
+
 #### 离屏渲染是什么
 
 - 离屏渲染指的是 GPU （图形处理器）在当前屏幕缓冲区以外新开辟一个缓冲区进行渲染操作
@@ -338,7 +388,14 @@ Cocoa Touch提供了4种CoreAnimation过渡类型，分别为：交叉淡化、�
 
 #### 什么是响应者链(事件传递响应链)
 
+苹果注册了一个 `Source1` (基于 `mach port` 的) 用来接收系统事件，其回调函数为 `__IOHIDEventSystemClientQueueCallback()`。
+
+当一个硬件事件(触摸/锁屏/摇晃等)发生后，首先由 `IOKit.framework` 生成一个 `IOHIDEvent` 事件并由 `SpringBoard` 接收。这个过程的详细情况可以参考这里。`SpringBoard` 只接收按键(锁屏/静音等)，触摸，加速，接近传感器等几种 `Event`，随后用 `mach port` 转发给需要的 `App` 进程。随后苹果注册的那个 `Source1` 就会触发回调，并调用 `_UIApplicationHandleEventQueue()` 进行应用内部的分发。
+
+`_UIApplicationHandleEventQueue()` 会把 `IOHIDEvent` 处理并包装成 `UIEvent` 进行处理或分发，其中包括识别 `UIGesture`/处理屏幕旋转/发送给 `UIWindow` 等。通常事件比如 `UIButton 点击`、`touchesBegin/Move/End/Cancel` 事件都是在这个回调中完成的
+
 - 响应者链是用于确定`事件响应`的一种机制，事件主要是指触摸事件(touch Event)，该机制与UIKit中的UIResponder类密切相关，响应触摸事件的必须是继承自UIResponder的类，最常用的比如UIView 、UIViewController、UIWindow
+
 - 一个事件响应者的完成主要分为2个过程
   - hitTest方法命中视图和响应者链确定响应者，hitTest的调用顺序是从UIWindow开始，对视图的每个子视图依次调用，直到找命中者
   - 然后命中者视图沿着响应者链往上传递寻找真正的响应者
@@ -370,6 +427,14 @@ Cocoa Touch提供了4种CoreAnimation过渡类型，分别为：交叉淡化、�
   
 - UIControl的子类和UIGestureRecognizer优先级较高，会打断响应链
 
+#### 解释一下 `手势识别` 的过程？
+
+当上面的 `_UIApplicationHandleEventQueue()`识别了一个手势时，其首先会调用 `Cancel` 将当前的 `touchesBegin/Move/End` 系列回调打断。随后系统将对应的 `UIGestureRecognizer` 标记为待处理。
+
+苹果注册了一个 `Observer` 监测 `BeforeWaiting` (Loop即将进入休眠) 事件，这个 `Observer` 的回调函数是 `_UIGestureRecognizerUpdateObserver()`，其内部会获取所有刚被标记为待处理的 `GestureRecognizer`，并执行`GestureRecognizer` 的回调。
+
+当有 `UIGestureRecognizer` 的变化(创建/销毁/状态改变)时，这个回调都会进行相应处理
+
 #### 什么是隐式动画和显示动画
 
 - 隐式动画是系统框架自动完成的。Core Animation在每个runloop周期中自动开始一次新的事务，即使你不显式的用[CATransaction begin]开始一次事务，任何在一次runloop循环中属性的改变都会被集中起来，然后做一次0.25秒的动画。
@@ -397,7 +462,7 @@ Cocoa Touch提供了4种CoreAnimation过渡类型，分别为：交叉淡化、�
   [self.imageView.layer addAnimation:positionAnima forKey:@"AnimationMoveY"];
   ```
 
-#### 动画相关有哪几种方式?
+#### 动画相关有哪几种方式
 
 - UIView animation 可以实现基于 UIView 的简单动画，是CALayer Animation封装，可以实现移动、旋转、变色、缩放等基本操作。它实现的动画无法回撤、暂停、与手势交互。常用方法如下
 
@@ -420,7 +485,7 @@ Cocoa Touch提供了4种CoreAnimation过渡类型，分别为：交叉淡化、�
   4. 转场动画——CATransition，是CAAnimation的子类，用于做转场动画，能够为层提供移出屏幕和移入屏幕的动画效果
   ```
 
-#### 使用drawRect有什么影响？
+#### 使用drawRect有什么影响
 
 - 处理touch事件时会调用setNeedsDisplay进行强制重绘，带来额外的CPU和内存开销
 
@@ -542,6 +607,16 @@ Cocoa Touch提供了4种CoreAnimation过渡类型，分别为：交叉淡化、�
 
 - 在开发中，尺寸比较大的图片（例如背景图片）一般适用jpg格式，减小对内存的占用
 
-#### tableView 的重用机制？
+#### 什么是光栅化
+
+光栅化是将几何数据经过一系列变换后最终转换为像素，从而呈现在显示设备上的过程，光栅化的本质是坐标变换、几何离散化
+
+我们使用 UITableView 和 UICollectionView 时经常会遇到各个 Cell 的样式是一样的，这时候我们可以使用这个属性提高性能：
+
+cell.layer.shouldRasterize=YES;
+
+cell.layer.rasterizationScale=[[UIScreenmainScreen]scale];
+
+#### tableView 的重用机制
 
 UITableView 通过重用单元格来达到节省内存的目的: 通过为每个单元格指定一个重用标识符(reuseIdentifier),即指定了单元格的种类,以及当单元格滚出屏幕时,允许恢复单元格以便重用.对于不同种类的单元格使用不同的ID,对于简单的表格,一个标识符就够了

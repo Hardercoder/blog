@@ -15,10 +15,113 @@
 - 内存泄漏指动态分配内存的对象在使用完后没有被系统回收内存，导致对象始终占有着内存，属于内存管理出错。一次内存泄露危害可以忽略，但内存泄漏堆积后果很严重，无论多少内存，迟早会被耗光
 - 常见的有ARC下block，delegate，NSTimer等的循环引用造成内存泄漏
 
+#### 在 `Obj-C` 中，如何检测内存泄漏？你知道哪些方式？
+
+目前常用的内存泄漏检测的方式有以下几种
+
+- Memory Leaks: Instruments->Leaks
+- Alloctions: Instruments->Allocations
+- Analyze:Xcode->Product->Analyze
+- Debug Memory Graph:Xcode->断点
+- MLeaksFinder
+
+泄露的内存主要有以下两种：
+
+- `Laek Memory` 这种是忘记 `Release` 操作所泄露的内存。
+- `Abandon Memory` 这种是循环引用，无法释放掉的内存。
+
+上面所说的五种方式，其实前四种都比较麻烦，需要不断地调试运行，第五种是腾讯阅读团队出品，效果好一些，感兴趣的可以看一下这两篇文章：
+
+- [MLeaksFinder：精准 iOS 内存泄露检测工具](https://links.jianshu.com/go?to=http%3A%2F%2Fwereadteam.github.io%2F2016%2F02%2F22%2FMLeaksFinder%2F)
+- [MLeaksFinder 新特性](https://links.jianshu.com/go?to=http%3A%2F%2Fwereadteam.github.io%2F2016%2F07%2F20%2FMLeaksFinder2%2F)
+
 #### 让你设计一种机制检测UIViewController的内存泄漏，你会怎么做
 
 - 如果Controller被释放了，但其曾经持有过的子对象如果还存在，那么这些子对象就是泄漏的可疑目标
 - 一个小示例：子对象（比如view）建立一个对controller的weak引用，如果Controller被释放，这个weak引用也随之置为nil。那怎么知道子对象没有被释放呢？用一个单例对象每个一小段时间发出一个ping通知去ping这个子对象，如果子对象还活着就回一个ping通知。所以结论就是：如果子对象的controller已不存在，但还能响应这个ping通知，那么这个对象就是可疑的泄漏对象
+
+#### 循环引用
+
+**循环引用的实质：多个对象相互之间有强引用，不能释放让系统回收**
+
+**如何解决循环引用？**
+
+1、避免产生循环引用，通常是将 strong 引用改为 weak 引用
+ 比如在修饰属性时用weak， 在block内调用对象方法时，使用其弱引用，这里可以使用两个宏
+
+```rust
+#define WS(weakSelf)            __weak __typeof(&*self)weakSelf = self; // 弱引用
+#define ST(strongSelf)          __strong __typeof(&*self)strongSelf = weakSelf; //使用这个要先声明weakSelf
+```
+
+还可以使用__block来修饰变量
+ 在MRC下，__block不会增加其引用计数，避免了循环引用
+ 在ARC下，__block修饰对象会被强引用，无法避免循环引用，需要手动解除。
+
+2、在合适时机去手动断开循环引用。
+ 通常我们使用第一种。
+
+**1、代理(delegate)循环引用属于相互循环引用**
+
+delegate 是iOS中开发中比较常遇到的循环引用，一般在声明delegate的时候都要使用弱引用 weak,或者assign,当然怎么选择使用assign还是weak，MRC的话只能用assign，在ARC的情况下最好使用weak，因为weak修饰的变量在释放后自动指向nil，防止野指针存在
+
+**2、NSTimer循环引用属于相互循环使用**
+
+在控制器内，创建NSTimer作为其属性，由于定时器创建后也会强引用该控制器对象，那么该对象和定时器就相互循环引用了。
+ 如何解决呢？
+ 这里我们可以使用手动断开循环引用：
+ 如果是不重复定时器，在回调方法里将定时器invalidate并置为nil即可。
+ 如果是重复定时器，在合适的位置将其invalidate并置为nil即可
+
+**3、block循环引用**
+
+一个简单的例子：
+
+```objectivec
+@property (copy, nonatomic) dispatch_block_t myBlock;
+@property (copy, nonatomic) NSString *blockString;
+
+- (void)testBlock {
+  self.myBlock = ^() {
+      NSLog(@"%@",self.blockString);
+  };
+}
+```
+
+由于block会对block中的对象进行持有操作,就相当于持有了其中的对象，而如果此时block中的对象又持有了该block，则会造成循环引用。
+ 解决方案就是使用__weak修饰self即可
+
+```objectivec
+__weak typeof(self) weakSelf = self;
+self.myBlock = ^() {
+    NSLog(@"%@",weakSelf.blockString);
+};
+```
+
+- 并不是所有block都会造成循环引用。
+   只有被强引用了的block才会产生循环引用
+   而比如dispatch_async(dispatch_get_main_queue(), ^{}),[UIView animateWithDuration:1 animations:^{}]这些系统方法等或者block并不是其属性而是临时变量,即栈block
+
+```objectivec
+[self testWithBlock:^{
+    NSLog(@"%@",self);
+}];
+
+- (void)testWithBlock:(dispatch_block_t)block {
+    block();
+}
+```
+
+还有一种场景，在block执行开始时self对象还未被释放，而执行过程中，self被释放了，由于是用weak修饰的，那么weakSelf也被释放了，此时在block里访问weakSelf时，就可能会发生错误(向nil对象发消息并不会崩溃，但也没任何效果)。
+ 对于这种场景，应该在block中对 对象使用__strong修饰，使得在block期间对 对象持有，block执行结束后，解除其持有。
+
+```objectivec
+__weak typeof(self) weakSelf = self;
+self.myBlock = ^() {
+    __strong __typeof(self) strongSelf = weakSelf;
+    [strongSelf test];
+};
+```
 
 #### 什么是内存溢出
 
@@ -28,18 +131,15 @@
 
 - 已经被销毁的对象(不能再使用的对象)，内存已经被回收的对象。一个引用计数器为0的对象被释放后就变为了僵尸对象
 
-#### 什么是野指针
+#### 说一下什么是 `悬垂指针`
 
-- 野指针又叫做'悬挂指针'，野指针出现的原因是因为指针没有赋值，或者指针指向的对象已经释放了，比如指向僵尸对象;野指针可能会指向一块垃圾内存，给野指针发送消息会导致程序崩溃
+> 指针指向的内存已经被释放了，但是指针还存在，这就是一个 `悬垂指针` 或者说 `迷途指针`
 
-  ```css
-  NSObject *obj = [NSObject new];
-  [obj release]; // obj 指向的内存地址已经释放了,
-  obj 如果再去访问的话就是野指针错误了.
-  野指针错误形式在Xcode中通常表现为：Thread 1：EXC_BAD_ACCESS，因为你访问了一块已经不属于你的内存。
-  ```
+#### 什么是`野指针`
 
-#### 什么是空指针
+> 没有进行初始化的指针，其实都是 `野指针`
+
+#### 什么是`空指针`
 
 - 空指针不同于野指针，它是一个没有指向任何内存的指针，空指针是有效指针，值为`nil,NULL,Nil,0`等，给空指针发送消息不会报错，不会响应消息
 
@@ -60,6 +160,51 @@
   - `extern uintptr_t _objc_rootRetainCount(id obj)`方法，作用是返回obj的引用计数
   - `extern void _objc_autoreleasePoolPrint(void)`方法，作用是打印当前的自动释放池对象
 
+#### 讲一下 `iOS` 内存管理的理解
+
+实际上是三种方案的结合
+
+- 1.TaggedPointer（针对类似于 `NSNumber` 的小对象类型）
+- 2.NONPOINTER_ISA（64位系统下）
+  - 第一位的 `0` 或 `1` 代表是纯地址型 `isa` 指针，还是 `NONPOINTER_ISA` 指针。
+  - 第二位，代表是否有关联对象
+  - 第三位代表是否有 `C++` 代码。
+  - 接下来33位代表指向的内存地址
+  - 接下来有 `弱引用` 的标记
+  - 接下来有是否 `delloc` 的标记....等等
+- 3.散列表（引用计数表、weak表）
+  - `SideTables` 表在 非嵌入式的64位系统中，有 64张 `SideTable` 表
+  - 每一张 `SideTable` 主要是由三部分组成。`自旋锁`、`引用计数表`、`弱引用表`。
+  - 全局的 `引用计数` 之所以不存在同一张表中，是为了避免资源竞争，解决效率的问题。
+  - `引用计数表` 中引入了 `分离锁`的概念，将一张表分拆成多个部分，对他们分别加锁，可以实现并发操作，提升执行效率
+
+#### 说一下对 `strong`,`copy`,`assign`,`weak`,`_unsafe_unretain` 关键字的理解。
+
+**strong**
+
+> `strong` 修饰符表示指向并持有该对象，其修饰对象的引用计数会加1。该对象只要引用计数不为0就不会被销毁。当然可以通过将变量强制赋值 `nil` 来进行销毁
+
+**weak**
+
+> `weak` 修饰符指向但是并不持有该对象，引用计数也不会加1。在 `Runtime` 中对该属性进行了相关操作，无需处理，可以自动销毁。`weak`用来修饰对象，多用于避免循环引用的地方。`weak` 不可以修饰基本数据类型
+
+**assign**
+
+> `assign`主要用于修饰基本数据类型
+>  例如`NSInteger`，`CGFloat`，存储在栈中，内存不用程序员管理。`assign`是可以修饰对象的，但是会出现悬垂指针的问题。当对象释放后继续给对象发送消息，将会造成crash
+
+**copy**
+
+> `copy`关键字和 `strong`类似，`copy` 多用于修饰有可变类型的不可变对象上 `NSString`,`NSArray`,`NSDictionary`上。
+
+**__unsafe_unretain**
+
+> `__unsafe_unretain` 类似于 `weak` ，但是当对象被释放后，指针已然保存着之前的地址，被释放后的地址变为 `僵尸对象`，访问被释放的地址就会出问题，所以说他是不安全的
+
+**__autoreleasing**
+
+> 将对象赋值给附有 `__autoreleasing`修饰的变量等同于 `ARC` 无效时调用对象的 `autorelease` 方法,实质就是扔进了自动释放池
+
 #### ARC 都帮我们做了什么？
 
 - LLVM + Runtime 会为我们代码自动插入retain和release以及 autorelease等代码，不需要我们手动管理
@@ -79,6 +224,17 @@ ARC会自动插入`retain`和`release`语句。ARC编译器有两部分，分别
 - ARC优化器
 
   虽然前端编译器听起来很厉害的样子，但代码中有时仍会出现几个对`retain`和`release`的重复调用。ARC优化器负责移除多余的`retain`和`release`语句，确保生成的代码运行速度高于手动引用计数的代码
+
+#### 使用自动引用计数应遵循的原则
+
+- 不能使用 `retain`、`release`、`retainCount`、`autorelease`
+- 不可以使用 `NSAllocateObject`、`NSDeallocateObject`
+- 必须遵守内存管理方法的命名规则
+- 不需要显示的调用 `Dealloc`
+- 使用 `@autoreleasePool` 来代替 `NSAutoreleasePool`
+- 不可以使用区域 `NSZone`
+- 对象性变量不可以作为 `C` 语言的结构体成员
+- 显示转换 `id` 和 `void*`
 
 #### weak指针的实现原理
 
@@ -126,7 +282,7 @@ struct weak_table_t {
 
 #### 内存区域划分
 
-在iOS开发过程中，为了合理的分配有限的内存空间，将内存区域分为五个区，由低地址向高地址分类依次是：代码区、常量区、全局静态区、堆区和栈区
+在iOS开发过程中，为了合理的分配有限的内存空间，将内存区域分为五个区
 
 - 代码段：也叫程序区，存放程序编译产生的二进制的数据
 
@@ -136,9 +292,9 @@ struct weak_table_t {
 
   全局变量和静态变量的存储是放在一块的，初始化的全局变量和静态变量在一块区域， 未初始化的全局变量和未初始化的静态变量在相邻的另一块区域，在程序结束后有系统释放（编译时分配，APP结束由系统释放）
 
-- 堆区（heap) ：动态分配内存，需要程序员申请，也需要程序员自己管理(alloc、malloc等)，如果不释放，则出现内存泄露。容量大，速度慢，无序
+- 堆区（heap) ：动态分配内存，需要程序员申请，也需要程序员自己管理(alloc、malloc等)，如果不释放，则出现内存泄露。是离散的，低地址往高地址扩展。容量大，速度慢，无序
 
-- 栈区（stack）：由编译器自动分配和释放，一般存放函数的参数值，局部变量等，容量小速度快，有序
+- 栈区（stack）：由编译器自动分配和释放，一般存放函数的参数值，局部变量等，是连续的，高地址往低地址扩展，容量小速度快，有序
 
 #### 堆和栈的区别
 
@@ -304,9 +460,308 @@ struct weak_table_t {
 | 不可变   | 浅拷贝     | 单层深拷贝  |
 | 可变     | 单层深拷贝 | 单层深拷贝  |
 
+#### 是否了解 深拷贝 和 浅拷贝 的概念，集合类深拷贝如何实现
+
+**简而言之：**
+
+1、对不可变的非集合对象，copy是指针拷贝，mutablecopy是内容拷贝
+
+2、对于可变的非集合对象，copy，mutablecopy都是内容拷贝
+
+3、对不可变的数组、字典、集合等集合类对象，copy是指针拷贝，mutablecopy是内容拷贝
+
+4、对于可变的数组、字典、集合等集合类对象，copy，mutablecopy都是内容拷贝
+
+但是，对于集合对象的内容复制仅仅是对对象本身，但是对象的里面的元素还是指针复制。要想复制整个集合对象，就要用集合深复制的方法，有两种：
+
+（1）使用initWithArray:copyItems:方法，将第二个参数设置为YES即可
+
+```objectivec
+NSDictionary shallowCopyDict = [[NSDictionary alloc] initWithDictionary:someDictionary copyItems:YES];
+```
+
+（2）将集合对象进行归档（archive）然后解归档（unarchive）：
+
+```objectivec
+NSArray *trueDeepCopyArray = [NSKeyedUnarchiver unarchiveObjectWithData:[NSKeyedArchiver archivedDataWithRootObject:oldArray]];
+```
+
 #### 内存泄漏可能会出现的几种原因
 
 第三方框架不当使用，block、delegate、NSTimer的循环引用，非OC对象内存处理，地图类处理，大次数循环内存暴涨
+
+#### 能不能简述一下 `Dealloc` 的实现机制
+
+1. `Dealloc` 调用流程
+   - 首先调用 `_objc_rootDealloc()`
+   - 接下来调用 `rootDealloc()`
+   - 这时候会判断是否可以被释放，判断的依据主要有5个，判断是否有以上五种情况
+     - `NONPointer_ISA`
+     - `weakly_reference`
+     - `has_assoc`
+     - `has_cxx_dtor`
+     - `has_sidetable_rc`
+    - 如果有以上五中任意一种，将会调用 `object_dispose()`方法，做下一步的处理
+    - 如果没有之前五种情况的任意一种，则可以执行释放操作，C函数的 `free()`
+    - 执行完毕。
+
+2. `object_dispose()` 调用流程
+   - 直接调用 `objc_destructInstance()`
+   - 之后调用 C函数的 `free()`
+
+3. `objc_destructInstance()` 调用流程
+   - 先判断 `hasCxxDtor`，如果有 `C++` 的相关内容，要调用 `object_cxxDestruct()` ，销毁 `C++` 相关的内容
+   - 再判断 `hasAssocitatedObjects`，如果有的话，要调用 `object_remove_associations()`，销毁关联对象的一系列操作
+   - 然后调用 `clearDeallocating()`
+   - 执行完毕
+
+4. `clearDeallocating()` 调用流程
+   - 先执行 `sideTable_clearDellocating()`
+   - 再执行 `weak_clear_no_lock`,在这一步骤中，会将指向该对象的弱引用指针置为 `nil`
+   - 接下来执行 `table.refcnts.erase()`，从引用计数表中擦除该对象的引用计数
+   - 至此为止，`Dealloc` 的执行流程结束
+
+#### **static、const和sizeof关键字**
+
+**static关键字**
+
+Static的用途主要有两个，一是用于修饰存储类型使之成为静态存储类型，二是用于修饰链接属性使之成为内部链接属性。
+
+- 静态存储类型：
+
+在函数内定义的静态局部变量，该变量存在内存的静态区，所以即使该函数运行结束，静态变量的值不会被销毁，函数下次运行时能仍用到这个值
+
+在函数外定义的静态变量——静态全局变量，该变量的作用域只能在定义该变量的文件中，不能被其他文件通过extern引用
+
+- 内部链接属性
+
+静态函数只能在声明它的源文件中使用
+
+**const关键字**
+
+- 声明常变量，使得指定的变量不能被修改。
+
+```cpp
+const int a = 5;/*a的值一直为5，不能被改变*/
+
+const int b; b = 10;/*b的值被赋值为10后，不能被改变*/
+
+const int *ptr; /*ptr为指向整型常量的指针，ptr的值可以修改，但不能修改其所指向的值*/
+
+int *const ptr;/*ptr为指向整型的常量指针，ptr的值不能修改，但可以修改其所指向的值*/
+
+const int *const ptr;/*ptr为指向整型常量的常量指针，ptr及其指向的值都不能修改*/
+```
+
+- 修饰函数形参，使得形参在函数内不能被修改，表示输入参数。
+
+如
+
+```kotlin
+int fun(const int a);或int fun(const char *str);
+```
+
+- 修饰函数返回值，使得函数的返回值不能被修改。
+
+```cpp
+const char *getstr(void);使用：const *str= getstr();
+
+const int getint(void);  使用：const int a =getint();
+```
+
+**sizeof关键字**
+
+sizeof是在编译阶段处理，且不能被编译为机器码。sizeof的结果等于对象或类型所占的内存字节数。sizeof的返回值类型为size_t
+
+- 变量：int a;  sizeof(a)为4；
+- 指针：int *p;  sizeof(p)为4；
+- 数组：int b[10]; sizeof(b)为数组的大小，4*10；int c[0]; sizeof(c)等于0
+- 结构体：struct (int a; char ch;)s1; sizeof(s1)为8 与结构体字节对齐有关。
+   对结构体求sizeof时，有两个原则：
+
+```undefined
+（1）展开后的结构体的第一个成员的偏移量应当是被展开的结构体中最大的成员的整数倍。
+
+（2）结构体大小必须是所有成员大小的整数倍，这里所有成员计算的是展开后的成员，而不是将嵌套的结构体当做一个整体。
+```
+
+- 注意：不能对结构体中的位域成员使用sizeof
+- - sizeof(void)等于1
+- - sizeof(void *)等于4
+
+#### 简要说一下 `@autoreleasePool` 的数据结构
+
+简单说是双向链表，每张链表头尾相接，有 `parent`、`child`指针
+
+每创建一个池子，会在首部创建一个 `哨兵` 对象,作为标记
+
+最外层池子的顶端会有一个`next`指针。当链表容量满了，就会在链表的顶端，并指向下一张表
+
+#### `retain`、`release` 的实现机制
+
+**`Retain`的实现机制**
+
+```c
+id
+objc_object::sidetable_retain()
+{
+#if SUPPORT_NONPOINTER_ISA
+    assert(!isa.nonpointer);
+#endif
+    SideTable& table = SideTables()[this];
+    
+    table.lock();
+    size_t& refcntStorage = table.refcnts[this];
+    if (! (refcntStorage & SIDE_TABLE_RC_PINNED)) {
+        refcntStorage += SIDE_TABLE_RC_ONE;
+    }
+    table.unlock();
+
+    return (id)this;
+}
+```
+
+**`Release`的实现机制。**
+
+```c
+uintptr_t
+objc_object::sidetable_release(bool performDealloc)
+{
+#if SUPPORT_NONPOINTER_ISA
+    assert(!isa.nonpointer);
+#endif
+    SideTable& table = SideTables()[this];
+
+    bool do_dealloc = false;
+
+    table.lock();
+    RefcountMap::iterator it = table.refcnts.find(this);
+    if (it == table.refcnts.end()) {
+        do_dealloc = true;
+        table.refcnts[this] = SIDE_TABLE_DEALLOCATING;
+    } else if (it->second < SIDE_TABLE_DEALLOCATING) {
+        // SIDE_TABLE_WEAKLY_REFERENCED may be set. Don't change it.
+        do_dealloc = true;
+        it->second |= SIDE_TABLE_DEALLOCATING;
+    } else if (! (it->second & SIDE_TABLE_RC_PINNED)) {
+        it->second -= SIDE_TABLE_RC_ONE;
+    }
+    table.unlock();
+    if (do_dealloc  &&  performDealloc) {
+        ((void(*)(objc_object *, SEL))objc_msgSend)(this, SEL_dealloc);
+    }
+    return do_dealloc;
+}
+```
+
+二者的实现机制类似，概括讲就是通过第一层 `hash` 算法，找到 `指针变量` 所对应的 `sideTable`。然后再通过一层 `hash` 算法，找到存储 `引用计数` 的 `size_t`，然后对其进行增减操作。`retainCount` 不是固定的 1，`SIZE_TABLE_RC_ONE` 是一个宏定义，实际上是一个值为 4 的偏移量
+
+`#define SIDE_TABLE_RC_ONE      (1UL<<2) // MSB-ward of deallocating bit`
+
+#### MRC（手动引用计数）和ARC(自动引用计数)
+
+**1、MRC：alloc，retain，release，retainCount,autorelease,dealloc**
+ **2、ARC：**
+
+- ARC是LLVM和Runtime协作的结果
+- ARC禁止手动调用retain，release，retainCount,autorelease关键字
+- ARC新增weak，strong关键字
+
+**3、引用计数管理：**
+
+- alloc: 经过一系列函数调用，最终调用了calloc函数，这里并没有设置引用计数为1
+- retain: 经过两次哈希查找，找到其对应引用计数值，然后将引用计数加1(实际是加偏移量)
+- release：和retain相反，经过两次哈希查找，找到其对应引用计数值，然后将引用计数减1
+- dealloc: _rootDealloc->rootDealloc->objc_dispose->objc_destructInstance->`clearDeallocating
+
+**4、弱引用管理：**
+
+- 添加weak变量:通过哈希算法位置查找添加。如果查找对应位置中已经有了当前对象所对应的弱引用数组，就把新的弱引用变量添加到数组当中；如果没有，就创建一个弱引用数组，并将该弱引用变量添加到该数组中。
+- 当一个被weak修饰的对象被释放后，weak对象怎么处理的？
+   清除weak变量，同时设置指向为nil。当对象被dealloc释放后，在dealloc的内部实现中，会调用弱引用清除的相关函数，会根据当前对象指针查找弱引用表，找到当前对象所对应的弱引用数组，将数组中的所有弱引用指针都置为nil。
+
+**5、自动释放池：**
+
+在当次runloop将要结束的时候调用objc_autoreleasePoolPop，并push进来一个新的AutoreleasePool
+
+AutoreleasePoolPage是以栈为结点通过双向链表的形式组合而成，是和线程一一对应的。
+ 内部属性有parent，child对应前后两个结点，thread对应线程  ，next指针指向栈中下一个可填充的位置。
+
+- AutoreleasePool实现原理？
+
+编译器会将 @autoreleasepool {} 改写为：
+
+```cpp
+void * ctx = objc_autoreleasePoolPush;
+    {}
+objc_autoreleasePoolPop(ctx);
+```
+
+- objc_autoreleasePoolPush：
+   把当前next位置置为nil，即哨兵对象,然后next指针指向下一个可入栈位置，AutoreleasePool的多层嵌套，即每次objc_autoreleasePoolPush，实际上是不断地向栈中插入哨兵对象。
+- objc_autoreleasePoolPop:
+   根据传入的哨兵对象找到对应位置。 给上次push操作之后添加的对象依次发送release消息。回退next指针到正确的位置
+
+#### `BAD_ACCESS` 在什么情况下出现
+
+访问了已经被销毁的内存空间，就会报出这个错误。
+根本原因是有 `悬垂指针` 没有被释放
+
+#### `autoReleasePool` 什么时候释放
+
+`App`启动后，苹果在主线程 `RunLoop` 里注册了两个 `Observer`，其回调都是 `_wrapRunLoopWithAutoreleasePoolHandler()`。
+
+第一个 `Observer` 监视的事件是 `Entry(即将进入Loop)`，其回调内会调用 `_objc_autoreleasePoolPush()` 创建自动释放池。其 `order` 是 `-2147483647`，优先级最高，保证创建释放池发生在其他所有回调之前。
+
+第二个 `Observer` 监视了两个事件： `BeforeWaiting`(准备进入休眠) 时调用`_objc_autoreleasePoolPop()`  和 `_objc_autoreleasePoolPush()` 释放旧的池并创建新池；`Exit`(即将退出Loop) 时调用 `_objc_autoreleasePoolPop()` 来释放自动释放池。这个 `Observer` 的 `order` 是 `2147483647`，优先级最低，保证其释放池子发生在其他所有回调之后。
+
+在主线程执行的代码，通常是写在诸如事件回调、`Timer`回调内的。这些回调会被 `RunLoop` 创建好的 `AutoreleasePool` 环绕着，所以不会出现内存泄漏，开发者也不必显示创建 `Pool` 了
+
+#### ARC自动内存管理的原则
+
+- 自己生成的对象，自己持有
+- 非自己生成的对象，自己可以持有
+- 自己持有的对象不再需要时，需要对其进行释放
+- 非自己持有的对象无法释放
+
+#### `ARC` 在运行时做了哪些工作？
+
+- 主要是指 `weak` 关键字。`weak` 修饰的变量能够在引用计数为`0` 时被自动设置成 `nil`，显然是有运行时逻辑在工作的。
+
+- 为了保证向后兼容性，`ARC` 在运行时检测到类函数中的 `autorelease` 后紧跟其后 `retain`，此时不直接调用对象的 `autorelease` 方法，而是改为调用 `objc_autoreleaseReturnValue`。
+   `objc_autoreleaseReturnValue` 会检视当前方法返回之后即将要执行的那段代码，若那段代码要在返回对象上执行 `retain` 操作，则设置全局数据结构中的一个标志位，而不执行 `autorelease` 操作，与之相似，如果方法返回了一个自动释放的对象，而调用方法的代码要保留此对象，那么此时不直接执行 `retain` ，而是改为执行 `objc_retainAoutoreleasedReturnValue`函数。此函数要检测刚才提到的标志位，若已经置位，则不执行 `retain` 操作，设置并检测标志位，要比调用 `autorelease` 和`retain`更快
+
+#### `ARC` 在编译时做了哪些工作
+
+根据代码执行的上下文语境，在适当的位置插入 `retain`，`release`
+
+#### `ARC` 的 `retainCount` 怎么存储的
+
+存在64张哈希表中，根据哈希算法去查找所在的位置，无需遍历，十分快捷
+
+散列表（引用计数表、weak表）
+ \- `SideTables` 表在 非嵌入式的64位系统中，有 64张 `SideTable` 表
+ \- 每一张 `SideTable` 主要是由三部分组成。`自旋锁`、`引用计数表`、`弱引用表`。
+ \- 全局的 `引用计数` 之所以不存在同一张表中，是为了避免资源竞争，解决效率的问题。
+ \- `引用计数表` 中引入了 `分离锁`的概念，将一张表分拆成多个部分，对他们分别加锁，可以实现并发操作，提升执行效率
+
+#### 引用计数表（哈希表）
+
+通过指针的地址，查找到引用计数的地址，大大提升查找效率
+
+通过 `DisguisedPtr(objc_object)` 函数存储，同时也通过这个函数查找，这样就避免了循环遍历
+
+#### `__weak` 属性修饰的变量，如何实现在变量没有强引用后自动置为 `nil` 
+
+用的弱引用 - `weak`表。也是一张 `哈希表`。
+
+被 `weak` 修饰的指针变量所指向的地址是 `key` ，所有指向这块内存地址的指针会被添加在一个数组里，这个数组是 `Value`。当内存地址销毁，数组里的所有对象被置为 `nil`
+
+#### `__weak` 和 `_Unsafe_Unretain` 的区别
+
+weak 修饰的指针变量，在指向的内存地址销毁后，会在 `Runtime` 的机制下，自动置为 `nil`
+
+`_Unsafe_Unretain`不会置为 `nil`，容易出现 `悬垂指针`，发生崩溃。但是 `_Unsafe_Unretain` 比 `__weak` 效率高
 
 
 
