@@ -1,33 +1,12 @@
-[TOC]
+//
+//  TimerService.m
+//  MyLib_Example
+//
+//  Created by apple on 2020/2/27.
+//  Copyright © 2020 zhoukang. All rights reserved.
+//
 
-
-
-#### 多列表多计时器问题怎么解决
-
-使用一个定时器，内部弱引用保存N多需要使用定时器的类
-
-```
-NS_ASSUME_NONNULL_BEGIN
-@class TimerService;
-//监听者需要实现的协议
-@protocol TimerListener <NSObject>
-@required
-- (void)didOnTimer:(TimerService *)timer;
-@end
-
-@interface TimerService : NSObject
-//对接提供的主要接口
-+ (instancetype)sharedInstance;
-
-- (void)startTimer;
-- (void)stopTimer;
-
-- (void)addListener:(id<TimerListener>)listener;
-- (void)removeListener:(id<TimerListener>)listener;
-@end
-
-NS_ASSUME_NONNULL_END
-
+#import "TimerService.h"
 
 @interface TimerService() {
     NSLock  *_operationLock;
@@ -139,26 +118,3 @@ NS_ASSUME_NONNULL_END
 }
 
 @end
-```
-
-#### 用过iconfont吗，它的实现原理是什么样的
-
-iconfont是阿里妈妈的一个线上字体设置的库。
-
-主要原理就是通过取出svg里面的path对应的序列，我们自由组合之后，平台会对取出的path做一系列的转换操作，然后合成一个大的path。生成字体
-
-[实现原理](https://www.iconfont.cn/help/article_detail?article_id=1)
-
-#### C++相关
-
-1. 有没有使用过friend
-
-   在一个类中用friend申明其他的类或函数,申明的类或函数能够直接访问该类中的private和protected成
-
-2. C++的析构函数必须使用virtual吗
-
-   [C++中的virtual关键字](https://www.jianshu.com/p/b470594c81ec)
-
-是否接触过AsyncSocket，[CocoaAsyncSocket源码框架](https://github.com/robbiehanson/CocoaAsyncSocket.git)
-
-是否接触过FMDB，它是线程安全的吗[FMDB](https://github.com/ccgus/fmdb.git)
