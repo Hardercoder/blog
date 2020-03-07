@@ -82,7 +82,45 @@
    线程越多，CPU在调度线程上的开销就越大
    程序设计更加复杂：比如线程之间的通信、多线程的数据共享
 
-#### 线程间怎么通信
+#### 多进程间怎么通信
+
+进程间通信（**IPC**，InterProcess Communication）是指在不同进程之间传播或交换信息。
+
+IPC的方式通常有管道（包括无名管道和命名管道）、消息队列、信号量、共享存储、Socket、Streams等。其中 Socket和Streams支持不同主机上的两个进程IPC
+
+1.管道：速度慢，容量有限，只有父子进程能通讯   
+
+2.FIFO：任何进程间都能通讯，但速度慢   
+
+3.消息队列：容量受到系统限制，且要注意第一次读的时候，要考虑上一次没有读完数据的问题   
+
+4.信号量：不能传递复杂消息，只能用来同步   
+
+5.共享内存区：能够很容易控制容量，速度快，但要保持同步，比如一个进程在写的时候，另一个进程要注意读写的问题，相当于线程中的线程安全，当然，共享内存区同样可以用作线程间通讯，不过没这个必要，线程间本来就已经共享了同一进程内的一块内存
+
+#### iOS中进程间通信
+
+iOS系统是相对封闭的系统，App各自在各自的沙盒（sandbox）中运行，每个App都只能读取iPhone上iOS系统为该应用程序程序创建的文件夹AppData下的内容，不能随意跨越自己的沙盒去访问别的App沙盒中的内容,所以iOS 的系统中进行App间通信的方式也比较固定，常见的app间通信方式以及使用场景总结如下
+
+1. **URL Scheme**是 iOS app通信最常用到的通信方式，App1通过openURL的方法跳转到App2，并且在URL中带上想要的参数，有点类似http的get请求那样进行参数传递
+
+2. **Keychain** iOS系统的Keychain是一个安全的存储容器，它本质上就是一个sqllite数据库，它的位置存储在/private/var/Keychains/keychain-2.db，不过它所保存的所有数据都是经过加密的，可以用来为不同的app保存敏感信息
+
+3. **UIPasteboard**是剪切板功能，因为iOS的原生控件UITextView，UITextField 、UIWebView
+
+4. **UIDocumentInteractionController**主要是用来实现同设备上app之间的共享文档，以及文档预览、打印、发邮件和复制等功能。它的使用非常简单.
+
+   首先通过调用它唯一的类方法 interactionControllerWithURL:，并传入一个URL(NSURL)，为你想要共享的文件来初始化一个实例对象。然后UIDocumentInteractionControllerDelegate，然后显示菜单和预览窗口
+
+5. **LocalSocket** 原理很简单，一个App1在本地的端口port1234进行TCP的bind和listen，另外一个App2在同一个端口port1234发起TCP的connect连接，这样就可以建立正常的TCP连接，进行TCP通信了，那么就想传什么数据就可以传什么数据了
+
+6. **AirDrop** 通过AirDrop实现不同设备的App之间文档和数据的分享
+
+7. **UIActivityViewController** iOS SDK中封装好的类在App之间发送数据、分享数据和操作数据
+
+8. **App Group** 用于同一个开发团队开发的App之间，包括App和Extension之间共享同一份读写空间，进行数据共享。同一个团队开发的多个应用之间如果能直接数据共享，大大提高用户体验
+
+#### 多线程间怎么通信
 
 - 一个线程传递数据给另一个线程
 

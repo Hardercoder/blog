@@ -141,3 +141,10 @@ NS_ASSUME_NONNULL_END
 @end
 ```
 
+#### 用过iconfont吗，它的实现原理是什么样的
+
+iconfont是阿里妈妈的一个线上字体设置的库。
+
+主要原理就是通过取出svg里面的path对应的序列，我们自由组合之后，平台会对取出的path做一系列的转换操作，然后合成一个大的path。生成字体
+
+[实现原理](https://www.iconfont.cn/help/article_detail?article_id=1)
