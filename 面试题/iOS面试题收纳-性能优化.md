@@ -102,8 +102,6 @@ R = S + D * ( 1 – Sa )
 
 4、避免日期格式转换。如果你要用NSDateFormatter来处理很多日期格式，应该小心以待。就像先前提到的，任何时候重用NSDateFormatters都是一个好的实践。如果你可以控制你所处理的日期格式，尽量选择Unix时间戳。你可以方便地从时间戳转换到NSDate:
 
-
-
 ```objectivec
     - (NSDate*)dateFromUnixTimestamp:(NSTimeInterval)timestamp {
     return[NSDate dateWithTimeIntervalSince1970:timestamp];
@@ -150,9 +148,7 @@ R = S + D * ( 1 – Sa )
   - 在Image Views中调整图片大小
      如果要在UIImageView中显示一个来自bundle的图片，你应保证图片的大小和UIImageView的大小相同。在运行中缩放图片是很耗费资源的.
 
-**讲讲你用Instrument优化动画性能的经历吧（别问我什么是Instrument）**
-
-
+**讲讲你用Instrument优化动画性能的经历吧**
 
 ```cpp
 Apple的instrument为开发者提供了各种template去优化app性能和定位问题。很多公司都在赶feature，并没有充足的时间来做优化，导致不少开发者对instrument不怎么熟悉。但这里面其实涵盖了非常完整的计算机基础理论知识体系，memory，disk，network，thread，cpu，gpu等等，顺藤摸瓜去学习，是一笔巨大的知识财富。动画性能只是其中一个template，重点还是理解上面问题当中CPU GPU如何配合工作的知识。
@@ -163,3 +159,5 @@ Apple的instrument为开发者提供了各种template去优化app性能和定位
 1.瘦身请求依赖
  2.UDP启动请求先行缓存
  3.队列串行化处理启动响应
+
+

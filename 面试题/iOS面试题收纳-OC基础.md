@@ -65,6 +65,10 @@
 
 （2）封装项目，有时候会遇到这个情况，就是一家公司找了两个开发公司做两个项目，然后要求他们的项目中的一个嵌套进另一个项目，此时也可以把呗嵌套的项目打包成framework放进去，这样比较方便
 
+#### 静态链接了解么？静态库和动态库的区别
+
+静态链接是指将多个目标文件合并为一个可执行文件，直观感觉就是将所有目标文件的段合并。需要注意的是可执行文件与目标文件的结构基本一致，不同的是是否“可执行”。 静态库：链接时完整地拷贝至可执行文件中，被多次使用就有多份冗余拷贝。 动态库：链接时不复制，程序运行时由系统动态加载到内存，供程序调用，系统只加载一次，多个程序共用，节省内存
+
 ### Xcode里的-ObjC,-all_load和-force_load的作用
 
 - 链接器：一个程序从简单易读的代码到可执行文件往往要经历以下步骤
@@ -260,6 +264,36 @@ id 声明的对象具有运行时的特性，即可以指向任意类型的Objce
 
 - 对象方法：以减号开头，只可以被对象调用，可以访问成员变量
 - 类方法：以加号开头只能用类名调用，对象不可以调用，类方法不能访问成员变量
+
+### iOS中内省的几个方法？class方法和objc_getClass方法有什么区别?
+
+1. 什么是内省？
+
+> 在计算机科学中，内省是指计算机程序在运行时（Run time）检查对象（Object）类型的一种能力，通常也可以称作运行时类型检查。 不应该将内省和反射混淆。相对于内省，反射更进一步，是指计算机程序在运行时（Run time）可以访问、检测和修改它本身状态或行为的一种能力。
+
+1. iOS中内省的几个方法？
+   - isMemberOfClass //对象是否是某个类型的对象
+   - isKindOfClass //对象是否是某个类型或某个类型子类的对象
+   - respondsToSelector //是否能响应某个方法
+   - conformsToProtocol //是否遵循某个协议
+2. class方法和object_getClass方法有什么区别?
+    实例class方法就直接返回object_getClass(self),类class方法直接返回self，而object_getClass(类对象)，则返回的是元类
+
+### 反射是什么？可以举出几个应用场景么？（知道多少说多少）
+
+1. 什么是反射
+
+> 反射是指计算机程序在运行时（runtime）可以访问、检测和修改它本身状态或行为的一种能力。用比喻来说，反射就是程序在运行的时候能够“观察”并且修改自己的行为。
+
+在OC中，反射是指程序在运行时，获取和修改类的信息。
+
+ 2. 应用场景
+
+- JSON与模型之间的相互转换
+- Method Swizzling
+- KVO的实现原理
+- 实现NSCoding的自动归档和自动解档
+- 探索系统某些类的具体实现
 
 ### OC中的NSInteger 和int 有什么区别
 
@@ -474,6 +508,14 @@ super是一个Magic Keyword，它本质是一个编译器标示符，和self是�
 
   - `atomic` 可以保证多线程访问时候，对象是未被其他线程销毁的(比如:如果当一个线程正在get或set时，又有另一个线程同时在进行release操作，可能会直接crash)
 
+### 讲一下atomic的实现机制；为什么不能保证绝对的线程安全（最好可以结合场景来说）？
+
+1. atomic的实现机制
+    atomic是property的修饰词之一，表示是原子性的，使用方式为`@property(atomic)int age;`,此时编译器会自动生成getter/setter方法，最终会调用`objc_getProperty`和`objc_setProperty`方法来进行存取属性。若此时属性用`atomic`修饰的话，在这两个方法内部使用`os_unfair_lock`来进行加锁，来保证读写的原子性。锁都在PropertyLocks中保存着（在iOS平台会初始化8个，mac平台64个），在用之前，会把锁都初始化好，在需要用到时，用对象的地址加上成员变量的偏移量为key，去PropertyLocks中去取。因此存取时用的是同一个锁，所以atomic能保证属性的存取时是线程安全的。注：由于锁是有限的，不用对象，不同属性的读取用的也可能是同一个锁
+2. atomic为什么不能保证绝对的线程安全？
+   1. atomic在getter/setter方法中加锁，仅保证了存取时的线程安全，假设我们的属性是`@property(atomic)NSMutableArray *array;`可变的容器时,无法保证对容器的修改是线程安全的
+   2. 在编译器自动生产的getter/setter方法，最终会调用`objc_getProperty`和`objc_setProperty`方法存取属性，在此方法内部保证了读写时的线程安全的，当我们重写getter/setter方法时，就只能依靠自己在getter/setter中保证线程安全
+
 ### 什么情况使用 weak 关键字，相比 assign 有什么不同
 
 - 在 ARC 中，在有可能出现循环引用的时候，往往要通过让其中一端使用 `weak` 来解决
@@ -488,10 +530,21 @@ super是一个Magic Keyword，它本质是一个编译器标示符，和self是�
 - 建议使用 `weak`，它指明该对象并不负责保持delegate这个对象，delegate这个对象的销毁由外部控制
 - 可以使用 `assign`，也有weak的效果，对于使用 assign修饰的delegate，在对象释放前需要将 delegate 指针设置为 nil，不然会产生野指针
 
-### weak 属性需要在 dealloc 中置 nil 么
+### 被weak修饰的对象在被释放的时候会发生什么？是如何实现的？知道sideTable么？里面的结构可以画出来么？
 
-- 在 ARC 环境无论是强指针还是弱指针都无需在 dealloc 设置为 nil ，ARC 会自动帮我们处理
-- 即便是编译器不帮我们做这些，weak 也不需要在 dealloc 中置 nil，在属性所指的对象遭到摧毁时，属性值也会清空
+1. 被weak修饰的对象在被释放的时候会发生什么？
+   在 ARC 环境无论是强指针还是弱指针都无需在 dealloc 设置为 nil ，ARC 会自动帮我们处理即便是编译器不帮我们做这些，weak 也不需要在 dealloc 中置 nil，在属性所指的对象遭到摧毁时，属性值也会清空
+2. weak是如何实现的？
+    runTime会把对weak修饰的对象放到一个全局的哈希表中，用weak修饰的对象的内存地址为key，weak指针为值，在对象进行销毁时，用通过自身地址去哈希表中查找到所有指向此对象的weak指针，并把所有的weak指针置位nil
+3. sideTable的结构
+
+```
+struct SideTable {
+    spinlock_t slock;//操作SideTable时用到的锁
+    RefcountMap refcnts;//引用计数器的值
+    weak_table_t weak_table;//存放weak指针的哈希表
+};
+```
 
 ### 怎么用 copy 关键字/用@property声明的NSString（或NSArray，NSDictionary）经常使用copy关键字，为什么？如果改用strong关键字，可能造成什么问题
 
@@ -545,6 +598,23 @@ super是一个Magic Keyword，它本质是一个编译器标示符，和self是�
 - NSObject类集成的一些反射API
 - 系统Foundation框架提供了一些方法反射的API
 - 使用objc/runtime提供的一些API
+
+### 你知道有哪些情况会导致app崩溃，分别可以用什么方法拦截并化解？（知道多少说多少））
+
+1. unrecognized selector sent to instance 方法找不到
+2. 数组越界，插入空值
+3. `[NSDictionary initWithObjects:forKeys:]`使用此方法初始化字典时，objects和keys的数量不一致时
+4. NSMutableDictionary，`setObject:forKey:`或者`removeObjectForKey:`时，key为nil
+5. `setValue:forUndefinedKey:`，使用KVC对对象进行存取值时传入错误的key或者对不可变字典进行赋值
+6. NSUserDefaults 存储时key为nil
+7. 对字符串操作时，传递的下标超出范围，判断是否存在前缀，后缀子串时，子串为空
+8. 使用C字符串初始化字符串时，传入null
+9. 对可变集合或字符串使用copy修饰并进行修改操作
+10. 在空间未添加到父元素上之前，就使用autoLayout进行布局
+11. KVO在对象销毁时，没有移除KVO或者多次移除KVO
+12. 野指针访问
+13. 死锁
+14. 除0
 
 ### KVC中的集合运算符
 

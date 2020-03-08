@@ -58,6 +58,11 @@ typedef struct objc_class *Class;
 - meta-class对象的isa指向基类的meta-class对象(NSObject meta class)，基类meta-class对象的isa指向自己，也就是NSObject。
 - 基类meta-class的superClass是基类NSObject，这样就形成了一个闭环。
 - isa主要的作用在于从它所属的类/元类对象上查找方法
+- 对象的结构体里存放着isa和成员变量，isa指向类对象。 类对象的isa指向元类，元类的isa指向NSObject的元类。 类对象和元类的结构体有isa、superclass、cache、bits，bits里存放着class_rw_t的指针
+
+#### 为什么对象方法没有保存的对象结构体里，而是保存在类对象的结构体里？
+
+方法是每个对象互相可以共用的，如果每个对象都存储一份方法列表太浪费内存，由于对象的isa是指向类对象的，当调用的时候，直接去类对象中查找就行了。可以节约很多内存空间的
 
 #### 说一下对 `isa` 指针的理解， `isa` 指针有哪两种类型？
 
@@ -161,12 +166,28 @@ Class objc_allocateClassPair ( Class superclass, const char *name, size_t extraB
 void objc_disposeClassPair ( Class cls );
 // 在应用中注册由objc_allocateClassPair创建的类
 void objc_registerClassPair ( Class cls );
-objc_allocateClassPair函数：如果我们要创建一个根类，则superclass指定为Nil。extraBytes通常指定为0，该参数是分配给类和元类对象尾部的索引ivars的字节数
+objc_allocateClassPair函数：
+如果我们要创建一个根类，则superclass指定为Nil。extraBytes通常指定为0，该参数是分配给类和元类对象尾部的索引ivars的字节数
 为了创建一个新类，我们需要调用objc_allocateClassPair
 然后使用诸如class_addMethod，class_addIvar等函数来为新创建的类添加方法、实例变量和属性等
 完成这些后，我们需要调用objc_registerClassPair函数来注册类，之后这个新类就可以在程序中使用了。
 实例方法和实例变量应该添加到类自身上，而类方法应该添加到类的元类上。
 objc_disposeClassPair函数用于销毁一个类，不过需要注意的是，如果程序运行中还存在类或其子类的实例，则不能调用针对类调用该方法。
+```
+
+因为此方法会创建一个类对象以及元类，正好组成一对
+
+```
+Class objc_allocateClassPair(Class superclass, const char *name, 
+                             size_t extraBytes){
+    ...省略了部分代码
+    //生成一个类对象
+    cls  = alloc_class_for_subclass(superclass, extraBytes);
+    //生成一个类对象元类对象
+    meta = alloc_class_for_subclass(superclass, extraBytes);
+    objc_initializeClassPair_internal(superclass, name, cls, meta);
+    return cls;
+}
 ```
 
 #### objc中向一个nil对象发送消息将会发生什么？（返回值是对象，是标量，结构体）
@@ -205,6 +226,36 @@ NSString * s = @"invocationname";
 ```
 
 ## KVO
+
+### KVO的底层实现？如何取消系统默认的KVO并手动触发（给KVO的触发设定条件：改变的值符合某个条件时再触发KVO）？
+
+1. KVO的底层实现？
+   1. 当某个类的属性被观察时，系统会在运行时动态的创建一个该类的子类。并且把该对象的isa指向这个子类
+   2. 假设被观察的属性名是`name`，若父类里有`setName:`或这`_setName:`,那么在子类里重写这2个方法，若2个方法同时存在，则只会重写`setName:`一个（这里和KVCset时的搜索顺序是一样的）
+   3. 若被观察的类型是NSString,那么重写的方法的实现会指向`_NSSetObjectValueAndNotify`这个函数，若是Bool类型，那么重写的方法的实现会指向`_NSSetBoolValueAndNotify`这个函数，这个函数里会调用`willChangeValueForKey:`和`didChangevlueForKey:`,并且会在这2个方法调用之间，调用父类set方法的实现
+   4. 系统会在`willChangeValueForKey:`对observe里的change[old]赋值，取值是用`valueForKey:`取值的,`didChangevlueForKey:`对observe里的change[new]赋值，然后调用observe的这个方法`- (void)observeValueForKeyPath:(nullable NSString *)keyPath ofObject:(nullable id)object change:(nullable NSDictionary *)change context:(nullable void *)context;`
+   5. 当使用KVC赋值的时候,在NSObject里的`setValue:forKey:`方法里,若父类不存在`setName:或者_setName:`这些方法,会调用`_NSSetValueAndNotifyForKeyInIvar`这个函数，这个函数里同样也会调用`willChangeValueForKey:`和`didChangevlueForKey:`,若存在则调用
+2. 如何取消系统默认的KVO并手动触发（给KVO的触发设定条件：改变的值符合某个条件时再触发KVO）？
+    举例：取消Person类age属性的默认KVO，设置age大于18时，手动触发KVO
+
+```
++ (BOOL)automaticallyNotifiesObserversForKey:(NSString *)key {
+    if ([key isEqualToString:@"age"]) {
+        return NO;
+    }
+    return [super automaticallyNotifiesObserversForKey:key];
+}
+
+- (void)setAge:(NSInteger)age {
+    if (age > 18 ) {
+        [self willChangeValueForKey:@"age"];
+        _age = age;
+        [self didChangeValueForKey:@"age"];
+    }else {
+        _age = age;
+    }
+}
+```
 
 #### KVO (Key-value observing)
 
@@ -377,12 +428,42 @@ struct category_t {
 
   - 如果多个分类中都实现了同一个方法，那么在调用该方法的时候会优先调用哪一个方法？
 
-    在多个分类中拥有相同的方法的时候， 会根据编译的先后顺序来添加分类方法列表，后编译的分类方法在最前面，所以要看 Build Phases  --> compile Sources中的顺序。 后参加编译的在前面。
+    在多个分类中拥有相同的方法的时候， 会根据编译的先后顺序来添加分类方法列表，后编译的分类方法在最前面，所以要看 Build Phases  --> compile Sources中的顺序。 后参加编译的在前面
 
-#### Category和Extension的区别是什么
+#### 分类和扩展有什么区别？可以分别用来做什么？分类有哪些局限性？分类的结构体里面有哪些成员？
 
-- Category 在运行的时候才将数据合并到类信息中，有名字，不可以添加成员变量。可以声明属性，但是属性默认没有实现，可以使用runtime手写`getter/setter`方法
-- Extension 在编译的时候就将数据包含在类信息中了，可以添加属性和成员变量。一般用来隐藏类的私有信息
+1. 分类主要用来为某个类添加方法，属性，协议（我一般用来为系统的类扩展方法或者把某个复杂的类的按照功能拆到不同的文件里）
+2. 扩展主要用来为某个类原来没有的成员变量、属性、方法。注：方法只是声明（一般用扩展来声明私有属性，或者把.h的只读属性重写成可读写的）
+
+分类和扩展的区别：
+
+1. 分类是在运行时把分类信息合并到类信息中，而扩展是在编译时，就把信息合并到类中的
+2. 分类声明的属性，只会生成getter/setter方法的声明，不会自动生成成员变量和getter/setter方法的实现，而扩展会
+3. 分类不可用为类添加实例变量，而扩展可以
+4. 分类可以为类添加方法的实现，而扩展只能声明方法，而不能实现
+
+分类的局限性：
+
+1. 无法为类添加实例变量，但可通过关联对象进行实现，注：关联对象中内存管理没有weak，用时需要注意野指针的问题，可通过其他办法来实现，具体可参考[iOS weak 关键字漫谈](http://mrpeak.cn/blog/ios-weak/)
+2. 分类的方法若和类中原本的实现重名，会覆盖原本方法的实现，注：并不是真正的覆盖
+3. 多个分类的方法重名，会调用最后编译的那个分类的实现
+
+分类的结构体里有哪些成员
+
+
+
+```c
+struct category_t {
+    const char *name; //名字
+    classref_t cls; //类的引用
+    struct method_list_t *instanceMethods;//实例方法列表
+    struct method_list_t *classMethods;//类方法列表
+    struct protocol_list_t *protocols;//协议列表
+    struct property_list_t *instanceProperties;//实例属性列表
+    // 此属性不一定真正的存在
+    struct property_list_t *_classProperties;//类属性列表
+};
+```
 
 #### Category中有load方法吗？load方法是什么时候调用的？load 方法能继承吗？
 
@@ -771,6 +852,10 @@ self.block = ^{
 3、为什么在block外边使用了__weak修饰self，里面使用__strong修饰weakSelf的时候不会发生循环引用
     strongSelf实质是一个局部变量（在block这个“函数”里面的局部变量），当block执行完毕就会释放自动变量strongSelf，不会对self一直进行强引用
     外部使用了weakSelf，里面使用strongSelf却不会造成循环，究其原因就是因为weakSelf是block截获的属性，而strongSelf是一个局部变量会在“函数”执行完释放
+
+
+总结:
+用__weak修饰之后block不会对该对象进行retain，只是持有了weak指针，在block执行之前或执行的过程时，随时都有可能被释放，将weak指针置位nil，产生一些未知的错误。在内部用__strong修饰，会在block执行时，对该对象进行一次retain，保证在执行时若该指针不指向nil，则在执行过程中不会指向nil。但有可能在执行执行之前已经为nil了
 ```
 
 #### block内一定要使用weakSelf来解决循环运用？
@@ -859,6 +944,10 @@ struct class_ro_t {
 ```
 
 `baseMethodList`，`baseProtocols`，`ivars`，`baseProperties`三个都是一维数组
+
+#### class_ro_t和class_rw_t的区别
+
+class_rw_t提供了运行时对类拓展的能力，而class_ro_t存储的大多是类在编译时就已经确定的信息。二者都存有类的方法、属性（成员变量）、协议等信息，不过存储它们的列表实现方式不同。简单的说class_rw_t存储列表使用的二维数组，class_ro_t使用的一维数组。 class_ro_t存储于class_rw_t结构体中，是不可改变的。保存着类的在编译时就已经确定的信息。而运行时修改类的方法，属性，协议等都存储于class_rw_t中
 
 #### 讲一下OC的消息机制
 
@@ -1025,6 +1114,13 @@ private:
 可以使用运行时objc_setAssociatedObject和objc_getAssociatedObject添加
 
 ![关联对象](./reviewimgs/objc_association_img)
+
+#### 关联对象有什么应用，系统如何管理关联对象？其被释放的时候需要手动将所有的关联对象的指针置空么？
+
+1. 关联对象有什么应用？ 一般用于在分类中给类添加实例变量
+2. 系统如何管理关联对象？
+    首先系统中有一个全局`AssociationsManager`,里面有个`AssociationsHashMap`哈希表，哈希表中的key是对象的内存地址，value是`ObjectAssociationMap`,也是一个哈希表，其中key是我们设置关联对象所设置的key，value是`ObjcAssociation`,里面存放着关联对象设置的值和内存管理的策略。 以`void objc_setAssociatedObject(id object, const void * key,id value, objc_AssociationPolicy policy)`为例，首先会通过`AssociationsManager`获取`AssociationsHashMap`，然后以`object`的内存地址为key，从`AssociationsHashMap`中取出`ObjectAssociationMap`，若没有，则新创建一个`ObjectAssociationMap`，然后通过key获取旧值，以及通过key和policy生成新值`ObjcAssociation(policy, new_value)`，把新值存放到`ObjectAssociationMap`中，若新值不为nil，并且内存管理策略为`retain`，则会对新值进行一次`retain`，若新值为nil，则会删除旧值，若旧值不为空并且内存管理的策略是`retain`，则对旧值进行一次`release`
+3. 其被释放的时候需要手动将所有的关联对象的指针置空么？ 注：对这个问题我的理解是：当对象被释放时，需要手动移除该对象所设置的关联对象吗？ 不需要，因为在对象的dealloc中，若发现对象有关联对象时，会调用`_object_remove_assocations`方法来移除所有的关联对象，并根据内存策略，来判断是否需要对关联对象的值进行release
 
 #### 如果向一个nil对象发消息不会crash的话,那么message sent to deallocated instance的错误是怎么回事？
 
@@ -1573,6 +1669,22 @@ CADisplayLink` 是一个和屏幕刷新率一致的定时器（但实际实现�
 
 ## AutoreleasePool
 
+####  Autoreleasepool所使用的数据结构是什么？AutoreleasePoolPage结构体了解么？
+
+Autoreleasepool是由多个AutoreleasePoolPage以双向链表的形式连接起来的， Autoreleasepool的基本原理：在每个自动释放池创建的时候，会在当前的AutoreleasePoolPage中设置一个标记位，在此期间，当有对象调用autorelsease时，会把对象添加到AutoreleasePoolPage中，若当前页添加满了，会初始化一个新页，然后用双向量表链接起来，并把新初始化的这一页设置为hotPage,当自动释放池pop时，从最下面依次往上pop，调用每个对象的release方法，直到遇到标志位。 AutoreleasePoolPage结构如下
+
+```c
+class AutoreleasePoolPage {
+    magic_t const magic;
+    id *next;//下一个存放autorelease对象的地址
+    pthread_t const thread; //AutoreleasePoolPage 所在的线程
+    AutoreleasePoolPage * const parent;//父节点
+    AutoreleasePoolPage *child;//子节点
+    uint32_t const depth;//深度,也可以理解为当前page在链表中的位置
+    uint32_t hiwat;
+}
+```
+
 #### ARC下什么样的对象由 Autoreleasepool 管理
 
 - 当使用`alloc/new/copy/mutableCopy`开始的方法进行初始化时，会生成并持有对象(系统会自动的帮它在合适位置release)，不需要pool进行管理
@@ -1582,7 +1694,7 @@ CADisplayLink` 是一个和屏幕刷新率一致的定时器（但实际实现�
 
 - `AutoreleasePool`并没有单独的结构，而是由若干个`AutoreleasePoolPage`以双向链表的形式组合而成（分别对应结构中的parent指针和child指针）
 
-![img](/Users/apple/Desktop/Interested_Git/myblog/面试题/reviewimgs/autorelease_pool_page.png)
+![img](./reviewimgs/autorelease_pool_page.png)
 
 - `AutoreleasePool`是按线程一一对应的（结构中的`thread`指针指向当前线程）
 - `AutoreleasePoolPage`每个对象会开辟4096字节内存（也就是虚拟内存一页的大小），除了上面的实例变量所占空间，剩下的空间全部用来储存autorelease对象的地址
@@ -1982,6 +2094,22 @@ imageView.layer.masksToBounds = YES;
   - 生成LinkMap文件
 
     可借助第三方工具解析LinkMap文件 [GitHub -检查每个类占用空间大小工具_下载链接](https://github.com/huanxsd/LinkMap)
+
+#### 你知道有哪些情况会导致app卡顿，分别可以用什么方法来避免？（知道多少说多少））
+
+1. 主线程中进化IO或其他耗时操作，解决：把耗时操作放到子线程中操作
+2. GCD并发队列短时间内创建大量任务，解决：使用线程池
+3. 文本计算，解决：把计算放在子线程中避免阻塞主线程
+4. 大量图像的绘制，解决：在子线程中对图片进行解码之后再展示
+5. 高清图片的展示，解法：可在子线程中进行下采样处理之后再展示
+
+#### App网络层有哪些优化策略？
+
+1. 优化DNS解析和缓存
+2. 对传输的数据进行压缩，减少传输的数据
+3. 使用缓存手段减少请求的发起次数
+4. 使用策略来减少请求的发起次数，比如在上一个请求未着地之前，不进行新的请求
+5. 避免网络抖动，提供重发机制
 
 #### 列表卡顿的原因可能有哪些？你平时是怎么优化的？
 
