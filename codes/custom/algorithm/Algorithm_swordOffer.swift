@@ -7,116 +7,9 @@
 //
 
 import Foundation
-// 树节点
-public class TreeNode {
-    public var val: Int
-    public var left: TreeNode?
-    public var right: TreeNode?
-    public var parent: TreeNode?
-    public init(_ val: Int) {
-        self.val = val
-        left = nil
-        right = nil
-        parent = nil
-    }
-}
-// 链表节点
-public class ListNode {
-    public var val: Int
-    public var next: ListNode?
-    public init(_ val: Int) {
-        self.val = val
-        next = nil
-    }
-}
-// 复杂链表
-public class RandomListNode {
-    public var label: Int
-    public var next:RandomListNode?
-    public var random:RandomListNode?
-    public init(_ val: Int) {
-        label = val
-    }
-}
 
-// 栈结构  https://github.com/raywenderlich/swift-algorithm-club/blob/master/Stack/Stack.swift
-public struct Stack<T> {
-    fileprivate var array = [T]()
-    
-    public var isEmpty: Bool {
-        return array.isEmpty
-    }
-    
-    public var count: Int {
-        return array.count
-    }
-    
-    public mutating func push(_ element: T) {
-        array.append(element)
-    }
-    
-    public mutating func pop() -> T? {
-        return array.popLast()
-    }
-    
-    public var top: T? {
-        return array.last
-    }
-}
-// 队列结构
-public struct Queue<T> {
-    fileprivate var array = [T?]()
-    fileprivate var head = 0
-    
-    public var isEmpty: Bool {
-        return count == 0
-    }
-    
-    public var count: Int {
-        return array.count - head
-    }
-    
-    public mutating func enqueue(_ element: T) {
-        array.append(element)
-    }
-    
-    public mutating func dequeue() -> T? {
-        guard let element = array[guarded: head] else { return nil }
-        
-        array[head] = nil
-        head += 1
-        
-        let percentage = Double(head)/Double(array.count)
-        if array.count > 50 && percentage > 0.25 {
-            array.removeFirst(head)
-            head = 0
-        }
-        
-        return element
-    }
-    
-    public var front: T? {
-        if isEmpty {
-            return nil
-        } else {
-            return array[head]
-        }
-    }
-}
-
-extension Array {
-    subscript(guarded idx: Int) -> Element? {
-        guard (startIndex..<endIndex).contains(idx) else {
-            return nil
-        }
-        return self[idx]
-    }
-}
-
-@objc
-class AlgorithmSolutions : NSObject {
-    
-    @objc public func testAlgorithm() {
+class Algorithm_swordOffer {
+    public func testAlgorithm() {
         _ = [
             [1,   4,  7, 11, 15],
             [2,   5,  8, 12, 19],
@@ -124,7 +17,7 @@ class AlgorithmSolutions : NSObject {
             [10, 13, 14, 17, 24],
             [18, 21, 23, 26, 30]
         ]
-        reverse("I  am   a   student")
+        reverse("  I  am   a   student  ")
         //        print(printMatrix(tupa))
         //        print("超过一半次数的数为 \(moreThanHalfNum_Solution([3,3,3,3,2,2,1]))")
         //        print("前K个最大的数\(getLeastNumbers_Solution([4,5,1,6,2,7,3,8], 4))")
@@ -462,7 +355,7 @@ class AlgorithmSolutions : NSObject {
                 return false
             }
             marked[r][c] = true
-            for n in AlgorithmSolutions.nextDirection  {
+            for n in Algorithm_swordOffer.nextDirection  {
                 if backtracking(pathLen + 1,
                                 r + n.0,
                                 c + n.1) {
@@ -533,7 +426,7 @@ class AlgorithmSolutions : NSObject {
                 return
             }
             cnt += 1
-            for n in AlgorithmSolutions.nextDirection  {
+            for n in Algorithm_swordOffer.nextDirection  {
                 dfs(r + n.0,
                     c + n.1)
             }
@@ -2159,14 +2052,14 @@ class AlgorithmSolutions : NSObject {
         return res
     }
     
-    // MARK: 判断一个数组中是否有两个数的和为target
+    // MARK: 判断一个数组中是否有两个数的和为target，如果存在返回他们的下标
     func twoSum(_ nums: [Int], _ target: Int) -> [Int] {
         var valueIndexMap = [Int:Int]()
         for i in 0..<nums.count {
             let valueAtI = nums[i]
             let complete = target - valueAtI
             if valueIndexMap.keys.contains(complete) {
-                return [(valueIndexMap[complete] ?? 0),i]
+                return [valueIndexMap[complete]!, i]
             }
             valueIndexMap[valueAtI] = i
             print(valueIndexMap)
@@ -2185,23 +2078,21 @@ class AlgorithmSolutions : NSObject {
         return t1 != nil ? t1 : t2
     }
     
-    // MARK: 反转一个字符串中的单词
-    
+    // MARK: 翻转一个字符串中的单词
     func reverse(_ str: String) {
+        // 将整句分割整二维数组，内层的每个数组代表一个单词
         var words = [[Character]]()
+        // 构建出来的单词
         var tmpWord = [Character]()
-        var hasEmpty = false
         for c in str {
             if c != " " {
-                if hasEmpty {
-                    words.append(tmpWord)
-                    tmpWord = [Character]()
-                }
-                hasEmpty = false
                 tmpWord.append(c)
             }
             else {
-                hasEmpty = true
+                if tmpWord.count > 0 {
+                    words.append(tmpWord)
+                    tmpWord = [Character]()
+                }
             }
         }
         if tmpWord.count > 0 {
@@ -2221,7 +2112,6 @@ class AlgorithmSolutions : NSObject {
             for j in 0..<word.count {
                 str.append(word[j])
             }
-            str.append(" ")
         }
         print(str)
     }
