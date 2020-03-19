@@ -9,15 +9,13 @@
 import Foundation
 
 class Algorithm_leetcode {
-    
     func testAlgorithm() {
-        //        printInvertedtriangle(5)
-        print("双指针-最长子串\(Think_DoublePointer().findLongestWord("abpcplea", ["ale","apple","monkey","plea"]))")
+        //        print("双指针-最长子串\(Think_DoublePointer().findLongestWord("abpcplea", ["ale","apple","monkey","plea"]))")
     }
     // MARK: 剑指offer题解之Swift实现 https://cyc2018.github.io/CS-Notes/#/README
     // 思想之双指针
     class Think_DoublePointer {
-        // MARK: 有序数组的 Two Sum
+        // MARK: 在有序数组中找出两个数，使它们的和为 target
         func twoSum(_ numbers: [Int], _ target: Int) -> (Bool, Int, Int) {
             if numbers.count == 0 {
                 return (false, 0, 0)
@@ -27,7 +25,7 @@ class Algorithm_leetcode {
             while i < j {
                 let sum = numbers[i] + numbers[j]
                 if (sum == target) {
-                    return (true, i + 1, j + 1)
+                    return (true, i, j)
                 }
                 else if (sum < target) {
                     i += 1
@@ -39,7 +37,7 @@ class Algorithm_leetcode {
             return (false, 0, 0)
         }
         
-        // MARK: 两数平方和
+        // MARK: 判断一个非负整数是否为两个整数的平方和
         func judgeSquareSum(_ target: Int) -> Bool {
             if target < 0 {
                 return false
@@ -89,7 +87,7 @@ class Algorithm_leetcode {
             return String(result)
         }
         
-        // MARK:回文字符串
+        // MARK: 可以删除一个字符，判断是否能构成回文字符串
         func validPalindrome(_ s: String) -> Bool {
             var chars = Array<Character>()
             for c in s {
@@ -120,7 +118,7 @@ class Algorithm_leetcode {
             return true
         }
         
-        // MARK: 归并两个有序数组
+        // MARK: 归并两个有序数组，把归并结果存到第一个数组上
         func merge(_ nums1: inout [Int], _ nums2: [Int]) {
             if nums1.count == 0 && nums2.count > 0 {
                 nums1 += nums2
@@ -172,7 +170,7 @@ class Algorithm_leetcode {
             return false
         }
         
-        // MARK: 最长子序列
+        // MARK: 最长子序列，删除 s 中的一些字符，使得它构成字符串列表 d 中的一个字符串，找出能构成的最长字符串。如果有多个相同长度的结果，返回字典序的最小字符串
         func findLongestWord(_ s: String, _ d: [String]) -> String {
             // 判断 target是否是s的子字符串
             func isSubstr(_ target: String, _ s: String) -> Bool {
@@ -211,7 +209,66 @@ class Algorithm_leetcode {
         
     }
     // 思想之排序
-    func sort() {
+    func Think_Sort() {
+        // 快排的partition 可以用于解决第K个元素的问题
+        // 堆排序用于解决 TopK的问题
+        
+        // MARK: 找到倒数第 k 个的元素
+        // 排序 ：时间复杂度 O(NlogN)，空间复杂度 O(1)。不清楚Swift中sort的排序算法是哪个，所以不好定性这里的说法
+        func findKthLargest(_ nums: [Int], _ k: Int) -> Int {
+            return nums.sorted()[nums.count-k]
+        }
+        // 快速选择 ：时间复杂度 O(N)，空间复杂度 O(1)
+        func findKthLargestQuickSort(_ nums: [Int], _ k: Int) -> Int {
+            if k > nums.count || k <= 0 {
+                return -1
+            }
+            let kk = nums.count - k
+            // 因为会进行排序，就用mNums接收
+            var mNums = nums
+            func partition(_ l: Int , _ h: Int ) -> Int {
+                func swap(_ i: Int , _ j: Int) {
+                    (mNums[i],mNums[j]) = (mNums[j],mNums[i])
+                }
+                
+                let p = mNums[l]     /* 切分元素 */
+                var i = l, j = h + 1
+                while true {
+                    i += 1
+                    while mNums[i] < p && i < h {
+                    }
+                    j -= 1
+                    while mNums[j] > p && j > l {
+                    }
+                    if i >= j {
+                        break
+                    }
+                    swap(i, j)
+                }
+                swap(l, j)
+                return j
+            }
+            
+            func findKthSmallest(_ k: Int) {
+                var l = 0, h = mNums.count - 1
+                while l < h {
+                    let j = partition(l, h)
+                    if j == k {
+                        break
+                    }
+                    if j > k {
+                        h = j - 1
+                    }
+                    else {
+                        l = j + 1
+                    }
+                }
+            }
+            
+            findKthSmallest(kk)
+            return mNums[kk]
+        }
+        // 桶排序
         
     }
     // 思想之数学
@@ -219,6 +276,7 @@ class Algorithm_leetcode {
         
     }
     
+    // 构建并打印倒三角形
     func printInvertedtriangle(_ num: Int) {
         let count = num + 1
         var ret = Array<[Int]>(repeating: Array<Int>(repeating: 0, count: count), count: count)
