@@ -710,3 +710,5 @@ int findKey(int *arr, int length, int key) {
 }
 ```
 
+[其余算法](../codes/custom/algorithm)
+

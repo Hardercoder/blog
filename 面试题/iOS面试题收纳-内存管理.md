@@ -160,6 +160,159 @@ self.myBlock = ^() {
   - `extern uintptr_t _objc_rootRetainCount(id obj)`方法，作用是返回obj的引用计数
   - `extern void _objc_autoreleasePoolPrint(void)`方法，作用是打印当前的自动释放池对象
 
+#### iOS内存管理方式
+
+- Tagged Pointer（小对象）
+
+Tagged Pointer 专门用来存储小的对象，例如 NSNumber 和 NSDate
+
+Tagged Pointer 指针的值不再是地址了，而是真正的值。所以，实际上它不再是一个对象了，它只是一个披着对象皮的普通变量而已。所以，它的内存并不存储在堆中，也不需要 malloc 和 free
+
+在内存读取上有着 3 倍的效率，创建时比以前快 106 倍
+
+objc_msgSend 能识别 Tagged Pointer，比如 NSNumber 的 intValue 方法，直接从指针提取数据
+
+使用 Tagged Pointer 后，指针内存储的数据变成了 Tag + Data，也就是将数据直接存储在了指针中
+
+- NONPOINTER_ISA （指针中存放与该对象内存相关的信息） 苹果将 isa 设计成了联合体，在 isa 中存储了与该对象相关的一些内存的信息，原因也如上面所说，并不需要 64 个二进制位全部都用来存储指针。
+
+isa 的结构：
+
+```cpp
+// x86_64 架构
+struct {
+    uintptr_t nonpointer        : 1;  // 0:普通指针，1:优化过，使用位域存储更多信息
+    uintptr_t has_assoc         : 1;  // 对象是否含有或曾经含有关联引用
+    uintptr_t has_cxx_dtor      : 1;  // 表示是否有C++析构函数或OC的dealloc
+    uintptr_t shiftcls          : 44; // 存放着 Class、Meta-Class 对象的内存地址信息
+    uintptr_t magic             : 6;  // 用于在调试时分辨对象是否未完成初始化
+    uintptr_t weakly_referenced : 1;  // 是否被弱引用指向
+    uintptr_t deallocating      : 1;  // 对象是否正在释放
+    uintptr_t has_sidetable_rc  : 1;  // 是否需要使用 sidetable 来存储引用计数
+    uintptr_t extra_rc          : 8;  // 引用计数能够用 8 个二进制位存储时，直接存储在这里
+};
+
+// arm64 架构
+struct {
+    uintptr_t nonpointer        : 1;  // 0:普通指针，1:优化过，使用位域存储更多信息
+    uintptr_t has_assoc         : 1;  // 对象是否含有或曾经含有关联引用
+    uintptr_t has_cxx_dtor      : 1;  // 表示是否有C++析构函数或OC的dealloc
+    uintptr_t shiftcls          : 33; // 存放着 Class、Meta-Class 对象的内存地址信息
+    uintptr_t magic             : 6;  // 用于在调试时分辨对象是否未完成初始化
+    uintptr_t weakly_referenced : 1;  // 是否被弱引用指向
+    uintptr_t deallocating      : 1;  // 对象是否正在释放
+    uintptr_t has_sidetable_rc  : 1;  // 是否需要使用 sidetable 来存储引用计数
+    uintptr_t extra_rc          : 19;  // 引用计数能够用 19 个二进制位存储时，直接存储在这里
+};
+```
+
+这里的 has_sidetable_rc 和 extra_rc，has_sidetable_rc 表明该指针是否引用了 sidetable 散列表，之所以有这个选项，是因为少量的引用计数是不会直接存放在 SideTables 表中的，对象的引用计数会先存放在 extra_rc 中，当其被存满时，才会存入相应的 SideTables 散列表中，SideTables 中有很多张 SideTable，每个 SideTable 也都是一个散列表，而引用计数表就包含在 SideTable 之中。
+
+- 散列表（引用计数表、弱引用表）
+
+引用计数要么存放在 isa 的 extra_rc 中，要么存放在引用计数表中，而引用计数表包含在一个叫 SideTable 的结构中，它是一个散列表，也就是哈希表。而 SideTable 又包含在一个全局的 StripeMap 的哈希映射表中，这个表的名字叫 SideTables。
+
+**当一个对象访问 SideTables 时：**
+
+- 首先会取得对象的地址，将地址进行哈希运算，与 SideTables 中 SideTable 的个数取余，最后得到的结果就是该对象所要访问的 SideTable
+- 在取得的 SideTable 中的 RefcountMap 表中再进行一次哈希查找，找到该对象在引用计数表中对应的位置
+- 如果该位置存在对应的引用计数，则对其进行操作，如果没有对应的引用计数，则创建一个对应的 size_t 对象，其实就是一个 uint 类型的无符号整型
+- 弱引用表也是一张哈希表的结构，其内部包含了每个对象对应的弱引用表 weak_entry_t，而 weak_entry_t 是一个结构体数组，其中包含的则是每一个对象弱引用的对象所对应的弱引用指针。
+
+#### 循环引用
+
+循环引用的实质：多个对象相互之间有强引用，不能释放让系统回收
+
+**如何解决循环引用？**
+
+1、避免产生循环引用，通常是将 strong 引用改为 weak 引用。 比如在修饰属性时用weak 在block内调用对象方法时，使用其弱引用，这里可以使用两个宏
+
+```rust
+#define WS(weakSelf) __weak __typeof(&*self)weakSelf = self; // 弱引用
+```
+
+```cpp
+#define ST(strongSelf) __strong __typeof(&*self)strongSelf = weakSelf; 
+```
+
+//使用这个要先声明weakSelf 还可以使用__block来修饰变量 在MRC下，__block不会增加其引用计数，避免了循环引用 在ARC下，__block修饰对象会被强引用，无法避免循环引用，需要手动解除。
+
+2、在合适时机去手动断开循环引用。 通常我们使用第一种。
+
+- 代理(delegate)循环引用属于相互循环引用
+
+delegate 是iOS中开发中比较常遇到的循环引用，一般在声明delegate的时候都要使用弱引用 weak,或者assign,当然怎么选择使用assign还是weak，MRC的话只能用assign，在ARC的情况下最好使用weak，因为weak修饰的变量在释放后自动指向nil，防止野指针存在
+
+- NSTimer循环引用属于相互循环使用
+
+在控制器内，创建NSTimer作为其属性，由于定时器创建后也会强引用该控制器对象，那么该对象和定时器就相互循环引用了。 如何解决呢？ 这里我们可以使用手动断开循环引用： 如果是不重复定时器，在回调方法里将定时器invalidate并置为nil即可。 如果是重复定时器，在合适的位置将其invalidate并置为nil即可
+
+3、block循环引用
+
+一个简单的例子：
+
+```objectivec
+@property (copy, nonatomic) dispatch_block_t myBlock;
+@property (copy, nonatomic) NSString *blockString;
+
+- (void)testBlock {
+    self.myBlock = ^() {
+        NSLog(@"%@",self.blockString);
+    };
+}
+```
+
+由于block会对block中的对象进行持有操作,就相当于持有了其中的对象，而如果此时block中的对象又持有了该block，则会造成循环引用。 解决方案就是使用__weak修饰self即可
+
+```objectivec
+__weak typeof(self) weakSelf = self;
+
+self.myBlock = ^() {
+        NSLog(@"%@",weakSelf.blockString);
+ };
+```
+
+并不是所有block都会造成循环引用。 只有被强引用了的block才会产生循环引用 而比如dispatch_async(dispatch_get_main_queue(), ^{}),[UIView animateWithDuration:1 animations:^{}]这些系统方法等 或者block并不是其属性而是临时变量,即栈block
+
+```objectivec
+[self testWithBlock:^{
+    NSLog(@"%@",self);
+}];
+
+- (void)testWithBlock:(dispatch_block_t)block {
+    block();
+}
+```
+
+还有一种场景，在block执行开始时self对象还未被释放，而执行过程中，self被释放了，由于是用weak修饰的，那么weakSelf也被释放了，此时在block里访问weakSelf时，就可能会发生错误(向nil对象发消息并不会崩溃，但也没任何效果)。
+
+对于这种场景，应该在block中对 对象使用__strong修饰，使得在block期间对 对象持有，block执行结束后，解除其持有。
+
+```objectivec
+__weak typeof(self) weakSelf = self;
+self.myBlock = ^() {
+        __strong __typeof(self) strongSelf = weakSelf;
+        [strongSelf test];
+ };
+```
+
+#### ARC 的 retainCount 怎么存储的？
+
+存在64张哈希表中，根据哈希算法去查找所在的位置，无需遍历，十分快捷
+
+**散列表（引用计数表、weak表）**
+
+- SideTables 表在 非嵌入式的64位系统中，有 64张 SideTable 表
+- 每一张 SideTable 主要是由三部分组成。自旋锁、引用计数表、弱引用表。
+- 全局的 引用计数 之所以不存在同一张表中，是为了避免资源竞争，解决效率的问题。
+- 引用计数表 中引入了 分离锁的概念，将一张表分拆成多个部分，对他们分别加锁，可以实现并发操作，
+
+**提升执行效率**
+
+- 引用计数表（哈希表）
+- 通过指针的地址，查找到引用计数的地址，大大提升查找效率
+- 通过 DisguisedPtr(objc_object) 函数存储，同时也通过这个函数查找，这样就避免了循环遍历
+
 #### 讲一下 `iOS` 内存管理的理解
 
 实际上是三种方案的结合
