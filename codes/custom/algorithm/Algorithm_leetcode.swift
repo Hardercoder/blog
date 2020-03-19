@@ -11,12 +11,12 @@ import Foundation
 class Algorithm_leetcode {
     
     func testAlgorithm() {
-        printInvertedtriangle(5)
+        //        printInvertedtriangle(5)
+        print("双指针-最长子串\(Think_DoublePointer().findLongestWord("abpcplea", ["ale","apple","monkey","plea"]))")
     }
     // MARK: 剑指offer题解之Swift实现 https://cyc2018.github.io/CS-Notes/#/README
-    
     // 思想之双指针
-    func think_DoublePointer() {
+    class Think_DoublePointer {
         // MARK: 有序数组的 Two Sum
         func twoSum(_ numbers: [Int], _ target: Int) -> (Bool, Int, Int) {
             if numbers.count == 0 {
@@ -196,7 +196,6 @@ class Algorithm_leetcode {
                 return j == targetChars.count
             }
             
-            
             var longestWord = ""
             for target in d {
                 let l1 = longestWord.count, l2 = target.count
@@ -210,8 +209,6 @@ class Algorithm_leetcode {
             return longestWord
         }
         
-        
-        print("双指针-最长子串\(findLongestWord("abpcplea", ["ale","apple","monkey","plea"]))")
     }
     // 思想之排序
     func sort() {

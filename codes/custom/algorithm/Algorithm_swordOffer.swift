@@ -10,14 +10,15 @@ import Foundation
 
 class Algorithm_swordOffer {
     public func testAlgorithm() {
-        _ = [
-            [1,   4,  7, 11, 15],
-            [2,   5,  8, 12, 19],
-            [3,   6,  9, 16, 22],
-            [10, 13, 14, 17, 24],
-            [18, 21, 23, 26, 30]
-        ]
-        reverse("  I  am   a   student  ")
+        //        _ = [
+        //            [1,   4,  7, 11, 15],
+        //            [2,   5,  8, 12, 19],
+        //            [3,   6,  9, 16, 22],
+        //            [10, 13, 14, 17, 24],
+        //            [18, 21, 23, 26, 30]
+        //        ]
+        //        reverse("  I  am   a   student  ")
+        //        print(sum_Solution(7))
         //        print(printMatrix(tupa))
         //        print("超过一半次数的数为 \(moreThanHalfNum_Solution([3,3,3,3,2,2,1]))")
         //        print("前K个最大的数\(getLeastNumbers_Solution([4,5,1,6,2,7,3,8], 4))")
@@ -1297,7 +1298,6 @@ class Algorithm_swordOffer {
         if index < 0 {
             return -1
         }
-        
         /**
          * place 位数的数字组成的字符串长度
          * 10, 90, 900, ...
@@ -1758,8 +1758,6 @@ class Algorithm_swordOffer {
         if n < 0 || n >= str.count {
             return str
         }
-        //        let strLength = str.count
-        //        return str.suffix(strLength-n) + str.prefix(n)
         
         var chars = [Character]()
         for c in str {
@@ -1916,7 +1914,6 @@ class Algorithm_swordOffer {
         return (lastRemaining(n-1, m) + m) % n
     }
     
-    
     func lastRemaining2(_ n: Int, _ m: Int) -> Int {
         var last = 0   //存活的最后一个人的位置
         for i in 2...n {
@@ -1944,8 +1941,9 @@ class Algorithm_swordOffer {
     // MARK: 求 1+2+3+...+n
     // 麻烦 swift中必须得是强制的类型转换，没有隐式转换
     func sum_Solution(_ n: Int) -> Int {
-        let sum = n
-        //        let b = (n > 0) && ((sum += sum_Solution(n - 1)) > 0)
+        var sum = n
+        let val = n > 0 ? sum_Solution(n - 1) : 0
+        sum += val
         return sum
     }
     
@@ -2062,7 +2060,6 @@ class Algorithm_swordOffer {
                 return [valueIndexMap[complete]!, i]
             }
             valueIndexMap[valueAtI] = i
-            print(valueIndexMap)
         }
         return [0, 0]
     }
