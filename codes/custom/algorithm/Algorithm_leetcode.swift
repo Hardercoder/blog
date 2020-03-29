@@ -11,8 +11,17 @@ import Foundation
 class Algorithm_leetcode {
     func testAlgorithm() {
         //        print("双指针-最长子串\(Think_DoublePointer().findLongestWord("abpcplea", ["ale","apple","monkey","plea"]))")
+        //        print(Algorithm_leetcode.Think_Greed().reconstructQueue([(1, 2),(2, 4),(1, 2)]))
+        //        print(Algorithm_leetcode.Think_Greed().reconstructQueue([(7,0), (4,4), (7,1), (5,0), (6,1), (5,2)]))
+        //        print(Algorithm_leetcode.Think_Greed().maxProfit([]))
+        //                print(Algorithm_leetcode.Think_Greed().isSubsequence("acb", "ahbgdc"))
+        //        print(Algorithm_leetcode.Think_Greed().checkPossibility([2,3,3,2,2,4]))
+        //        print(Algorithm_leetcode.Think_Greed().maxSubArray([-2,1,-3,4,-1,2,1,-5,4]))
+        print(Algorithm_leetcode.Think_Greed().partitionLabels("ababcbacadefegdehijhklij"))
+        //
+        
     }
-    // MARK: 剑指offer题解之Swift实现 https://cyc2018.github.io/CS-Notes/#/README
+    // MARK: LeetCode题解之Swift实现 https://cyc2018.github.io/CS-Notes/#/README
     // 思想之双指针
     class Think_DoublePointer {
         // MARK: 在有序数组中找出两个数，使它们的和为 target
@@ -209,7 +218,7 @@ class Algorithm_leetcode {
         
     }
     // 思想之排序
-    func Think_Sort() {
+    class Think_Sort {
         // 快排的partition 可以用于解决第K个元素的问题
         // 堆排序用于解决 TopK的问题
         
@@ -218,6 +227,7 @@ class Algorithm_leetcode {
         func findKthLargest(_ nums: [Int], _ k: Int) -> Int {
             return nums.sorted()[nums.count-k]
         }
+        // 堆
         // 快速选择 ：时间复杂度 O(N)，空间复杂度 O(1)
         func findKthLargestQuickSort(_ nums: [Int], _ k: Int) -> Int {
             if k > nums.count || k <= 0 {
@@ -231,20 +241,23 @@ class Algorithm_leetcode {
                     (mNums[i],mNums[j]) = (mNums[j],mNums[i])
                 }
                 
-                let p = mNums[l]     /* 切分元素 */
+                /* 切分元素 */
                 var i = l, j = h + 1
                 while true {
                     i += 1
-                    while mNums[i] < p && i < h {
+                    while mNums[i] < mNums[l] && i < h {
+                        i += 1
                     }
                     j -= 1
-                    while mNums[j] > p && j > l {
+                    while mNums[j] > mNums[l] && j > l {
+                        j -= 1
                     }
                     if i >= j {
                         break
                     }
                     swap(i, j)
                 }
+                
                 swap(l, j)
                 return j
             }
@@ -256,7 +269,7 @@ class Algorithm_leetcode {
                     if j == k {
                         break
                     }
-                    if j > k {
+                    else if j > k {
                         h = j - 1
                     }
                     else {
@@ -269,10 +282,388 @@ class Algorithm_leetcode {
             return mNums[kk]
         }
         // 桶排序
-        
+        // MARK: 出现频率最多的 k 个元素
+        func topKFrequent(_ nums: [Int], _ k: Int) -> [Int] {
+            //设置若干个桶，每个桶存储出现频率相同的数。桶的下标表示数出现的频率，即第 i 个桶中存储的数出现的频率为 i
+            var frequencyForNum = Dictionary<Int, Int>.init(minimumCapacity: nums.count)
+            for num in nums {
+                if let n = frequencyForNum[num] {
+                    frequencyForNum[num] = n + 1
+                }
+                else {
+                    frequencyForNum[num] = 1
+                }
+            }
+            
+            var buckets = Array<[Int]>(repeating: [], count: nums.count + 1)
+            for key in frequencyForNum.keys {
+                let frequency = frequencyForNum[key]!
+                buckets[frequency].append(key)
+            }
+            
+            var topK = Array<Int>()
+            for i in stride(from: buckets.count - 1, through: 0, by: -1) {
+                if topK.count >= k {
+                    break
+                }
+                if buckets[i].isEmpty {
+                    continue
+                }
+                if buckets[i].count <= k - topK.count {
+                    topK.append(contentsOf: buckets[i])
+                }
+                else {
+                    topK.append(contentsOf: buckets[i][0..<k-topK.count])
+                }
+            }
+            return topK
+        }
+        // MARK: 按照字符出现次数对字符串排序
+        func frequencySort(_ str: String) -> String {
+            //设置若干个桶，每个桶存储出现频率相同的数。桶的下标表示数出现的频率，即第 i 个桶中存储的数出现的频率为 i
+            var frequencyForNum = Dictionary<Character, Int>.init(minimumCapacity: str.count)
+            for c in str {
+                if let n = frequencyForNum[c] {
+                    frequencyForNum[c] = n + 1
+                }
+                else {
+                    frequencyForNum[c] = 1
+                }
+            }
+            
+            var buckets = Array<[Character]>(repeating: [], count: str.count + 1)
+            for key in frequencyForNum.keys {
+                let frequency = frequencyForNum[key]!
+                buckets[frequency].append(key)
+            }
+            
+            var frequencyStr = Array<Character>()
+            for i in stride(from: buckets.count - 1, through: 0, by: -1) {
+                if buckets[i].isEmpty {
+                    continue
+                }
+                for c in buckets[i] {
+                    for _ in 0..<i {
+                        frequencyStr.append(c)
+                    }
+                }
+            }
+            return String(frequencyStr)
+        }
+        // MARK: 荷兰国旗问题
+        func sortColors(_ nums: [Int]) -> [Int] {
+            var mNums = nums
+            func swap(_ i: Int , _ j: Int) {
+                (mNums[i],mNums[j]) = (mNums[j],mNums[i])
+            }
+            
+            var zero = -1, one = 0, two = nums.count
+            while (one < two) {
+                if mNums[one] == 0 {
+                    zero += 1
+                    swap(zero, one)
+                    one += 1
+                }
+                else if nums[one] == 2 {
+                    two -= 1
+                    swap(two, one)
+                }
+                else {
+                    one += 1
+                }
+            }
+            return mNums
+        }
     }
-    // 思想之数学
-    func math() {
+    // 思想之贪心思想
+    class Think_Greed {
+        // MARK: 分配饼干
+        func findContentChildren(_ grid: [Int], _ size: [Int]) -> Int {
+            if grid.count == 0 || size.count == 0 {
+                return 0
+            }
+            let mGrid = grid.sorted()
+            let mSize = size.sorted()
+            var gi = 0, si = 0
+            while gi < mGrid.count && si < mSize.count {
+                if mGrid[gi] <= mSize[si] {
+                    gi += 1
+                }
+                si += 1
+            }
+            return gi
+        }
+        // MARK: 不重叠的区间个数
+        func eraseOverlapIntervals(_ intervals: [(start: Int, end: Int)]) -> Int {
+            if intervals.count == 0 {
+                return 0
+            }
+            let mIntervals = intervals.sorted { (firstTuple, secondTuple) -> Bool in
+                return firstTuple.end < secondTuple.end
+            }
+            
+            var cnt = 1
+            var end = mIntervals.first!.end
+            for i in 1..<mIntervals.count {
+                if mIntervals[i].start < end {
+                    continue
+                }
+                end = mIntervals[i].end
+                cnt += 1
+            }
+            return mIntervals.count - cnt
+        }
+        // MARK: 投飞镖刺破气球
+        func findMinArrowShots(_ intervals: [(start: Int, end: Int)]) -> Int {
+            if intervals.count == 0 {
+                return 0
+            }
+            let mIntervals = intervals.sorted { (firstTuple, secondTuple) -> Bool in
+                return firstTuple.end < secondTuple.end
+            }
+            
+            var cnt = 1
+            var end = mIntervals.first!.end
+            for i in 1..<mIntervals.count {
+                if mIntervals[i].start <= end {
+                    continue
+                }
+                end = mIntervals[i].end
+                cnt += 1
+            }
+            return cnt
+        }
+        // MARK: 根据身高和序号重组队列
+        typealias People = (height: Int, kNum: Int)
+        func reconstructQueue(_ people: [People]) -> [People] {
+            if people.count == 0 {
+                return [(0, 0)]
+            }
+            // 身高 h 降序、个数 k 值升序，然后将某个学生插入队列的第 k 个位置中
+            let mSortedPeople = people.sorted { (firstP, secondP) -> Bool in
+                if firstP.height == secondP.height {
+                    return firstP.kNum < secondP.kNum
+                }
+                else {
+                    return firstP.height > secondP.height
+                }
+            }
+            
+            // 没办法，没有java里面的linkList，只能自己实现了
+            var linkListQueue = Array<Array<People>>.init(repeating: [], count: mSortedPeople.count)
+            for p in mSortedPeople {
+                let index = p.kNum
+                linkListQueue[index].insert(p, at: 0)
+            }
+            
+            var queue = Array<People>()
+            for list in linkListQueue {
+                for p in list {
+                    queue.append(p)
+                }
+            }
+            
+            return queue
+        }
+        // MARK: 买卖股票最大的收益
+        func maxProfit(_ prices: [Int]) -> Int {
+            if prices.count == 0 {
+                return 0
+            }
+            var soFarMin = prices[0]
+            var maxProfit = 0
+            for i in 1..<prices.count {
+                if soFarMin > prices[i] {
+                    // 至今为止最小的波谷
+                    soFarMin = prices[i]
+                }
+                else {
+                    // 至今为止最大的波峰
+                    maxProfit = max(maxProfit, prices[i] - soFarMin)
+                }
+            }
+            return maxProfit
+        }
+        // MARK: 买卖股票的最大收益 II
+        func maxProfit2(_ prices: [Int]) -> Int {
+            var profit = 0
+            for i in 1..<prices.count {
+                let mProfit = prices[i] - prices[i - 1]
+                if mProfit > 0 {
+                    profit += mProfit
+                }
+            }
+            return profit
+        }
+        // MARK: 种植花朵
+        func canPlaceFlowers(_ flowerbed: [Int], _ n: Int) -> Bool {
+            var mFlowerbed = flowerbed
+            let len = mFlowerbed.count
+            var cnt = 0
+            for i in 0..<len {
+                if cnt >= n {
+                    break
+                }
+                if flowerbed[i] == 1 {
+                    continue
+                }
+                let pre = i == 0 ? 0 : mFlowerbed[i - 1]
+                let next = i == len - 1 ? 0 : mFlowerbed[i + 1]
+                if pre == 0 && next == 0 {
+                    cnt += 1
+                    mFlowerbed[i] = 1
+                }
+            }
+            return cnt >= n
+        }
+        // MARK: 判断是否为子序列
+        func isSubsequence(_ s: String, _ t: String) -> Bool {
+            if t.count == 0 {
+                return false
+            }
+            
+            var index = t.startIndex
+            for c in s {
+                if let tmpIndex = t.suffix(from: index).firstIndex(of: c) {
+                    index = t.index(after: tmpIndex)
+                }
+                else {
+                    return false
+                }
+            }
+            return true
+        }
+        // MARK: 修改一个数成为非递减数组
+        func checkPossibility(_ nums: [Int]) -> Bool {
+            var cnt = 1
+            var mNums = nums
+            for i in 1..<mNums.count {
+                if mNums[i] < mNums[i - 1] {
+                    if cnt == 0 {
+                        return false
+                    }
+                    cnt -= 1
+                    if i >= 2 && mNums[i - 2] > mNums[i] {
+                        mNums[i] = mNums[i - 1]
+                    }
+                    else {
+                        mNums[i - 1] = mNums[i]
+                    }
+                }
+            }
+            return true
+        }
+        // MARK: 子数组最大的和
+        func maxSubArray(_ nums: [Int]) -> Int {
+            if nums.count == 0 {
+                return 0
+            }
+            var preSum = nums[0]
+            var maxSum = preSum
+            for i in 1..<nums.count {
+                preSum = preSum > 0 ? preSum + nums[i] : nums[i]
+                maxSum = max(maxSum, preSum)
+            }
+            return maxSum
+        }
+        // MARK: 分隔字符串使同种字符出现在一起
+        func partitionLabels(_ s: String) -> [Int] {
+            var lastIndexsOfChar = [Character: Int]()
+            var ind = 0
+            for c in s {
+                lastIndexsOfChar[c] = ind
+                ind += 1
+            }
+            var partitions = [Int]()
+            var firstIndex = 0
+            while firstIndex < s.count {
+                var lastIndex = firstIndex
+                for i in firstIndex..<s.count {
+                    if i > lastIndex {
+                        break
+                    }
+                    
+                    let index = lastIndexsOfChar[s[s.index(s.startIndex, offsetBy: i)]]!
+                    if index > lastIndex {
+                        lastIndex = index
+                    }
+                }
+                partitions.append(lastIndex - firstIndex + 1)
+                firstIndex = lastIndex + 1
+            }
+            return partitions
+        }
+    }
+    // 思想之二分查找
+    class Think_BinarySearch {
+        // MARK: 二分查找key
+        func binarySearch(_ nums: [Int], _ key: Int) -> (Bool, Int) {
+            var l = 0, h = nums.count - 1
+            while l <= h {
+                let m = l + (h - l) / 2
+                if nums[m] == key {
+                    return (true, m)
+                }
+                else if nums[m] > key {
+                    h = m - 1
+                }
+                else {
+                    l = m + 1
+                }
+            }
+            return (false, -1)
+        }
+        // MARK: 在一个有重复元素的数组中查找 key 的最左位置
+        func binarySearch2(_ nums: [Int], _ key: Int) -> Int {
+            var l = 0, h = nums.count - 1
+            while l < h {
+                let m = l + (h - l) / 2
+                if nums[m] >= key {
+                    h = m
+                }
+                else {
+                    l = m + 1
+                }
+            }
+            return l
+        }
+        // MARK: 求开方
+        func mySqrt(_ x: Int) -> Int {
+            if x <= 1 {
+                return x
+            }
+            var l = 1, h = x
+            while l <= h {
+                let mid = l + (h - l) / 2
+                let sqrt = x / mid
+                if sqrt == mid {
+                    return mid
+                }
+                else if mid > sqrt {
+                    h = mid - 1
+                }
+                else {
+                    l = mid + 1
+                }
+            }
+            return h
+        }
+        // MARK: 大于给定元素的最小元素
+        func nextGreatestLetter(_ letters: [Character], _ target: Character) -> Character {
+            let n = letters.count
+            var l = 0, h = n - 1
+            while l <= h {
+                let m = l + (h - l) / 2
+                if letters[m] <= target {
+                    l = m + 1
+                }
+                else {
+                    h = m - 1
+                }
+            }
+            return l < n ? letters[l] : letters[0]
+        }
+
         
     }
     

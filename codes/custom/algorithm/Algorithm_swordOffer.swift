@@ -21,7 +21,7 @@ class Algorithm_swordOffer {
         //        print(sum_Solution(7))
         //        print(printMatrix(tupa))
         //        print("超过一半次数的数为 \(moreThanHalfNum_Solution([3,3,3,3,2,2,1]))")
-        //        print("前K个最大的数\(getLeastNumbers_Solution([4,5,1,6,2,7,3,8], 4))")
+                print("前K个最大的数\(getLeastNumbers_Solution([4,5,1,6,2,7,3,8], 4))")
         //        print("仅出现一次的数字\(firstAppearingOnce(in: [1,2,3,4,5,4,2,1]))")
         //        print("1 到 n 中1出现的次数\(numberOf1Between1AndN_Solution(12))")
         //        print("数字序列中第16位 \(getDigitAtIndex(17))")
@@ -1109,7 +1109,7 @@ class Algorithm_swordOffer {
     func deserializeTree(fromstr str: String) -> TreeNode? {
         // 先重建根节点，如果是NULL节点，返回。如果是数字节点，递归重建左子树。之后，再重建右子树
         var start = -1
-        var strArr:[Substring] = str.split(separator: " ")
+        let strArr:[Substring] = str.split(separator: " ")
         
         func deserialize(_ strArr:[Substring]) -> TreeNode? {
             start += 1
@@ -1204,18 +1204,18 @@ class Algorithm_swordOffer {
                 (mNums[i],mNums[j]) = (mNums[j],mNums[i])
             }
             
-            let p = mNums[l]     /* 切分元素 */
+            /* 切分元素 */
             var i = l, j = h + 1
             while true {
                 while i != h {
                     i += 1
-                    if mNums[i] >= p {
+                    if mNums[i] >= mNums[l] {
                         break
                     }
                 }
                 while j != l {
                     j -= 1
-                    if mNums[j] <= p {
+                    if mNums[j] <= mNums[l] {
                         break
                     }
                 }
