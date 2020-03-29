@@ -663,8 +663,83 @@ class Algorithm_leetcode {
             }
             return l < n ? letters[l] : letters[0]
         }
-
-        
+        // MARK: 有序数组的 Single Element
+        func singleNonDuplicate(_ nums: [Int]) -> Int {
+            var l = 0, h = nums.count - 1
+            while l < h {
+                var m = l + (h - l) / 2;
+                if m % 2 == 1 {
+                    m -= 1   // 保证 l/h/m 都在偶数位，使得查找区间大小一直都是奇数
+                }
+                if nums[m] == nums[m + 1] {
+                    l = m + 2
+                }
+                else {
+                    h = m
+                }
+            }
+            return nums[l]
+        }
+        // MARK: 第一个错误的版本
+        func firstBadVersion(_ n: Int) -> Int {
+            func isBadVersion(_ n: Int) -> Bool {
+                if n == 23  {
+                    return true
+                }
+                return false
+            }
+            
+            var l = 1, h = n
+            while l < h {
+                let mid = l + (h - l) / 2
+                if isBadVersion(mid) {
+                    h = mid
+                }
+                else {
+                    l = mid + 1
+                }
+            }
+            return l
+        }
+        // MARK: 旋转数组的最小数字
+        func findMin(_ nums: [Int]) -> Int {
+            var l = 0, h = nums.count - 1
+            while l < h {
+                let m = l + (h - l) / 2
+                if nums[m] <= nums[h] {
+                    h = m
+                }
+                else {
+                    l = m + 1
+                }
+            }
+            return nums[l]
+        }
+        // MARK: 查找区间
+        func searchRange(_ nums: [Int], _ target: Int) -> (Bool, Int, Int) {
+            func findFirst(_ targetI: Int) -> Int {
+                var l = 0, h = nums.count // 注意 h 的初始值
+                while l < h {
+                    let m = l + (h - l) / 2
+                    if nums[m] >= target {
+                        h = m
+                    }
+                    else {
+                        l = m + 1
+                    }
+                }
+                return l
+            }
+            
+            let first = findFirst(target)
+            let last = findFirst(target + 1) - 1
+            if first == nums.count || nums[first] != target {
+                return (false, -1, -1)
+            }
+            else {
+                return (true, first, max(first, last))
+            }
+        }
     }
     
     // 构建并打印倒三角形
