@@ -127,3 +127,11 @@ lookUpImpOrForward内部逻辑
    - 另一个阶段可做的事情更多。会先调用methodSignatureForSelector返回一个自定义方法签名，然后采用该签名调用forwardInvocation进行调用转发
 7. 如果以上转发阶段均未做处理，会调用doesNotRecognizeSelector结束整个消息发送过程
 
+
+
+##### 其他的一些参考资料
+
+[戴铭-Objc Runtime 总结](https://ming1016.github.io/2015/04/01/objc-runtime/)
+
+[南峰子-Objective-C Runtime 运行时](http://southpeak.github.io/2014/10/25/objective-c-runtime-1/)
+

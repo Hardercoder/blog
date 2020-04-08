@@ -56,3 +56,10 @@ LLVM IR有三种表现形式
 IR 基本语法:
 
 > @ 全局标识 % 局部标识 alloca 开辟空间 align 内存对齐 i32 32 bit, 即 4 个字节 store 写入内存 load 读取数据 call 调用函数 ret 返回
+
+
+
+#### 参考资料
+
+[深入剖析 iOS 编译 Clang / LLVM](https://ming1016.github.io/2017/03/01/deeply-analyse-llvm/)
+
