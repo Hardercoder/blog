@@ -4,7 +4,7 @@
 
 #### 什么是Mach-O文件格式
 
-Mach-O是全称为Mach Object format的缩写，是mac上可执行文件的格式，常见的主要由以下类型
+Mach-O是全称为Mach Object format的缩写，是Mach/iOS上普遍应用的一种文件，常见的主要由以下类型
 
 1. Executable：可执行文件，应用的主要二进制。我们打出来的包，右键显示包内容即可查看主执行文件
 2. Dylib Library：动态链接库（又称DSO或DLL），在iOS中基本上就是系统自带的共享动态库
@@ -38,25 +38,69 @@ Mach-O 文件主要由Header，LoadCommand，Data组成，其中Data中包含多
 > __TEXT segment 包含被执行的代码以只读和可执行的方式映射。
 >
 > - __text section 包含编译后的机器码。
-> - **stubs 和** stub_helper 是给动态链接器 dyld 使用，可以允许延迟链接。
+> - **stubs 和** stub_helper 是给动态链接器 dyld 使用，可以允许延迟链接，在首次使用而非加载时去绑定其符号地址
 > - __cstring 可执行文件中的字符串。
 > - __const 不可变的常量。
+> - __objc_classname, __objc_methname, __objc_methtype，这三部分是不变的
 >
 > __DATA segment 以可读写和不可执行的方式映射，里面是会被更改的数据。
 >
-> - __nl_symbol_ptr 非延迟指针。可执行文件加载同时加载。
-> - __la_symbol_ptr 延迟符号指针。延迟用于可执行文件中调用未定义的函数，可执行文件里没有包含的函数会延迟加载。
+> - `__nl_symbol_ptr` 中的 non-lazy 符号是在动态链接库绑定的时候进行加载的
+> - `__la_symbol_ptr` 中的符号会在该符号被第一次调用时，通过 dyld 中的 `dyld_stub_binder` 过程来进行加载
+> - **`la_symbol_ptr`是懒绑定（lazy binding）的符号指针，在加载的时候，并未直接确定符号地址，而是在第一次调用该函数的时候，通过PLT(Procedure Linkage Table)进行一次懒绑定**
 > - __const 需要重定向的常量，例如 char * const c = “foo”; c指针指向可变的数据。
-> - __bss 不用初始化的静态变量，例如 static int i; ANSI C 标准规定静态变量必须设置为0。运行时静态变量的值是可修改的。
-> - __common 包含外部全局变量。例如在函数外定义 int i;
+> - __data已经初始化的全局常量
+> - __bss 未初始化的静态变量，例如 static int i; ANSI C 标准规定静态变量必须设置为0。运行时静态变量的值是可修改的。
+> - __common 未初始化的外部全局变量。例如在函数外定义 int i;
 > - __dyld 是section占位符，用于动态链接器。
 >
-> 更多 section 类型介绍可以查看苹果文档： [OS X Assembler Reference](https://developer.apple.com/library/content/documentation/DeveloperTools/Reference/Assembler/000-Introduction/introduction.html)
+> __LINKEDIT Segment 包含需要被动态链接器dyld使用的符号和其他表，包括符号表、字符串表等
+>
+> - Symbol Table，符号映射
+> - Dynamic Symbol Table 动态符号表是加载动态库时的函数表，是符号表的子集。动态符号表的符号 = 符号在原所属符号表中的offset + 原所属符号表在动态符号表中的offset + 动态符号表的基地址base。在动态符号表中查找到的这个符号的值，又等于该符号在符号表中的offset
+>
+> 更多 section 类型介绍可以查看苹果文档：[Mach-O develop.apple.com](https://developer.apple.com/library/archive/documentation/Performance/Conceptual/CodeFootprint/Articles/MachOOverview.html) [OS X Assembler Reference](https://developer.apple.com/library/content/documentation/DeveloperTools/Reference/Assembler/000-Introduction/introduction.html)
 
 - `xcrun otool -s __TEXT __text a.out/xcrun otool -v -t a.out`  查看某个段的内容
   - otool还有很多可用的option，待以后有时间慢慢研究和测试吧
 
 - `lipo 命令`，常用 thin拆出对应架构的文件，使用create合成文件。关于该命令的详细使用情况可以使用man 查看：man lipo
+
+![](./imgs/fishhook_macho.png)
+
+#### 和延迟绑定有关的知识
+
+在所有拥有延迟加载符号的Mach-O文件里，它的符号表中一定有一个`dyld_stub_helper`符号，它是延迟符号加载的关键！延迟绑定符号的修正工作就是由它完成的。绑定符号信息可以使用`XCode`提供的命令行工具`dyldinfo`来查看，执行以下命令可以查看`python`的绑定信息
+
+所有的延迟绑定符号都存储在`_TEXT`段的`stubs`节区（桩节区），编译器在生成代码时创建的符号调用就生成在此节区中，该节区被称为“桩”节区，桩只是一小段临时使用的指令，在`stubs`中只是一条`jmp`跳转指令，跳转的地址位于`__DATA`段`__la_symbol_ptr`节区中，指向的是一段代码，类似于如下的语句：
+
+```
+push xxx
+jmp yyy
+```
+
+其中xxx是符号在动态链接信息中延迟绑定符号数据的偏移值，yyy则是跳转到`_TEXT`段的`stub_helper`节区头部，此处的代码通常为：
+
+```
+lea        r11, qword [ds:zzz]
+push       r11
+jmp        qword [ds:imp___nl_symbol_ptr_dyld_stub_binder]
+```
+
+`jmp`跳转的地址是`__DATA`段中`__nl_symbol_ptr`节区，指向的是符号`dyld_stub_binder()`，该函数由dyld导出，实现位于dyld源码的“dyld_stub_binder.s”文件中，它调用`dyld::fastBindLazySymbol()`来绑定延迟加载的符号，后者是一个虚函数，实际调用`ImageLoaderMachOCompressed`的`doBindFastLazySymbol()`，后者调用`bindAt()`解析并返回正确的符号地址，`dyld_stub_binder()`在最后跳转到符号地址去执行。这一步完成后，`__DATA`段`__la_symbol_ptr`节区中存储的符号地址就是修正后的地址，下一次调用该符号时，就直接跳转到真正的符号地址去执行，而不用`dyld_stub_binder()`来重新解析该符号了
+
+#### Dyld作用
+
+dyld是Apple的动态链接库加载器，内核做好App的初始准备后，交个dyld负责。作用如下：
+
+- 从内核留下的原始调用栈引导和启动自己
+- 将程序依赖的dylib递归加载进内存，考虑缓存机制
+- non-lazy符号立即link到可执行文件，lazy的存表里
+- Runs static initializers for the executable
+- 找到可执行文件的main函数，准备参数并调用
+- 程序执行中负责绑定lazy符号，提供runtime dynamic loading services，提供调试器接口
+- 程序main函数return后执行static terminator
+- 某些场景下main函数结束后调用libsystem的_exit函数
 
 #### 编译器Attribute
 
@@ -333,18 +377,12 @@ IR 基本语法:
 
 [Mach-O 文件格式解析](https://www.exchen.net/mach-o-文件格式解析.html)
 
+[对Mach-O文件的初步探索](http://icetime.cc/2020/02/05/2020-02/%E5%AF%B9Mach-O%E6%96%87%E4%BB%B6%E7%9A%84%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%B4%A2/)
 
 
 [MustOverride 源码解读](https://kingcos.me/posts/2019/dive_into_mustoverride/)
 
-[iOS App冷启动治理：来自美团外卖的实践](https://juejin.im/post/5c0a17d6e51d4570cf60d102)
-
-
-
-[MachO文件详解](https://www.cnblogs.com/guohai-stronger/p/11915571.html)
-
-[iOS 逆向 - Mach-O文件](https://juejin.im/post/5db7ab9fe51d452a3c6ca68c#heading-16)
-
+[美团外卖iOS App冷启动治理](https://tech.meituan.com/2018/12/06/waimai-ios-optimizing-startup.html)
 
 
 [Macho文件浏览器---MachOView](https://www.jianshu.com/p/175925ab3355)
@@ -371,6 +409,8 @@ IR 基本语法:
 
 [南峰子-Objective-C Runtime 运行时](http://southpeak.github.io/2014/10/25/objective-c-runtime-1/)
 
+[dylib动态库加载过程分析](https://feicong.github.io/2017/01/14/dylib/)
+
 ##### iOS性能优化和LLVM底层
 
 [与调试器共舞 - LLDB 的华尔兹](https://objccn.io/issue-19-2/)
@@ -378,6 +418,8 @@ IR 基本语法:
 [深入剖析 iOS 性能优化](https://ming1016.github.io/2017/06/20/deeply-ios-performance-optimization/)
 
 [深入剖析 iOS 编译 Clang / LLVM](https://ming1016.github.io/2017/03/01/deeply-analyse-llvm/)
+
+[iOS编译过程](https://developerdoc.com/essay/LLDB/iOS_Compiler/)
 
 ##### Chrome浏览器
 
