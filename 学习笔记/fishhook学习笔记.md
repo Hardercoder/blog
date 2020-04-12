@@ -108,7 +108,7 @@ Symbol Table: 即符号表。每个目标文件都有自己的符号表，记录
 
 [fishhook 源码学习](https://rimson.top/2019/06/03/fishhook/)
 
-[Hook 原理之 fishhook 源码解析]([https://amywushu.github.io/2017/02/27/%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0-Hook-%E5%8E%9F%E7%90%86%E4%B9%8B-fishhook-%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90.html](https://amywushu.github.io/2017/02/27/源码学习-Hook-原理之-fishhook-源码解析.html))
+[Hook 原理之 fishhook 源码解析](https://amywushu.github.io/2017/02/27/源码学习-Hook-原理之-fishhook-源码解析.html)
 
 [Fishhook————一种Hook动态库C函数的工具](https://zhuanlan.zhihu.com/p/89794872)
 
@@ -128,9 +128,9 @@ Symbol Table: 即符号表。每个目标文件都有自己的符号表，记录
 
 [dylib动态库加载过程分析](https://feicong.github.io/2017/01/14/dylib/)
 
-[聊一聊iOS中的hook方案]([http://icetime.cc/2020/02/08/2020-02/%E8%81%8A%E4%B8%80%E8%81%8AiOS%E4%B8%AD%E7%9A%84hook%E6%96%B9%E6%A1%88/](http://icetime.cc/2020/02/08/2020-02/聊一聊iOS中的hook方案/))
+[聊一聊iOS中的hook方案](http://icetime.cc/2020/02/08/2020-02/聊一聊iOS中的hook方案)
 
 [iOS程序员的自我修养-fishhook原理-五](https://wukaikai.tech/2019/08/12/iOS程序员的自我修养-fishhook原理（五）/)
 
-[iOS程序员的自我修养-MachO文件动态链接-四]([https://wukaikai.tech/2019/08/12/iOS%E7%A8%8B%E5%BA%8F%E5%91%98%E7%9A%84%E8%87%AA%E6%88%91%E4%BF%AE%E5%85%BB-MachO%E6%96%87%E4%BB%B6%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%EF%BC%88%E5%9B%9B%EF%BC%89/](https://wukaikai.tech/2019/08/12/iOS程序员的自我修养-MachO文件动态链接（四）/))
+[iOS程序员的自我修养-MachO文件动态链接-四](https://wukaikai.tech/2019/08/12/iOS程序员的自我修养-MachO文件动态链接（四）)
 
