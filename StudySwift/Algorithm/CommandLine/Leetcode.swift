@@ -2147,7 +2147,7 @@ class Leetcode {
                 xor ^= num
             }
             return xor == 0
-           }
+        }
     }
     func lc113() {
         // 剑指 Offer 34. 二叉树中和为某一值的路径
@@ -2175,7 +2175,7 @@ class Leetcode {
             }
             dfs(root, targetSum)
             return ret
-            }
+        }
     }
     func lc426() {
         // 二叉搜索树与双向链表
@@ -2271,7 +2271,7 @@ class Leetcode {
             }
             dfs(root)
             return res
-            }
+        }
     }
     
     func lc110() {
@@ -2296,7 +2296,7 @@ class Leetcode {
             }
             
             return recur(root) != -1
-            }
+        }
     }
     func lc235() {
         // 剑指 Offer 68 - I. 二叉搜索树的最近公共祖先
@@ -2305,7 +2305,7 @@ class Leetcode {
         // https://leetcode-cn.com/problems/lowest-common-ancestor-of-a-binary-search-tree/
         func lowestCommonAncestor(_ root: TreeNode?, _ p: TreeNode?, _ q: TreeNode?) -> TreeNode? {
             return swordOffer.lowestCommonAncestor(root, p, q)
-            }
+        }
     }
     
     func lc236() {
@@ -2329,24 +2329,32 @@ class Leetcode {
                 return 0
             }
             var res = 0
-            let bndry = Int.max / 10
             var hasJudgeSign = false
+            let isNegatvive = str.first! == "-" ? -1 : 1
             let zeroAsciiValue = Character("0").asciiValue!
             for c in str {
                 if !hasJudgeSign {
                     hasJudgeSign = true
-                    let isNegative = c == "-"
-                    res *= isNegative ? -1 : 1
+                    if isNegatvive == -1 {
+                        continue
+                    }
                 }
                 if c < "0" || c > "9" {
                     return 0
                 }
-                let val = c.asciiValue! - zeroAsciiValue
-                res = res * 10 + val
+                let val = Int(c.asciiValue! - zeroAsciiValue) * isNegatvive
                 
+                let maxDiv = Int.max / 10
+                if res > maxDiv || (res == maxDiv &&  val > Int.max % 10) {
+                    return 0
+                }
+                let minDiv = Int.min / 10
+                if res < minDiv || (res == minDiv &&  val < Int.min % 10) {
+                    return 0
+                }
+                res = res * 10 +  val
             }
-            
-            
-            }
+            return res
+        }
     }
 }

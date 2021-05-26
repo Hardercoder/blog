@@ -75,3 +75,9 @@ func practiceFor() {
         print("内层for循环结束")
     }
 }
+
+func practiceMultiParam() {
+    func test(a: Int..., b: String, c: String...) {
+        print(a,b)
+    }
+}
