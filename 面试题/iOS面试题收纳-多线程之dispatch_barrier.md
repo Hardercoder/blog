@@ -1,28 +1,63 @@
-###### dispatch_barrier_async
+[TOC]
 
-**1、问：怎么用GCD实现多读单写？**
+
+
+#### iOS中的读写安全方案
+
+- 上面的场景就是典型的“多读单写”，经常用于文件等数据的读写操作，iOS中的实现方案有
+  - pthread_rwlock：读写锁
+  - dispatch_barrier_async：异步栅栏调用
+
+##### pthread_rwlock
+
+- 等待锁的线程会进入休眠
+
+  ```objc
+  // 初始化锁
+  pthread_rwlock_t lock;
+  pthread_rwlock_init(&lock, NULL);
+  // 读 加锁
+  pthread_rwlock_rdlock(&lock);
+  // 读 尝试加锁
+  pthread_rwlock_tryrdlock(&lock);
+  // 写 加锁
+  pthread_rwlock_wrlock(&lock);
+  // 写 尝试加锁
+  pthread_rwlock_trywrlock(&lock);
+  // 解锁
+  pthread_rwlock_unlock(&lock);
+  // 销毁
+  pthread_rwlock_destroy(&lock);
+  ```
+
+##### dispatch_barrier_async
+
+1、问：怎么用GCD实现多读单写？
 
 多读单写的意思就是：可以多个读者同时读取数据，而在读的时候，不能取写入数据。并且，在写的过程中，不能有其他写者去写。即读者之间是并发的，写者与读者或其他写者是互斥的。
 
 这里的写处理就是通过栅栏的形式去写,就可以用dispatch_barrier_sync(栅栏函数)去实现
 
-**2、dispatch_barrier_sync的用法：**
+2、dispatch_barrier_sync的用法：
+
+- 这个函数传入的并发队列必须是自己通过dispatch_queue_cretate创建的
+- 如果传入的是一个串行或是一个全局的并发队列，那这个函数便等同于dispatch_async函数的效果
 
 ```objectivec
 dispatch_queue_t concurrentQueue = dispatch_queue_create("test", DISPATCH_QUEUE_CONCURRENT);
 
 for (NSInteger i = 0; i < 10; i++) {
-    dispatch_sync(concurrentQueue, ^{
+    dispatch_async(concurrentQueue, ^{
         NSLog(@"%zd",i);
     });
 }
 
-dispatch_barrier_sync(concurrentQueue, ^{
+dispatch_barrier_async(concurrentQueue, ^{
     NSLog(@"barrier");
 });
 
 for (NSInteger i = 10; i < 20; i++) {
-    dispatch_sync(concurrentQueue, ^{
+    dispatch_async(concurrentQueue, ^{
         NSLog(@"%zd",i);
     });
 }
@@ -42,7 +77,7 @@ for (NSInteger i = 10; i < 20; i++) {
 - (id)readDataForKey:(NSString *)key
 {
     __block id result;
-    dispatch_sync(_concurrentQueue, ^{
+    dispatch_async(_concurrentQueue, ^{
         result = [self valueForKey:key];
     });
     

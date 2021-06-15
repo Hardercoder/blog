@@ -433,7 +433,9 @@ struct weak_table_t {
 - alloc 与 dealloc 语义相反，alloc 是创建变量，dealloc是释放变量
 - retain 与 release 语义相反，retain 保留一个对象，引用计数器+1；release 使引用计数器 -1
 
-#### 内存区域划分
+#### iOS程序的内存布局
+
+![img](./reviewimgs/objc_memory_0.png)
 
 在iOS开发过程中，为了合理的分配有限的内存空间，将内存区域分为五个区
 
@@ -607,6 +609,11 @@ struct weak_table_t {
 - 在没有使用Tagged Pointer之前， NSNumber等对象需要动态分配内存、维护引用计数等，NSNumber指针存储的是堆中NSNumber对象的地址值
 - 使用Tagged Pointer之后，NSNumber指针里面存储的数据变成了：Tag + Data，也就是将数据直接存储在了指针中
 - 当指针不够存储数据时，才会使用动态分配内存的方式来存储数据
+- objc_msgSend能识别Tagged Pointer，比如NSNumber的intValue方法，直接从指针提取数据，节省了以前的调用开销
+- 如何判断一个指针是否为Tagged Pointer？
+
+  - iOS平台，最高有效位是1（第64bit）
+  - Mac平台，最低有效位是1
 
 #### copy和mutableCopy区别
 
@@ -646,6 +653,8 @@ NSArray *trueDeepCopyArray = [NSKeyedUnarchiver unarchiveObjectWithData:[NSKeyed
 第三方框架不当使用，block、delegate、NSTimer的循环引用，非OC对象内存处理，地图类处理，大次数循环内存暴涨
 
 #### 能不能简述一下 `Dealloc` 的实现机制
+
+- 当一个对象要释放时，会自动调用dealloc
 
 1. `Dealloc` 调用流程
    - 首先调用 `_objc_rootDealloc()`
@@ -892,21 +901,24 @@ objc_autoreleasePoolPop(ctx);
 
 根据代码执行的上下文语境，在适当的位置插入 `retain`，`release`
 
-#### `ARC` 的 `retainCount` 怎么存储的
+#### 引用计数的存储
+
+在64bit中，引用计数可以直接存储在优化过的isa指针中，也可能存储在SideTable类中
 
 存在64张哈希表中，根据哈希算法去查找所在的位置，无需遍历，十分快捷
 
+- 通过指针的地址，查找到引用计数的地址，大大提升查找效率
+- 通过 `DisguisedPtr(objc_object)` 函数存储，同时也通过这个函数查找，这样就避免了循环遍历
+
 散列表（引用计数表、weak表）
- \- `SideTables` 表在 非嵌入式的64位系统中，有 64张 `SideTable` 表
- \- 每一张 `SideTable` 主要是由三部分组成。`自旋锁`、`引用计数表`、`弱引用表`。
- \- 全局的 `引用计数` 之所以不存在同一张表中，是为了避免资源竞争，解决效率的问题。
- \- `引用计数表` 中引入了 `分离锁`的概念，将一张表分拆成多个部分，对他们分别加锁，可以实现并发操作，提升执行效率
 
-#### 引用计数表（哈希表）
+- `SideTables` 表在 非嵌入式的64位系统中，有 64张  `SideTable` 表
+- 每一张 `SideTable` 主要是由三部分组成。`自旋锁`、`引用计数表`、`弱引用表`。
+- 全局的 `引用计数` 之所以不存在同一张表中，是为了避免资源竞争，解决效率的问题。
+-  `引用计数表` 中引入了 `分离锁`的概念，将一张表分拆成多个部分，对他们分别加锁，可以实现并发操作，提升执行效率
+- refcnts是一个存放着对象引用计数的散列表
 
-通过指针的地址，查找到引用计数的地址，大大提升查找效率
 
-通过 `DisguisedPtr(objc_object)` 函数存储，同时也通过这个函数查找，这样就避免了循环遍历
 
 #### `__weak` 属性修饰的变量，如何实现在变量没有强引用后自动置为 `nil` 
 

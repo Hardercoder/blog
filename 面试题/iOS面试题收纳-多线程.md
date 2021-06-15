@@ -211,6 +211,16 @@ GCD共有三种队列类型：
 - global queue：全局队列是并发队列，由整个进程共享。存在着高、中、低三种优先级的全局队列。调用dispath_get_global_queue并传入优先级来访问队列
 - 自定义队列：通过函数dispatch_queue_create创建的队列
 
+#### 同步、异步、并发、串行
+
+- 同步和异步主要影响：能不能开启新的线程
+  - 同步：在当前线程中执行任务，不具备开启新线程的能力
+  - 异步：在新的线程中执行任务，具备开启新线程的能力
+
+- 并发和串行主要影响：任务的执行方式
+  - 并发：多个任务并发（同时）执行
+  - 串行：一个任务执行完毕后，再执行下一个任务
+
 #### 什么是同步和异步任务派发(synchronous和asynchronous)
 
 GCD多线程经常会使用 `dispatch_sync`和`dispatch_async`函数向指定队列添加任务，分别是`同步和异步`
@@ -224,6 +234,8 @@ GCD多线程经常会使用 `dispatch_sync`和`dispatch_async`函数向指定队
 | :--- | :--------------------------- | :-------------------------- | :--------------------------- |
 | 同步 | 没有开启新线程  串行执行任务 | 没有开启新线程 串行执行任务 | 没有开启新线程  串行执行任务 |
 | 异步 | 开启新线程  并行执行任务     | 开启新线程  串行执行任务    | 没有开启新线程  串行执行任务 |
+
+**使用sync函数往当前串行队列中添加任务，会卡住当前的串行队列（产生死锁）**
 
 #### 如何去理解GCD执行原理？
 
@@ -743,27 +755,192 @@ dispatch_async(serialQueue, ^{
 #### 多线程安全隐患的解决方案
 
 - 隐患造成原因：多个线程同时访问一个数据然后对数据进行操作
+
 - 解决方案：使用线程同步技术
+
 - 常见线程同步技术： 加锁
+
 - iOS线程同步方案：
   - OSSpinLock			 ios10 废弃
+
+    -  OSSpinLock叫做”自旋锁”，等待锁的线程会处于忙等（busy-wait）状态，一直占用着CPU资源
+    - 目前已经不再安全，可能会出现优先级反转问题
+
+    - 如果等待锁的线程优先级较高，它会一直占用着CPU资源，优先级低的线程就无法释放锁
+    - 需要导入头文件#import <libkern/OSAtomic.h>
+
+    ```objc
+    #import <libkern/OSAtomic.h>
+    // 初始化
+    OSSpinLock lock = OS_SPINLOCK_INIT;
+    // 尝试加锁（如果需要等待就不加锁，直接返回false，如果不需要等待就加锁，返回true）
+    bool result = OSSpinLockTry(&lock);
+    // 加锁
+    OSSpinLockLock(&lock);
+    // 解锁
+    OSSpinLockUnlock(&lock);
+    ```
+
   - os_unfair_lock        ios10 开始
+
+    - os_unfair_lock用于取代不安全的OSSpinLock ，从iOS10开始才支持
+
+    - 从底层调用看，等待os_unfair_lock锁的线程会处于休眠状态，并非忙等
+
+    - 需要导入头文件#import <os/lock.h>
+
+      ```objc
+      #import <os/lock.h>
+      // 初始化
+      os_unfair_lock lock = OS_UNFAIR_LOCK_INIT;
+      // 尝试加锁
+      os_unfair_lock_trylock(&lock);
+      // 加锁
+      os_unfair_lock_lock(&lock);
+      // 解锁
+      os_unfair_lock_unlock(&lock);
+      ```
+
   - pthread_mutex     跨平台的锁，使用步骤复杂，不建议
+
+    - mutex叫做”互斥锁”，等待锁的线程会处于休眠状态
+
+    - 需要导入头文件#import <pthread.h>
+
+      ```objc
+      #import <pthread.h>
+      // 初始化锁的属性
+      pthread_mutexattr_t attr;
+      pthread_mutexattr_init(&attr);
+      pthread_mutextattr_settype(&attr, PTHREAD_MUTEX_NORMAL);
+      //初始化锁
+      pthread_mutex_t mutex;
+      pthread_mutex_init(&mutex, &attr);
+      // 尝试加锁
+      pthread_mutex_trylock(&mutex);
+      // 加锁
+      pthread_mutex_lock(&mutext);
+      //解锁
+      pthread_mutext_unlock(&mutex);
+      //销毁锁资源
+      pthread_mutexattr_destroy(&attr);
+      pthread_mutex_destroy(&mutext);
+      ```
+
+    - pthread_mutex 递归锁
+
+      ```c
+      // 初始化锁的属性
+      pthread_mutexattr_t attr;
+      pthread_mutexattr_init(&attr);
+      pthread_mutextattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+      //初始化锁
+      pthread_mutex_t mutex;
+      pthread_mutex_init(&mutex, &attr);
+      ```
+
+    - pthread_mutex条件
+
+      ```objc
+      //初始化锁
+      pthread_mutex_t mutex;
+      // NULL 代表使用默认属性
+      pthread_mutex_init(&mutex, NULL);
+      // 初始化条件
+      pthread_cond_t condition;
+      pthread_cond_init(&condition, NULL);
+      // 等待条件(进入休眠，放开mutex锁，被唤醒后，会再次对mutext加锁)
+      pthread_cond_wait(&condition, &mutex);
+      // 激活一个等待条件的线程
+      pthread_cond_signal(&condition);
+      // 激活所有等待条件的线程
+      pthread_cond_boradcast(&conditioin);
+      // 销毁资源
+      pthread_mutex_destroy(&mutex);
+      pthread_cond_destroy(&condition);
+      ```
+
   - dispatch_semaphore    建议使用,性能也比较好
+
+    - semaphore叫做”信号量”
+
+    - 信号量的初始值，可以用来控制线程并发访问的最大数量
+
+    - 信号量的初始值为1，代表同时只允许1条线程访问资源，保证线程同步
+
+      ```
+      // 信号量的初始值
+      int value = 1;
+      // 初始化信号量
+      dispatch_semaphore_t semaphore = dispatch_semaphore_create(value);
+      // 如果信号量<=0,当前线程就会进入休眠等待（直到信号量>0）
+      // 如果信号量>0,就-1，然后往下执行后面的代码
+      dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+      // 让信号量的值+1
+      dispatch_semaphore_signal(semaphore);
+      ```
+
   - dispatch_queue(DISPATCH_QUEUE_SERIAL)   串行队列
+
+    - 直接使用GCD的串行队列，也是可以实现线程同步的
+
+      ```
+      dispatch_queue_t queue = dispatch_queue_create("lock_queue", DISPATCH_QUEUE_SERIAL);
+      dispatch_sync(queue, ^{});
+      ```
+
   - NSLock                           对 mutex 封装
+
+    - NSLock是对mutex普通锁的封装
+
   - NSRecursiveLock         递归锁，用于多层嵌套的锁
+
+    - NSRecursiveLock也是对mutex递归锁的封装，API跟NSLock基本一致
+
   - NSCondition
+
+    - NSCondition是对mutex和cond的封装
+
   - NSConditionLock
+
+    - NSConditionLock是对NSCondition的进一步封装，可以设置具体的条件值
+
   - @synchronized          性能最差
+
+    - @synchronized是对mutex递归锁的封装
+    - 源码查看：objc4中的objc-sync.mm文件
+    - @synchronized(obj)内部会生成obj对应的递归锁，然后进行加锁、解锁操作
+
+- 性能高低
+
+  ```
+  性能从高到低排序
+  os_unfair_lock
+  OSSpinLock
+  dispatch_semaphore
+  pthread_mutex
+  dispatch_queue(DISPATCH_QUEUE_SERIAL)
+  NSLock
+  NSCondition
+  pthread_mutex(recursive)
+  NSRecursiveLock
+  NSConditionLock
+  @synchronized
+  ```
 
 #### 有哪几种锁？各自的原理？它们之间的区别是什么？最好可以结合使用场景来说
 
-1. 自旋锁：自旋锁在无法进行加锁时，会不断的进行尝试，一般用于临界区的执行时间较短的场景，不过iOS的自旋锁OSSpinLock不再安全，主要原因发生在低优先级线程拿到锁时，高优先级线程进入忙等(busy-wait)状态，消耗大量 CPU 时间，从而导致低优先级线程拿不到 CPU 时间，也就无法完成任务并释放锁。这种问题被称为优先级反转。
+1. 自旋锁：自旋锁在无法进行加锁时，会不断的进行尝试，处于忙等状态，一直占用CPU资源，一般用于临界区的执行时间较短的场景，不过iOS的自旋锁OSSpinLock不再安全，主要原因发生在低优先级线程拿到锁时，高优先级线程进入忙等(busy-wait)状态，消耗大量 CPU 时间，从而导致低优先级线程拿不到 CPU 时间，也就无法完成任务并释放锁。这种问题被称为优先级反转。
 2. 互斥锁：对于某一资源同时只允许有一个访问，无论读写，平常使用的NSLock就属于互斥锁
 3. 读写锁：对于某一资源同时只允许有一个写访问或者多个读访问，iOS中pthread_rwlock就是读写锁
 4. 条件锁：在满足某个条件的时候进行加锁或者解锁，iOS中可使用NSConditionLock来实现
 5. 递归锁：可以被一个线程多次获得，而不会引起死锁。它记录了成功获得锁的次数，每一次成功的获得锁，必须有一个配套的释放锁和其对应，这样才不会引起死锁。只有当所有的锁被释放之后，其他线程才可以获得锁，iOS可使用NSRecursiveLock来实现
+
+#### atomic
+
+- atomic用于保证属性setter、getter的原子性操作，相当于在getter和setter内部加了线程同步的锁
+- 可以参考源码objc4的objc-accessors.mm
+- 它并不能保证使用属性的过程是线程安全的
 
 #### AF中常驻线程的实现
 

@@ -8,11 +8,12 @@ NSObject对象的本质就是结构体
 
 ```objective-c
 typedef struct objc_class *Class;
-@implementation NSObject
-+ (Class)class {
-    return self;
+struct NSObject_IMPL {
+  Class isa;
 }
 ```
+
+![img](./reviewimgs/objc_nsobject_0.png)
 
 #### 一个NSObject对象占用多少内存
 
@@ -24,26 +25,49 @@ typedef struct objc_class *Class;
 
   ```objc
   #import <Objc/Runtime>
+  // 创建一个实例对象，至少需要多少内存
   Class_getInstanceSize([NSObject Class])
   ```
-
+  
   本质是
-
+  
   ```objc
   size_t class_getInstanceSize(Class cls) {
       if (!cls) return 0;
       return cls->alignedInstanceSize();
   }
   ```
-
+  
   获取 Obj-C 指针所指向的内存的大小，实际上是16 字节
-
+  
   ```objc
   #import <malloc/malloc.h>
+  // 创建一个实例对象，实际上分配了多少内存
   malloc_size((__bridge const void *)obj); 
   ```
-
+  
   对象在分配内存空间时，会进行内存对齐，所以在 iOS 中，分配内存空间都是 16字节 的倍数
+
+#### OC对象的分类
+
+- instance对象（实例对象）
+  - instance对象就是通过类alloc出来的对象，每次调用alloc都会产生新的instance对象
+  - instance对象在内存中存储的信息包括
+    - isa指针
+    - 其他成员变量
+- class对象（类对象）
+  - 它们是同一个对象。每个类在内存中有且只有一个class对象
+  - class对象在内存中存储的信息主要包括
+    - isa指针
+    - superclass指针
+    - 类的属性信息（@property）、类的对象方法信息（instance method）
+    - 类的协议信息（protocol）、类的成员变量信息（ivar）
+- meta-class对象（元类对象） 
+  - 每个类在内存中有且只有一个meta-class对象
+  - meta-class对象和class对象的内存结构是一样的，但是用途不一样，在内存中存储的信息主要包括
+    - isa指针
+    - superclass指针
+    - 类的类方法信息（class method）
 
 #### 对象的isa指针指向哪里，有什么作用
 
@@ -53,12 +77,29 @@ typedef struct objc_class *Class;
 
 ![](./reviewimgs/objc_isa)
 
-- instance对象的isa指向class对象
-- class对象的isa指向meta-class对象 
-- meta-class对象的isa指向基类的meta-class对象(NSObject meta class)，基类meta-class对象的isa指向自己，也就是NSObject。
+- instance对象（实例对象）的isa指向class对象
+  - 当调用对象方法时，通过instance的isa找到class，最后找到对象方法的实现进行调用
+- class对象（类对象）的isa指向meta-class对象
+  - 当调用类方法时，通过class的isa找到meta-class，最后找到类方法的实现进行调用
+- meta-class对象（元类对象）的isa指向基类的meta-class对象(NSObject meta class)，基类meta-class对象的isa指向自己，也就是NSObject。
 - 基类meta-class的superClass是基类NSObject，这样就形成了一个闭环。
 - isa主要的作用在于从它所属的类/元类对象上查找方法
 - 对象的结构体里存放着isa和成员变量，isa指向类对象。 类对象的isa指向元类，元类的isa指向NSObject的元类。 类对象和元类的结构体有isa、superclass、cache、bits，bits里存放着class_rw_t的指针
+- class的superclass指向父类的class
+  - 如果没有父类，superclass指针为nil
+- meta-class的superclass指向父类的meta-class
+  - 基类的meta-class的superclass指向基类的class
+- instance调用对象方法的轨迹
+  - isa找到class，方法不存在，就通过superclass找父类
+- class调用类方法的轨迹
+  - isa找meta-class，方法不存在，就通过superclass找父类
+- class、meta-class对象的本质结构都是struct objc_class
+
+#### OC的类信息存放在哪里
+
+- 对象方法、属性、成员变量、协议信息，存放在class对象中
+- 类方法，存放在meta-class对象中
+- 成员变量的具体值，存放在instance对象
 
 #### 为什么对象方法没有保存的对象结构体里，而是保存在类对象的结构体里？
 
@@ -232,7 +273,7 @@ NSString * s = @"invocationname";
 1. KVO的底层实现？
    1. 当某个类的属性被观察时，系统会在运行时动态的创建一个该类的子类。并且把该对象的isa指向这个子类
    2. 假设被观察的属性名是`name`，若父类里有`setName:`或这`_setName:`,那么在子类里重写这2个方法，若2个方法同时存在，则只会重写`setName:`一个（这里和KVCset时的搜索顺序是一样的）
-   3. 若被观察的类型是NSString,那么重写的方法的实现会指向`_NSSetObjectValueAndNotify`这个函数，若是Bool类型，那么重写的方法的实现会指向`_NSSetBoolValueAndNotify`这个函数，这个函数里会调用`willChangeValueForKey:`和`didChangevlueForKey:`,并且会在这2个方法调用之间，调用父类set方法的实现
+   3. 若被观察的类型是NSString,那么重写的方法的实现会指向`_NSSetXXXValueAndNotify`这个函数，若是Bool类型，那么重写的方法的实现会指向`_NSSetBoolValueAndNotify`这个函数，这个函数里会调用`willChangeValueForKey:`和`didChangevlueForKey:`,并且会在这2个方法调用之间，调用父类set方法的实现
    4. 系统会在`willChangeValueForKey:`对observe里的change[old]赋值，取值是用`valueForKey:`取值的,`didChangevlueForKey:`对observe里的change[new]赋值，然后调用observe的这个方法`- (void)observeValueForKeyPath:(nullable NSString *)keyPath ofObject:(nullable id)object change:(nullable NSDictionary *)change context:(nullable void *)context;`
    5. 当使用KVC赋值的时候,在NSObject里的`setValue:forKey:`方法里,若父类不存在`setName:或者_setName:`这些方法,会调用`_NSSetValueAndNotifyForKeyInIvar`这个函数，这个函数里同样也会调用`willChangeValueForKey:`和`didChangevlueForKey:`,若存在则调用
 2. 如何取消系统默认的KVO并手动触发（给KVO的触发设定条件：改变的值符合某个条件时再触发KVO）？
@@ -276,6 +317,7 @@ KVO是观察者模式的另一实现。使用了isa混写(isa-swizzling)来实�
 #### iOS用什么方式实现对一个对象的KVO？（KVO的本质是什么？）
 
 - KVO是通过isa-swizzling技术实现的，利用RuntimeAPI动态生成一个子类，并且让instance对象的isa指向这个全新的子类，重写对应的class，setter方法等
+    - 同时还会重写 -class,-dealloc方法，新增-isKVOA方法
 - 当修改instance对象的属性时，会调用Foundation的_NSSetXXXValueAndNotify函数
     - willChangeValueForKey:
     - 父类原来的setter
@@ -361,7 +403,7 @@ KVC就是指iOS的开发中，可以允许开发者通过Key名直接访问对�
 
 - KVC的全称是Key-Value Coding，俗称“键值编码”，可以通过一个key来访问某个属性
 
-- setValue:forKey
+- setValue:forKey的原理
 
   ![](./reviewimgs/objc_kvc_set)
 
@@ -370,7 +412,7 @@ KVC就是指iOS的开发中，可以允许开发者通过Key名直接访问对�
     - 返回值为YES，按照_Key,_isKey,Key,isKey的顺序查找成员变量， 如果找到，直接赋值，如果没有找到，调用setValue:forUndefinedKey:，抛出异常
     - 返回NO，直接调用setValue:forUndefinedKey:，抛出异常
 
-- valueForKey
+- valueForKey的原理
   
 	![](./reviewimgs/objc_kvc_get)
   
@@ -401,7 +443,7 @@ KVC就是指iOS的开发中，可以允许开发者通过Key名直接访问对�
 
 ```c
 struct category_t {
-    constchar*name;//类的名字（name）
+    const char*name;//类的名字（name）
     classref_t cls;//类（cls）
     struct method_list_t *instanceMethods; //category中所有给类添加的实例方法的列表（instanceMethods）
     structmethod_list_t *classMethods;//category中所有添加的类方法的列表（classMethods）
@@ -429,6 +471,19 @@ struct category_t {
   - 如果多个分类中都实现了同一个方法，那么在调用该方法的时候会优先调用哪一个方法？
 
     在多个分类中拥有相同的方法的时候， 会根据编译的先后顺序来添加分类方法列表，后编译的分类方法在最前面，所以要看 Build Phases  --> compile Sources中的顺序。 后参加编译的在前面
+  
+- 源码阅读顺序
+
+  - objc-os.mm
+    - _objc_init
+    - map_images
+    - map_images_nolock
+  - objc-runtime-new.mm
+    - _read_images
+    - remethodizeClass
+    - attachCategories
+    - attachLists
+    - realloc、memmove、memcpy
 
 #### 分类和扩展有什么区别？可以分别用来做什么？分类有哪些局限性？分类的结构体里面有哪些成员？
 
@@ -449,8 +504,6 @@ struct category_t {
 3. 多个分类的方法重名，会调用最后编译的那个分类的实现
 
 分类的结构体里有哪些成员
-
-
 
 ```c
 struct category_t {
@@ -477,12 +530,10 @@ struct category_t {
 
   - load 根据函数地址直接调用
   - initialize 是通过objc_msgSend调用
-
 - 调用时刻：
 
   - load是runtime加载类、分类的时候调用（只会调用1次），main函数之前
   - initialize 是**类**第一次接收到消息的时候调用objc_msgsend方法 如alloc、每一个类只会调用1次（但是父类的initialize方法可能会调用多次），有些子类没有initialize方法所以调用父类的。
-
 - 调用顺序：
 
   - load：父类->子类->分类
@@ -494,13 +545,32 @@ struct category_t {
   - initialize：分类->子类->父类
     - 初始化父类
     - 优先调用分类的 initialize，如果没有分类会调用 子类的,如果子类未实现则调用 父类的
-
 - load方法可以继承，我们在子类没有实现的时候可以调用，但是一般都是类自动去调用，我们不会主动调用，当子类没有实现+load方法的时候不会自动调用
-
 - 当一个类有分类的时候为什么+load能多次调用而initialize只调用了一次？
 
   - 根据源码看出来，+load 直接通过函数指针指向函数，拿到函数地址，找到函数代码，直接调用，它是分开来直接调用的，不是通过objc_msgsend调用的
   - 而 initialize是通过消息发送机制，isa找到类对象找到方法调用的，所以只调用一次
+- load方法objc源码阅读过程 objc-os.mm
+  - _objc_init
+  - load_images
+  - prepare_load_methods
+    - schedule_class_load
+    - add_class_to_loadable_list
+    - add_category_to_loadable_list
+  - call_load_methods
+    - call_class_loads
+    - call_category_loads
+    - (*load_method)(cls, SEL_load)
+- initialize方法objc4源码阅读过程
+  - ojbc-msg-arm64.s
+    - objc_msgSend
+  - objc-runtime-new.mm
+    - class_getInstanceMethod
+    - lookUpImpOrNil
+    - lookUpImpOrForward
+    - _class_initialize
+    - callInitialize
+    - objc_msgSend(cls, SEL_initialize)
 
 #### Category能否添加成员变量？如果可以，如何给Category添加成员变量？
 
@@ -572,7 +642,6 @@ struct category_t {
   | OBJC_ASSOCIATION_COPY_NONATOMIC    | copy, nonatomic   |
   | OBJC_ASSOCIATION_RETAIN            | strong, atomic    |
   | OBJC_ASSOCIATION_COPY              | copy, atomic      |
-  
 
 #### 如何给Category添加 weak 属性
 
@@ -657,7 +726,9 @@ struct category_t {
 
 #### block的原理是怎样的？本质是什么
 
-- block的本质就是一个oc对象，内部也有isa指针， 封装了函数及调用环境的OC对象，
+- block的本质就是一个oc对象，内部也有isa指针， 封装了函数及函数调用环境的OC对象
+
+![img](./reviewimgs/objc_block_1.png)
 
 #### 看代码解释原因
 
@@ -722,38 +793,42 @@ int main(int argc, const char *argv[]){
 ```
 #### block捕获机制
 
-| 变量类型 |        | 捕获到Block内部 | 访问方式 |
+为了保证block内部能够正常访问外部的变量，block有个变量捕获机制
+
+oc方法都至少有self和_cmd参数，block捕获的self其实是这个局部变量
+
+| 变量类型 | 修饰符 | 捕获到Block内部 | 访问方式 |
 | :------- | :----- | :-------------- | :------- |
 | 局部变量 | auto   | ✅               | 值传递   |
 | 局部变量 | static | ✅               | 指针传递 |
 | 全局变量 |        | ❌               | 直接访问 |
 #### 既然block是一个OC对象，那么block的对象类型是什么？
 
-- block在iOS平台有三种类型，最终都继承自NSBlock
+- block在iOS平台有三种类型，最终都继承自NSBlock，基类也是NSObject
 
-  | block类型             | 环境                                         | 存放位置 |
-| :-------------------- | :------------------------------------------- | :------- |
-  | **__NSGlobalBlock__** | 没有访问auto变量                             | 静态区   |
-  | **__NSStackBlock__**  | 访问了auto变量                               | 栈       |
-  | **__NSMallocBlock__** | **__NSStackBlock__**进行了赋值或者调用了copy | 堆       |
+  | block类型                                      | 环境                                           | 存放位置       |
+  | :--------------------------------------------- | :--------------------------------------------- | :------------- |
+  | **`__NSGlobalBlock__(NSConcreteGlobalBlock)`** | 没有访问auto变量                               | 静态区(data段) |
+  | **`__NSStackBlock__(NSConcreteStackBlock)`**   | 访问了auto变量                                 | 栈             |
+  | **`__NSMallocBlock__(NSConcreteMallocBlock)`** | **`__NSStackBlock__`**进行了赋值或者调用了copy | 堆             |
   
 - 每一种类型的block调用了copy之后结果如下所示
 
-  | block的类型           | 副本源的配置存储域 | 复制后的区域 |
-  | :-------------------- | :----------------- | :----------- |
-  | **__NSGlobalBlock__** | 程序的数据区域     | 什么都不做   |
-  | **__NSStackBlock__**  | 栈                 | 从栈复制到堆 |
-  | **__NSMallocBlock__** | 堆                 | 引用计数器+1 |
+  | block的类型                                    | 副本源的配置存储域 | 复制后的区域 |
+  | :--------------------------------------------- | :----------------- | :----------- |
+  | **`__NSGlobalBlock__(NSConcreteGlobalBlock)`** | 程序的数据区域     | 什么都不做   |
+  | **`__NSStackBlock__(NSConcreteStackBlock)`**   | 栈                 | 从栈复制到堆 |
+  | **`__NSMallocBlock__(NSConcreteMallocBlock)`** | 堆                 | 引用计数器+1 |
 
 #### 在什么情况下，编译器会根据情况自动将栈上的block复制到堆上？
 
-- block作为函数的返回值
+ARC环境下，编译器根据情况自动将栈上的block复制到堆上
 
-- ARC环境下使用copy修饰属性
+- block作为函数的返回值
 
 - 将block赋值给__strong指针
 
-- block作为 Cocoa API中方法名含有usingBlock的方法参数时
+- block作为 Cocoa API中方法名含有usingBlock的方法参数
 
   ```objective-c
   NSArray *arr = @[];
@@ -761,6 +836,12 @@ int main(int argc, const char *argv[]){
   [arr enumerateObjectUsingBlock:^(id _Nonnullobj, NSUInteger idx, Bool _Nonnull stop){}];
   ```
   
+- block作为GCD API的方法参数
+
+- ARC环境下使用copy修饰属性
+
+#### block声明的建议写法
+
 - block作为GCD属性的建议写法
 
   ```objective-c
@@ -768,7 +849,7 @@ int main(int argc, const char *argv[]){
   dispatch_once(&onceToken, ^{});
   disPatch_after(disPatch_time(IDSPATCH_TIME_NOW, (int64_t)(delayInSecounds *NSEC_PER_SEC)), dispatch_get_main_queue(), ^{});
   ```
-  
+
 - MRC下block属性建议写法
 
   - `@property (copy, nonatomic) void (^block)(void);`
@@ -786,22 +867,74 @@ int main(int argc, const char *argv[]){
   iOS中总共有__strong,__weak,__unsafe_unretained,__autoreleasing四种修饰符
   ```
 
-- 当block内部访问的对象类型是auto变量
-  - 如果block是在栈上，将不会对auto变量产生强引用，只会声明一个同名的变量并将值复制过来
-  - 如果Block被拷贝到堆上
-    - 会调用block内部的copy函数
-    - copy函数会调用源码中的_Block_object_assign函数
-    - _Block_object_assign函数会根据修饰 auto 变量的修饰符（__strong、__weak 、__unsafe_unretained）来决定作出相应的操作，形成强引用或者弱引用
-  - block从堆上移除
-    - 会调用block内部的dispose函数
-    - dispose函数会调用源码中的 _Block_object_dispose函数
-    - _Block_object_dispose函数会自动释放auto变量（release）
 
 #### __block的作用是什么？
 
-- 如果需要在 block 内部修改外部的 局部变量的值,就需要使用block 修饰(全局变量和静态变量不需要加block 可以修改)
-- **block 修饰以后,局部变量的数据结构就会发生改变,底层会变成一个结构体的对象**,结构内部会声明一个 block修饰变量的成员, 并且将 __block修饰变量的地址保存到堆内存中. 后面如果修改这个变量的值,可以通过 isa 指针找到这个结构体,进来修改这个变量的值;
+- 如果需要在 block 内部修改外部的 局部变量的值，就需要使用block 修饰(全局变量和静态变量不需要加block)
+
+- **__block 修饰以后，局部变量的数据结构就会发生改变，底层会变成一个结构体的对象**，结构内部会声明一个 block修饰变量的成员，并且将 __block修饰变量的地址保存到堆内存中。后面如果修改这个变量的值，可以通过 isa 指针找到这个结构体,进来修改这个变量的值;
+
+  ![img](./reviewimgs/objc_block_block.png)
+
 - 使用注意点： 在MRC环境下不会对指向的对象产生强引用的
+
+#### 内存管理，对象类型的auto变量、__block变量
+
+`使用clang rewrite-objc时，遇到__weak，需要加上 --fobjc-arc -fobjc-runtime=ios-9.0`
+
+- 当block在栈上时，对它们都不会产生强引用
+
+- 当block拷贝到堆上时，都会通过copy函数来处理它们
+
+  ![img](./reviewimgs/objc_block_copy.png)
+
+  - 会调用block内部的copy函数
+  - copy函数内部会调用`_Block_object_assign`函数
+  - `_Block_object_assign`函数会根据auto变量的修饰符（`__strong、__weak、__unsafe_unretained`）做出相应的操作，形成强引用（retain）或者弱引用
+  - `_Block_object_assign`函数会对__block变量形成强引用（retain）
+    - __block变量（假设变量名叫做a）
+      - _Block_object_assign((void*)&dst->a, (void*)src->a, 8);
+    - 对象类型的auto变量（假设变量名叫做p）
+      - _Block_object_assign((void*)&dst->p, (void*)src->p, 3);
+
+- 当block从堆上移除时，都会通过dispose函数来释放它们
+
+  ![img](./reviewimgs/objc_block_copy2.png)
+
+  - 会调用block内部的dispose函数
+  - dispose函数内部会调用`_Block_object_dispose`函数
+  - `_Block_object_dispose`函数会自动释放引用的__block/auto变量（release）
+    - __block变量（假设变量名叫做a）
+      - _Block_object_dispose((void*)src->a, 8);
+    - 对象类型的auto变量（假设变量名叫做p）
+      - _Block_object_dispose((void*)src->p, 3);
+
+- 其他细节
+
+  - 访问的是对象类型，block的desc里面就会增加copy和dispose函数
+  - 多层嵌套block，以捕获的强引用的最长生命周期为准
+
+| 函数        | 调用时机                |
+| ----------- | ----------------------- |
+| copy函数    | 栈上的Block复制到堆上时 |
+| dispose函数 | 堆上的Block被废弃时     |
+
+#### Block的forwarding指针
+
+![img](./reviewimgs/objc_block_forwarding.png)
+
+#### 被__block修饰的对象类型
+
+- 当__block变量在栈上时，不会对指向的对象产生强引用
+- 当__block变量被copy到堆时
+  - 会调用__block变量内部的copy函数
+  - copy函数内部会调用`_Block_object_assign`函数
+  - `_Block_object_assign`函数会根据所指向对象的修饰符（__strong、__weak、__unsafe_unretained）做出相应的操作，形成强引用（retain）或者弱引用（注意：这里**仅限于ARC时会retain，MRC时不会retain**）
+
+- 如果__block变量从堆上移除
+  - 会调用__block变量内部的dispose函数
+  - dispose函数内部会调用`_Block_object_dispose`函数
+  - `_Block_object_dispose`函数会自动释放指向的对象（release）
 
 #### __block的属性修饰词是什么？为什么？使用block有哪些注意点？
 
@@ -886,6 +1019,8 @@ self.block = ^{
 
 `ObjC` 类中的属性、方法还有遵循的协议等信息都保存在 `class_rw_t` 中：
 
+class_rw_t里面的methods、properties、protocols是二维数组，是可读可写的，包含了类的初始内容、分类的内容
+
 ```objc
 // 可读可写
 struct class_rw_t {
@@ -921,6 +1056,8 @@ struct class_rw_t {
 
 存储了当前类在编译期就已经确定的属性、方法以及遵循的协议。
 
+class_ro_t里面的baseMethodList、baseProtocols、ivars、baseProperties是一维数组，是只读的，包含了类的初始内容
+
 ```objc
 struct class_ro_t {
     uint32_t flags;
@@ -949,6 +1086,53 @@ struct class_ro_t {
 
 class_rw_t提供了运行时对类拓展的能力，而class_ro_t存储的大多是类在编译时就已经确定的信息。二者都存有类的方法、属性（成员变量）、协议等信息，不过存储它们的列表实现方式不同。简单的说class_rw_t存储列表使用的二维数组，class_ro_t使用的一维数组。 class_ro_t存储于class_rw_t结构体中，是不可改变的。保存着类的在编译时就已经确定的信息。而运行时修改类的方法，属性，协议等都存储于class_rw_t中
 
+#### method_t
+
+method_t 是对方法/函数的封装
+
+```objective-c
+struct method_t {
+SEL name; // 函数名
+const char *types; 编码（返回值类型，参数类型）
+IMP imp; // 指向函数的指针（函数地址）
+}
+```
+
+- IMP代表函数的具体实现
+
+  `typedef id _Nullable (*IMP)(id _Nonull, SEL _Nonull, ...);`
+
+- SEL代表方法\函数名，一般叫做选择器，底层结构跟char *类似
+
+  - 可以通过@selector()和sel_registerName()获得
+  - 可以通过sel_getName()和NSStringFromSelector()转成字符串
+  - 不同类中相同名字的方法，所对应的方法选择器是相同的
+
+  `typedef struct objc_selector *SEL;`
+
+- types包含了函数返回值、参数编码的字符串
+
+#### 方法缓存
+
+Class内部结构中有个方法缓存（cache_t），用散列表（哈希表）来缓存曾经调用过的方法，可以提高方法的查找速度
+
+```objc
+struct bucket_t {
+  cache_key_t _key; // SEL作为key
+  IMP _imp;//函数的内存地址
+}   	
+		
+struct cache_t {
+	struct bucket_t *_buckets; // 散列表
+	mask_t_ mask; // 散列表的长度 - 1
+	mas_t _occupied;  // 已经缓存的方法数量
+}
+```
+
+- 缓存查找
+  - objc-cache.mm
+  - bucket_t * cache_t::find(cache_key_t k, id receiver)
+
 #### 讲一下OC的消息机制
 
 - OC中的方法调用最后都是objc_msgSend函数调用，给receiver(方法调用者)发送了一条消息(selector方法名)
@@ -957,6 +1141,9 @@ class_rw_t提供了运行时对类拓展的能力，而class_ro_t存储的大多
 #### 消息发送机制流程
 
 - 消息发送阶段
+
+  ![img](./reviewimgs/objc_msg_send_0.png)
+
   - 给当前类发送一条消息，判断消息是否认要忽略。比如 Mac OS X 开发，有了垃圾回收就不理会 retain，release 这些函数
   - 判断对象是否为nil，若为nil直接退出消息发送，返回对应类型的默认值
   - 从当前的类中的缓存查找（缓存查找：给定值SEL,目标是查找对应bucket_t中的IMP，哈希查找）
@@ -965,7 +1152,11 @@ class_rw_t提供了运行时对类拓展的能力，而class_ro_t存储的大多
   - 如果没有再去父类的class_rw_t方法列表中查找
   - 循环反复，如果找到，调用方法， 并且将方法缓存到方法调用者的方法缓存中
   - 如果一直没有，转到下一个阶段：动态解析阶段
+
 - 动态解析阶段
+  
+  ![img](./reviewimgs/objc_msg_send_1.png)
+  
   - 动态解析会调用-resolveInstanceMethod \ +resolveClassMethod 方法，在方法中手动添加class_addMethod方法的调用。
   - 只会解析一次，会将是否解析过的参数置位YES
   - 然后重新走消息发送阶段
@@ -973,7 +1164,11 @@ class_rw_t提供了运行时对类拓展的能力，而class_ro_t存储的大多
   - 调用方法并将方法缓存到方法调用者的缓存中
   - 如果没有实现， 再第二次走到动态解析阶段，不会进入动态解析，因为上一次已经解析过了
   - 我们将动态解析过的参数设置为YES，所以会走到下一个阶段：消息转发阶段
+  
 - 消息转发阶段
+  
+   ![img](./reviewimgs/objc_msg_send_2.png)
+  
   - 第一种： 实现了forwardingTargetForSelector方法
     - 调用forwardingTargetForSelector 方法（返回一个类对象）， 直接使用我们设置的类去发送消息。
   - 第二种： 没有实现forwardingTargetForSelector
@@ -1168,11 +1363,25 @@ private:
 
 具体可以参看 `Runtime` 源代码
 
-```cpp
+```objc
 struct objc_class : objc_object {
     // Class ISA;
     Class superclass; //父类指针
+	  // 用散列表（哈希表）来缓存曾经调用过的方法，可以提高方法的查找速度
+   	/*
+		struct bucket_t {
+			cache_key_t _key; // SEL作为key
+			IMP _imp;//函数的内存地址
+		}   	
+   	
+    struct cache_t {
+    	struct bucket_t *_buckets; // 散列表
+    	mask_t_ mask; // 散列表的长度 - 1
+    	mas_t _occupied;  // 已经缓存的方法数量
+    }
+   	*/
     cache_t cache;             // formerly cache pointer and vtable 方法缓存
+  	
     class_data_bits_t bits;    // class_rw_t * plus custom rr/alloc flags 用于获取地址
 
     class_rw_t *data() { 
@@ -1332,6 +1541,94 @@ objc_storeWeak函数把第二个参数的赋值对象（obj）的内存地址作
   NSLog(@"%d", [Person isMemberOfClass:[MJPerson class]]); // 0
   ```
 
+#### Runtime 常用API
+
+##### 类
+
+```
+动态创建一个类（参数：父类，类名，额外的内存空间）
+Class objc_allocateClassPair(Class superclass, const char *name, size_t extraBytes)
+注册一个类（要在类注册之前添加成员变量）
+void objc_registerClassPair(Class cls) 
+销毁一个类
+void objc_disposeClassPair(Class cls)
+获取isa指向的Class
+Class object_getClass(id obj)
+设置isa指向的Class
+Class object_setClass(id obj, Class cls)
+判断一个OC对象是否为Class
+BOOL object_isClass(id obj)
+判断一个Class是否为元类
+BOOL class_isMetaClass(Class cls)
+获取父类
+Class class_getSuperclass(Class cls)
+```
+
+##### 成员变量
+
+```
+获取一个实例变量信息
+Ivar class_getInstanceVariable(Class cls, const char *name)
+拷贝实例变量列表（最后需要调用free释放）
+Ivar *class_copyIvarList(Class cls, unsigned int *outCount)
+设置和获取成员变量的值
+void object_setIvar(id obj, Ivar ivar, id value)
+id object_getIvar(id obj, Ivar ivar)
+动态添加成员变量（已经注册的类是不能动态添加成员变量的）
+BOOL class_addIvar(Class cls, const char * name, size_t size, uint8_t alignment, const char * types)
+获取成员变量的相关信息
+const char *ivar_getName(Ivar v)
+const char *ivar_getTypeEncoding(Ivar v)
+```
+
+##### 属性
+
+```
+获取一个属性
+objc_property_t class_getProperty(Class cls, const char *name)
+拷贝属性列表（最后需要调用free释放）
+objc_property_t *class_copyPropertyList(Class cls, unsigned int *outCount)
+动态添加属性
+BOOL class_addProperty(Class cls, const char *name, const objc_property_attribute_t *attributes, unsigned int attributeCount)
+动态替换属性
+void class_replaceProperty(Class cls, const char *name, const objc_property_attribute_t *attributes, unsigned int attributeCount)
+获取属性的一些信息
+const char *property_getName(objc_property_t property)
+const char *property_getAttributes(objc_property_t property)
+```
+
+##### 方法
+
+```objc
+获得一个实例方法、类方法
+Method class_getInstanceMethod(Class cls, SEL name)
+Method class_getClassMethod(Class cls, SEL name)
+方法实现相关操作
+IMP class_getMethodImplementation(Class cls, SEL name) 
+IMP method_setImplementation(Method m, IMP imp)
+void method_exchangeImplementations(Method m1, Method m2) 
+拷贝方法列表（最后需要调用free释放）
+Method *class_copyMethodList(Class cls, unsigned int *outCount)
+动态添加方法
+BOOL class_addMethod(Class cls, SEL name, IMP imp, const char *types)
+动态替换方法
+IMP class_replaceMethod(Class cls, SEL name, IMP imp, const char *types)
+获取方法的相关信息（带有copy的需要调用free去释放）
+SEL method_getName(Method m)
+IMP method_getImplementation(Method m)
+const char *method_getTypeEncoding(Method m)
+unsigned int method_getNumberOfArguments(Method m)
+char *method_copyReturnType(Method m)
+char *method_copyArgumentType(Method m, unsigned int index)
+选择器相关
+const char *sel_getName(SEL sel)
+SEL sel_registerName(const char *str)
+用block作为方法实现
+IMP imp_implementationWithBlock(id block)
+id imp_getBlock(IMP anImp)
+BOOL imp_removeBlock(IMP anImp)
+```
+
 ## Runloop
 
 #### RunLoop概念
@@ -1386,11 +1683,32 @@ UIApplicationMain函数一直没有返回，而是不断地接收处理消息以
 RunLoop通过`mach_msg()`函数接收、发送消息。它的本质是调用函数`mach_msg_trap()`，相当于是一个系统调用，会触发内核状态切换。在用户态调用 `mach_msg_trap()`时会切换到内核态；内核态中内核实现的`mach_msg()`函数会完成实际的工作。
  即基于port的source1，监听端口，端口有消息就会触发回调；而source0，要手动标记为待处理和手动唤醒RunLoop
 
+Source0
+
+- 触摸事件处理
+- performSelector:onThread:
+
+Source1
+
+- 基于Port的线程间通信
+- 系统事件捕捉
+
+Timers
+
+- NSTimer
+- performSelector:withObject:afterDelay:
+
+Observers
+
+- 用于监听RunLoop的状态
+- UI刷新（BeforeWaiting）
+- Autorelease pool（BeforeWaiting）
+
 [Mach消息发送机制](https://www.jianshu.com/p/a764aad31847)
  大致逻辑为：
- 1、通知观察者 RunLoop 即将启动。
- 2、通知观察者即将要处理Timer事件。
- 3、通知观察者即将要处理source0事件。
+ 1、通知Observers：RunLoop 即将启动。
+ 2、通知Observers：即将要处理Timers事件。
+ 3、通知观察者：即将要处理source0事件。
  4、处理source0事件。
  5、如果基于端口的源(Source1)准备好并处于等待状态，进入步骤9。
  6、通知观察者线程即将进入休眠状态。
@@ -1408,7 +1726,7 @@ RunLoop通过`mach_msg()`函数接收、发送消息。它的本质是调用函�
 - 如果输入源启动，传递相应的消息。
 - 如果RunLoop被显示唤醒而且时间还没超时，重启RunLoop。进入步骤2
 
-10、通知观察者RunLoop结束
+10、通知Observers: 退出Loop
 
 ![](./reviewimgs/objc_runloop)
 
@@ -1419,6 +1737,8 @@ RunLoop通过`mach_msg()`函数接收、发送消息。它的本质是调用函�
 - RunLoop保存在一个全局的Dictionary里，线程作为key，RunLoop作为value
 
 - 线程刚创建时并没有RunLoop对象，RunLoop会在第一次获取它时创建
+
+- RunLoop会在线程结束时销毁
 
 - 主线程的RunLoop已经自动获取（创建），子线程默认没有开启RunLoop
 
@@ -1724,7 +2044,9 @@ class AutoreleasePoolPage {
 
 - iOS在主线程的Runloop中注册了2个Observer
   - 第1个Observer监听了`kCFRunLoopEntry`事件，会调用`objc_autoreleasePoolPush()`
-  - 第2个Observer 监听了`kCFRunLoopBeforeWaiting`事件，会调用`objc_autoreleasePoolPop()、objc_autoreleasePoolPush()`；监听了`kCFRunLoopBeforeExit`事件，会调用`objc_autoreleasePoolPop()`  **autorelease 对象是在 runloop 的即将进入休眠时进行释放的**
+  - 第2个Observer
+    -  监听了`kCFRunLoopBeforeWaiting`事件，会调用`objc_autoreleasePoolPop()、objc_autoreleasePoolPush()`；
+    - 监听了`kCFRunLoopBeforeExit`事件，会调用`objc_autoreleasePoolPop()`  **autorelease 对象是在 runloop 的即将进入休眠时进行释放的**
 - `objc_autoreleasePoolPop()`调用时候会给 pool 中的对象发送一次 release 消息
 
 #### 子线程默认不会开启 Runloop，那出现 Autorelease 对象如何处理？不手动处理会内存泄漏吗？
@@ -1753,6 +2075,21 @@ for (int i= 0; i< 1000000; i++) {
 
 - 第一个内存会暴涨，str对象会不停的创建。由于是类方法，会加入到自动释放池，会延迟释放造成内存暴涨，使用@autoreleasepool 解决
 - 第二个内存固定，会使用 Tagged Pointer 将值存在str 变量地址中，存在栈空间地址中,，出了作用域会自动销毁
+
+## 关联对象
+
+![img](./reviewimgs/objc_association0.png)
+
+![img](./reviewimgs/objc_association.png)
+
+#### key的几种形式
+
+- const void * name;  不推荐
+  - 其实就是个0，如果还定义了其他的key，再取出来会错乱
+  - 其次如果在其他地方声明了extern name；那么也可以访问name。可以添加static
+- static const char name；使用的时候使用  &name；不推荐
+- @selector
+- _cmd
 
 ## 程序启动过程优化
 
@@ -1849,299 +2186,14 @@ for (int i= 0; i< 1000000; i++) {
   8. 单例使用不易过多
   9. 线程最大并发数
 
-## 性能优化
-
-#### 什么是CPU和GPU
-
-- CPU (Central Processing Unit，中央处理器 )
-
-  - 对象的创建和销毁、对象属性的调整、布局计算、文本的计算和排版、图片的格式转换和解码、图像的绘制 (Core Graphics)
-
-- GPU (Graphics Processing Unit，图形处理器 )
-
-  - 纹理的渲染
-
-
-#### 卡顿原因
-
-- CPU处理后GPU处理,若垂直同步信号早于GPU处理的速度那么会形成掉帧问题
-
-- 在 iOS中有双缓存机制，有前帧缓存、后帧缓存
-
-#### 卡顿优化 - CPU
-
-- 尽量使用轻量级的对象，比如用不到事件处理的地方，可以考虑使用CALayer 替代 UIView
-  - UIView和CALayer的区别？
-    - CALayer是UIView的一个成员
-    - CALayer是专门用来显示东西的
-    - UIView是用来负责监听点击事件等
-- 不要频繁的调用UIView的相关属性，比如frame、bounds、transform等属性，尽量减少不必要的修改。
-- 尽量提前计算好布局，在有需要时一次性调整好对应的属性，不要多次修改属性。
-- Autolayout会比直接设置frame消耗更多的CPU资源
-- 图片的size最好跟UIImageView的size保持一致
-  - 因为如果超出或者UIImageView会对图片进行伸缩的处理
-- 控制线程的最大并发数量
-- 尽量把一些耗时的操作放到子线程
-  - 文本处理（储存计算和绘制）
-  - 图片处理（解码、绘制）
-
-#### 卡顿优化 - GPU
-
-- 尽量减少视图数量和层次
-- 尽量避免短时间内大量图片的显示，尽可能将多张图片合成一张进行显示
-- GPU能处理的最大纹理尺寸是4096x4096，一旦超过这个尺寸，机会占用CPU资源进行处理，所以纹理尽量不要超过这个尺寸。
-- 减少透明视图，不透明的就设置opaque为YES
-- 尽量避免离屏渲染
-
-#### 离屏渲染
-
-- 在OpenGL中，GPU有2中渲染方式
-
-  - On-Screen Rendering: 当前屏幕渲染，在当前用于显示的屏幕缓冲区进行渲染操作。
-  - Off-Screen Rendering: 离屏渲染，在当前屏幕缓冲区以外新开辟一个缓冲区进行渲染操作
-
-- 离屏渲染消耗性能原因：
-
-  - 需要创建新的缓冲区
-  - 离屏渲染的整个过程，需要多次切换上下文环境，先是从当前屏幕（On-Screen）切换到离屏（Off-Screen）；等到离屏渲染结束后，将离屏缓冲区的渲染结果显示到屏幕上，有需要将上下文环境从离屏切换到当前屏幕
-
-- 哪些操作会触发离屏渲染
-
-  - 光栅化  layer.shouldRasterize = YES;
-
-  - 遮罩，layer.mask =
-
-  - 圆角，同时设置layer.maskToBounds = YES、layer.cornerRadius大于0
-
-    - 考虑通过CoreGraphics绘制圆角，或者美工直接提供。
-- 设置圆角的几种方法
-  
-    - 第一种方法:通过设置layer的属性
-    
-      ```objective-c
-      imageView.layer.masksToBounds = YES;
-      [self.view addSubview:imageView];
-      ```
-    
-  - 第二种方法:使用贝塞尔曲线UIBezierPath和Core Graphics框架画出一个圆角
-  
-    ```objc
-    UIImageView *imageView = [[UIImageView alloc]initWithFrame:CGRectMake(100, 100, 100, 100)];
-    imageView.image = [UIImage imageNamed:@"1"];
-    //开始对imageView进行画图
-    UIGraphicsBeginImageContextWithOptions(imageView.bounds.size, NO, 1.0);
-    //使用贝塞尔曲线画出一个圆形图
-    [[UIBezierPath bezierPathWithRoundedRect:imageView.bounds cornerRadius:imageView.frame.size.width] addClip];
-    [imageView drawRect:imageView.bounds];
-    
-    imageView.image = UIGraphicsGetImageFromCurrentImageContext();
-     //结束画图
-    UIGraphicsEndImageContext();
-    [self.view addSubview:imageView];
-    ```
-  
-  - 第三种方法:使用CAShapeLayer和UIBezierPath设置圆角
-  
-    ```objective-c
-    #import "ViewController.h"
-    @interface ViewController ()
-    @end
-    @implementation ViewController
-    
-    - (void)viewDidLoad {
-     [super viewDidLoad];
-    UIImageView *imageView = [[UIImageView alloc]initWithFrame:CGRectMake(100, 100, 100, 100)];
-    imageView.image = [UIImage imageNamed:@"1"];
-    UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:imageView.bounds byRoundingCorners:UIRectCornerAllCorners cornerRadii:imageView.bounds.size];
-    
-    CAShapeLayer *maskLayer = [[CAShapeLayer alloc]init];
-    //设置大小
-    maskLayer.frame = imageView.bounds;
-    //设置图形样子
-    maskLayer.path = maskPath.CGPath;
-    imageView.layer.mask = maskLayer;
-    [self.view addSubview:imageView];
-    }
-    推荐第三种方式，对内存的消耗最少，渲染速度快
-    ```
-  
-  - 阴影， layer.shadowXXX
-  
-    - 如果设置了layer.shadowPath就不会产生
-
-#### 如果检测离屏渲染
-
-- 模拟器debug-选中color Offscreen - Renderd离屏渲染的图层高亮成黄 可能存在性能问题
-- 真机Instrument-选中Core Animation-勾选Color Offscreen-Rendered Yellow
-
-**离屏渲染的触发方式**
-
-设置了以下属性时，都会触发离屏绘制：
-
-1、layer.shouldRasterize（光栅化）
-
-光栅化概念：将图转化为一个个栅格组成的图象
-
-光栅化特点：每个元素对应帧缓冲区中的一像素
-
-2、masks（遮罩）
-
-3、shadows（阴影）
-
-4、edge antialiasing（抗锯齿）
-
-5、group opacity（不透明）
-
-6、复杂形状设置圆角等
-
-7、渐变
-
-8、drawRect
-
-例如我们日程经常打交道的TableViewCell,因为TableViewCell的重绘是很频繁的（因为Cell的复用）,如果Cell的内容不断变化,则Cell需要不断重绘,如果此时设置了cell.layer可光栅化。则会造成大量的离屏渲染,降低图形性能。
-
-如果将不在GPU的当前屏幕缓冲区中进行的渲染都称为离屏渲染，那么就还有另一种特殊的“离屏渲染”方式：CPU渲染。如果我们重写了drawRect方法，并且使用任何Core Graphics的技术进行了绘制操作，就涉及到了CPU渲染。整个渲染过程由CPU在App内同步地完成，渲染得到的bitmap最后再交由GPU用于显示。
-
-现在摆在我们面前得有三个选择：当前屏幕渲染、离屏渲染、CPU渲染，该用哪个呢？这需要根据具体的使用场景来决定。
-
-**尽量使用当前屏幕渲染**
-
-鉴于离屏渲染、CPU渲染可能带来的性能问题，一般情况下，我们要尽量使用当前屏幕渲染。
-
-**离屏渲染 VS CPU渲染**
-
-由于GPU的浮点运算能力比CPU强，CPU渲染的效率可能不如离屏渲染；但如果仅仅是实现一个简单的效果，直接使用CPU渲染的效率又可能比离屏渲染好，毕竟离屏渲染要涉及到缓冲区创建和上下文切换等耗时操作
-
-UIButton 的 masksToBounds = YES又设置setImage、setBackgroundImage、[button setBackgroundColor:[UIColor colorWithPatternImage:[UIImage imageNamed:@"btn_selected"]]];
-
-下发生离屏渲染，但是[button setBackgroundColor:[UIColor redColor]];是不会出现离屏渲染的
-
-关于 UIImageView,现在测试发现(现版本: iOS10),在性能的范围之内,给UIImageView设置圆角是不会触发离屏渲染的,但是同时给UIImageView设置背景色则肯定会触发.触发离屏渲染跟 png.jpg格式并无关联
-
-日常我们使用layer的两个属性，实现圆角
-
-imageView.layer.cornerRaidus = CGFloat(10);
-
-imageView.layer.masksToBounds = YES;
-
-这样处理的渲染机制是GPU在当前屏幕缓冲区外新开辟一个渲染缓冲区进行工作，也就是离屏渲染，这会给我们带来额外的性能损耗。如果这样的圆角操作达到一定数量，会触发缓冲区的频繁合并和上下文的的频繁切换，性能的代价会宏观地表现在用户体验上——掉帧
-
-#### 卡顿检测
-
-- 平时所说的“卡顿”主要是因为在主线程执行了比较耗时的操作
-- 可以添加Observer到主线程RunLoop中，通过监听RunLoop状态切换的耗时，以达到监控卡顿的目的
-- 参考代码：[GitHub - UIControl/LXDAppFluecyMonitor](https://github.com/UIControl/LXDAppFluecyMonitor)
-
-#### 耗电优化
-
-- 耗电来源
-
-  - CPU处理  Processing
-  - 网络     Networking
-  - 定位     Location
-  - 图像     Graphice
-
-- 尽可能降低CPU、GPU的功耗
-
-- 少用定时器
-
-- 优化I/O操作  文件读写
-
-  - 尽量不要频繁的写入小数据，最好批量一次性写入
-  - 读写大量重要的数据的时候，考虑使用dispatch_io，其提供了基于GCD的异步操作文件I/O的API。用dispatch_io系统会优化磁盘访问
-  - 数据量比较大的，建议使用数据库（比如SQList、CoreData）
-
-- 网络优化
-
-  - 减少压缩网络数据 （XML -> JSON -> ProtoBuf），如果可能建议使用 ProtoBuf
-  - 如果请求的返回数据相同，可以使用 NSCache 进行缓存
-  - 使用断点续传，否则网络不稳定时可能多次传输相同的内容
-  - 网络不可用时尽量不要尝试执行网络请求
-  - 让用户可以取消长时间运行或者网络速度很慢的网络操作，设置合理的超时时间
-  - 批量传输，比如：下载视频流时，不要传输很小的数据包，直接下载整个文件或者一大块一大块的下载，如果下载广告，一次性多下载一些，然后慢慢展示。如果下载电子邮件，一次下载多封,不要一封一封的下载。
-
-- 定位优化
-
-  - 如果只需要快速确定用户位置，最好用CLLocationManager的requestLocation方法。定位完成之后，会自动让定位硬件断电
-  - 如果不是导航应用，尽量不要实时更新位置，定位完毕之后就关掉定位服务
-  - 尽量降低定位的精准度，如果没有需求的话尽量使用低精准度的定位。随软件自身要求
-  - 如果需要后台定位，尽量设置pausesLocationUpdatasAutomatically为YES，如果用户不太可能移动的时候系统会自动暂停位置更新
-  - 尽量不要使用 startMonitoringSignificantLocationChanges，优先考虑 startMonitoringForRegion
-
-
-#### 安装包瘦身
-
-- 安装包（IPA）主要由可执行文件、资源组成
-
-- 资源（图片、音频、视频等）
-
-  - 采用无损压缩
-  - 去除没用到的资源文件（[GitHub -查询多余的资源文件_下载链接](https://github.com/tinymind/LSUnusedResources)）
-
-- 可执行文件瘦身
-
-  - 编译器优化
-
-    - Strip Linked Product、Make Strings Read-Only、Symbols Hidden by Default设置为YES
-    - 去掉异常支持，Enable C++ Exceptions、Enable Objective-C Exceptions设置为NO，Other C Flags添加-fno-exceptions
-
-  - 利用AppCode（[AppCode下载链接](https://www.jetbrains.com/objc/)）检测未使用的代码:
-
-    - 菜单栏 -> Code -> inspect Code
-
-  - 编写LLVM插件检测出重复代码、未被调用的代码
-
-  - 生成LinkMap文件
-
-    可借助第三方工具解析LinkMap文件 [GitHub -检查每个类占用空间大小工具_下载链接](https://github.com/huanxsd/LinkMap)
-
-#### 你知道有哪些情况会导致app卡顿，分别可以用什么方法来避免？（知道多少说多少））
-
-1. 主线程中进化IO或其他耗时操作，解决：把耗时操作放到子线程中操作
-2. GCD并发队列短时间内创建大量任务，解决：使用线程池
-3. 文本计算，解决：把计算放在子线程中避免阻塞主线程
-4. 大量图像的绘制，解决：在子线程中对图片进行解码之后再展示
-5. 高清图片的展示，解法：可在子线程中进行下采样处理之后再展示
-
-#### App网络层有哪些优化策略？
-
-1. 优化DNS解析和缓存
-2. 对传输的数据进行压缩，减少传输的数据
-3. 使用缓存手段减少请求的发起次数
-4. 使用策略来减少请求的发起次数，比如在上一个请求未着地之前，不进行新的请求
-5. 避免网络抖动，提供重发机制
-
-#### 列表卡顿的原因可能有哪些？你平时是怎么优化的？
-
-- 最常用的就是cell的重用， 注册重用标识符
-  - 如果不重用cell时，每当一个cell显示到屏幕上时，就会重新创建一个新的cell；
-
-  - 如果有很多数据的时候，就会堆积很多cell。
-
-  - 如果重用cell，为cell创建一个ID，每当需要显示cell 的时候，都会先去缓冲池中寻找可循环利用的cell，如果没有再重新创建cell
-- 避免cell的重新布局
-  - cell的布局填充等操作 比较耗时，一般创建时就布局好
-  - 如可以将cell单独放到一个自定义类，初始化时就布局好
-- 提前计算并缓存cell的属性及内容
-
-  - 当我们创建cell的数据源方法时，编译器并不是先创建cell 再定cell的高度
-
-  - 而是先根据内容一次确定每一个cell的高度，高度确定后，再创建要显示的cell，滚动时，每当cell进入屏幕区都会计算高度，提前估算高度告诉编译器，编译器知道高度后，紧接着就会创建cell，这时再调用高度的具体计算方法，这样可以方式浪费时间去计算显示以外的cell
-- 减少cell中控件的数量
-  - 尽量使cell得布局大致相同，不同风格的cell可以使用不用的重用标识符
-  - 初始化时添加控件，不适用的可以先隐藏
-- 不要使用ClearColor，无背景色，透明度也不要设置为0，否则渲染耗时比较长
-- 使用局部更新，如果只是更新某组的话，使用reloadSection进行局部更新
-- 加载网络数据，下载图片，使用异步加载，并缓存
-- 懒加载,不要一次性创建所有的subview,而是需要时才创建.
-- 按需加载cell，cell滚动很快时，只加载范围内的cell
-- 不要实现无用的代理方法，tableView只遵守两个协议
-- 缓存行高：estimatedHeightForRow不能和HeightForRow里面的layoutIfNeed同时存在，这两者同时存在才会出现“窜动”的bug。所以我的建议是：只要是固定行高就写预估行高来减少行高调用次数提升性能。如果是动态行高就不要写预估方法了，用一个行高的缓存字典来减少代码的调用次数即可
-- 不要做多余的绘制工作。在实现drawRect:的时候，它的rect参数就是需要绘制的区域，这个区域之外的不需要进行绘制。例如上例中，就可以用CGRectIntersectsRect、CGRectIntersection或CGRectContainsRect判断是否需要绘制image和text，然后再调用绘制方法。
-- 预渲染图像。当新的图像出现时，仍然会有短暂的停顿现象。解决的办法就是在bitmap context里先将其画一遍，导出成UIImage对象，然后再绘制到屏幕
-- 避免庞大的xib,storyBoard,尽量使用纯代码开发
-- 使用正确的数据结构来存储数据
-  - NSArray,使用index来查找很快(插入和删除很慢)
-  - 字典,使用键来查找很快
-
-  - NSSets,是无序的,用键查找很快,插入/删除很快
+## 常用LLDB指令
+
+- `print，p`: 打印
+- `po`：打印对象
+- 读取内存
+  - `memory read/数量格式字节数 内存地址` 
+    - 格式：x 16进制，f 浮点，d 十进制
+    - 字节大小：b byte 1字节，h half word 2字节，w word 4字节，g giant word 8字节
+  - `x/数量格式字节数 内存地址`
+- 设置内存
+  - `memory write 内存地址 数值`
