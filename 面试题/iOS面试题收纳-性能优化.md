@@ -283,7 +283,7 @@ imageView.layer.masksToBounds = YES;
 
 - APP启动时间的优化，主要是针对冷启动进行优化
 - 通过添加环境变量可以打印出APP的启动时间分析（Edit scheme -> Run -> Arguments）
-  - DYLD_PRINT_STATISTICS设置为1
+  - `DYLD_PRINT_STATISTICS`设置为1
   - 如果需要更详细的信息，那就将DYLD_PRINT_STATISTICS_DETAILS设置为1
 
 ## 冷启过程
@@ -295,10 +295,10 @@ imageView.layer.masksToBounds = YES;
   - 装载APP的可执行文件，同时会递归加载所有依赖的动态库
   - 当dyld把可执行文件、动态库都装载完毕后，会通知Runtime进行下一步的处理
 - 启动APP时，runtime所做的事情有
-  - 调用map_images进行可执行文件内容的解析和处理
-  - 在load_images中调用call_load_methods，调用所有Class和Category的+load方法
+  - 调用`map_images`进行可执行文件内容的解析和处理
+  - 在`load_images`中调用`call_load_methods`，调用所有Class和Category的+load方法
   - 进行各种objc结构的初始化（注册Objc类 、初始化类对象等等）
-  - 调用C++静态初始化器和__attribute__((constructor))修饰的函数
+  - 调用C++静态初始化器和`__attribute__((constructor))`修饰的函数
 
 - 到此为止，可执行文件和动态库中所有的符号(Class，Protocol，Selector，IMP，…)都已经按格式成功加载到内存中，被runtime 所管理
 

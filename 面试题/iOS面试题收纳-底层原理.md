@@ -361,23 +361,23 @@ self->_myBool,不会触发KVO，必须通过KVC或者setter方法才会触发
 
 #### KVC(Key-value coding)
 
+`KVC`可以通过`key`直接访问对象的属性或者给对象的属性赋值，这样可以在运行时动态的访问或修改对象的属性
+
 ```objectivec
 -(id)valueForKey:(NSString *)key;
-
 -(void)setValue:(id)value forKey:(NSString *)key;
 ```
 
-KVC就是指iOS的开发中，可以允许开发者通过Key名直接访问对象的属性，或者给对象的属性赋值。而不需要调用明确的存取方法。这样就可以在运行时动态地访问和修改对象的属性。而不是在编译时确定，这也是iOS开发中的黑魔法之一。很多高级的iOS开发技巧都是基于KVC实现的
+**当调用setValue:属性值 forKey:@”name“的代码时，底层的执行机制如下：**
 
-**当调用setValue：属性值forKey：@”name“的代码时，，底层的执行机制如下：**
-
-- 程序优先调用set<Key>:属性值方法，代码通过setter方法完成设置。注意，这里的<key>是指成员变量名，首字母大小写要符合KVC的命名规则，下同
-- 如果没有找到setName：方法，KVC机制会检查+ (BOOL)accessInstanceVariablesDirectly方法有没有返回YES，默认该方法会返回YES，如果你重写了该方法让其返回NO的话，那么在这一步KVC会执行setValue：forUndefinedKey：方法，不过一般开发者不会这么做。所以KVC机制会搜索该类里面有没有名为<key>的成员变量，无论该变量是在类接口处定义，还是在类实现处定义，也无论用了什么样的访问修饰符，只在存在以<key>命名的变量，KVC都可以对该成员变量赋值。
-- 如果该类即没有set<key>：方法，也没有_<key>成员变量，KVC机制会搜索_is<Key>的成员变量。
-- 和上面一样，如果该类即没有set<Key>：方法，也没有_<key>和_is<Key>成员变量，KVC机制再会继续搜索<key>和is<Key>的成员变量。再给它们赋值。
+- 程序首先尝试调用 `set<Key>:属性值` 方法，通过setter方法完成设置
+  - 注意：这里的<key>是指成员变量名，首字母大小写要符合KVC的命名规则，下同
+- 如果没有找到setName：方法，KVC机制会检查`+ (BOOL)accessInstanceVariablesDirectly`方法
+  - 该方法默认会返回YES，KVC机制会搜索该类里面有没有名为<key>的成员变量，无论该变量是在类接口处定义，还是在类实现处定义，也无论用了什么样的访问修饰符，只要存在以<key>命名的变量，KVC都可以对该成员变量赋值
+  - 如果你重写了该方法让其返回NO的话，那么在这一步KVC会执行setValue：forUndefinedKey：方法
+- 如果该类既没有`set<key>：`方法，也没有`_<key>成员变量`，KVC机制会搜索`_is<Key>的成员变量`。
+- 如果该类既没有`set<Key>：`方法，也没有`_<key>和_is<Key>成员变量`，KVC机制再会继续搜索<key>和is<Key>的成员变量。再给它们赋值。
 - 如果上面列出的方法或者成员变量都不存在，系统将会执行该对象的setValue：forUndefinedKey：方法，默认是抛出异常。
-
-即如果没有找到Set<Key>方法的话，会按照_key，_iskey，key，iskey的顺序搜索成员并进行赋值操作。
 
 如果开发者想让这个类禁用KVC，那么重写+ (BOOL)accessInstanceVariablesDirectly方法让其返回NO即可，这样的话如果KVC没有找到set<Key>:属性名时，会直接用setValue：forUndefinedKey：方法。
 
@@ -1013,13 +1013,48 @@ self.block = ^{
 
 ## Runtime
 
+#### isa位域详解
+
+- 在arm64架构之前，isa就是一个普通的指针，存储着Class、Meta-Class对象的内存地址
+
+- 从arm64架构开始，对isa进行了优化，变成了一个共用体（union）结构，还使用位域来存储更多的信息
+
+  - nonpointer
+    - 0，代表普通的指针，存储着Class、Meta-Class对象的内存地址
+    - 1，代表优化过，使用位域存储更多的信息
+  - has_assoc
+    - 是否有设置过关联对象，如果没有，释放时会更快
+  - has_cxx_dtor
+    - 是否有C++的析构函数（.cxx_destruct），如果没有，释放时会更快
+  - shiftcls
+    - 存储着Class、Meta-Class对象的内存地址信息
+  - magic
+    - 用于在调试时分辨对象是否未完成初始化
+  - weakly_referenced
+    - 是否有被弱引用指向过，如果没有，释放时会更快
+  - deallocating
+    - 对象是否正在释放
+
+  - extra_rc
+    - 里面存储的值是引用计数器减1
+
+  - has_sidetable_rc
+    - 引用计数器是否过大无法存储在isa中
+    - 如果为1，那么引用计数会存储在一个叫SideTable的类的属性中
+
+- 
+
+#### objc_class结构
+
+![img](./reviewimgs/objc_class_jiegou.png)
+
 #### 说一下对 `class_rw_t` 的理解
 
 `rw`代表可读可写。
 
-`ObjC` 类中的属性、方法还有遵循的协议等信息都保存在 `class_rw_t` 中：
-
 class_rw_t里面的methods、properties、protocols是二维数组，是可读可写的，包含了类的初始内容、分类的内容
+
+![img](./reviewimgs/objc_class_rw.png)
 
 ```objc
 // 可读可写
@@ -1058,6 +1093,8 @@ struct class_rw_t {
 
 class_ro_t里面的baseMethodList、baseProtocols、ivars、baseProperties是一维数组，是只读的，包含了类的初始内容
 
+![img](./reviewimgs/objc_class_ro.png)
+
 ```objc
 struct class_ro_t {
     uint32_t flags;
@@ -1092,9 +1129,9 @@ method_t 是对方法/函数的封装
 
 ```objective-c
 struct method_t {
-SEL name; // 函数名
-const char *types; 编码（返回值类型，参数类型）
-IMP imp; // 指向函数的指针（函数地址）
+	SEL name; // 函数名
+	const char *types; 编码（返回值类型，参数类型）
+	IMP imp; // 指向函数的指针（函数地址）
 }
 ```
 
@@ -1111,6 +1148,8 @@ IMP imp; // 指向函数的指针（函数地址）
   `typedef struct objc_selector *SEL;`
 
 - types包含了函数返回值、参数编码的字符串
+
+  - ![img](./reviewimgs/objc_method_typecoding.png)
 
 #### 方法缓存
 
@@ -1137,6 +1176,31 @@ struct cache_t {
 
 - OC中的方法调用最后都是objc_msgSend函数调用，给receiver(方法调用者)发送了一条消息(selector方法名)
 - objc_msgSend底层有三大模块，消息发送(当前类、父类中查找)、动态方法解析、消息转发
+
+#### objc_msgSend源码阅读顺序
+
+- objc-msg-arm64.s
+  - ENTRY _objc_msgSend
+  - b.le	LNilOrTagged
+  - CacheLookup NORMAL
+  - .macro CacheLookup
+  - .macro CheckMiss
+  - STATIC_ENTRY __objc_msgSend_uncached
+  - .macro MethodTableLookup
+  - __class_lookupMethodAndLoadCache3
+- objc-runtime-new.mm
+  - _class_lookupMethodAndLoadCache3
+  - lookUpImpOrForward
+  - getMethodNoSuper_nolock、search_method_list、log_and_fill_cache
+  - cache_getImp、log_and_fill_cache、getMethodNoSuper_nolock、log_and_fill_cache
+  - _class_resolveInstanceMethod
+  - _objc_msgForward_impcache
+- objc-msg-arm64.s
+  - STATIC_ENTRY __objc_msgForward_impcache
+  - ENTRY __objc_msgForward
+
+- Core Foundation
+  - `__forwarding__`（不开源）
 
 #### 消息发送机制流程
 
@@ -1629,6 +1693,26 @@ id imp_getBlock(IMP anImp)
 BOOL imp_removeBlock(IMP anImp)
 ```
 
+#### LLVM-IR
+
+- Objective-C在变为机器代码之前，会被LLVM编译器转换为中间代码（Intermediate Representation）
+- 可以使用以下命令行指令生成中间代码
+  - clang -emit-llvm -S main.m
+
+- 语法简介
+  - @ - 全局变量
+  - % - 局部变量
+  - alloca - 在当前执行的函数的堆栈帧中分配内存，当该函数返回到其调用者时，将自动释放内存
+  - i32 - 32位4字节的整数
+  - align - 对齐
+  - load - 读出，store 写入
+  - icmp - 两个整数值比较，返回布尔值
+  - br - 选择分支，根据条件来转向label，不根据条件跳转的话类似 goto
+  - label - 代码标签
+  - call - 调用函数
+
+- 具体可以参考官方文档：https://llvm.org/docs/LangRef.html
+
 ## Runloop
 
 #### RunLoop概念
@@ -1674,7 +1758,21 @@ UIApplicationMain函数一直没有返回，而是不断地接收处理消息以
 - 可以提高程序性能，节约CPU资源，有事情做就做，没事情做就让线程休眠
 
   应用范畴:
-  定时器，事件响应，手势识别，界面刷新以及autoreleasePool 等等
+  定时器(Timer)，PerformSelector，GCD Async Main  Quue，事件响应，手势识别，界面刷新以及
+  
+  网络请求、autoreleasePool 等等
+
+#### RunLoop对象
+
+- iOS中有2套API来访问和使用RunLoop
+  - Foundation：NSRunLoop
+  - Core Foundation：CFRunLoopRef
+
+- NSRunLoop和CFRunLoopRef都代表着RunLoop对象
+  - NSRunLoop是基于CFRunLoopRef的一层OC包装
+  - CFRunLoopRef是开源的
+
+- https://opensource.apple.com/tarballs/CF/
 
 #### runloop内部实现逻辑
 
@@ -1812,14 +1910,14 @@ Observers
 - 一个RunLoop包含若干个Mode，每个Mode又包含若干个Source0/Source1/Timer/Observer
 - RunLoop启动时只能选择其中一个Mode，作为currentMode
 - 如果需要切换Mode，只能退出当前Loop，再重新选择一个Mode进入
-- 不同组的Source0/Source1/Timer/Observer能分隔开来，互不影响
+  - 不同组的Source0/Source1/Timer/Observer能分隔开来，互不影响
 - 如果Mode里没有任何Source0/Source1/Timer/Observer，RunLoop会立马退出
 - OS 中公开暴露出来的只有 `NSDefaultRunLoopMode` 和 `NSRunLoopCommonModes`。 `NSRunLoopCommonModes` 实际上是一个 Mode 的集合，默认包括 `NSDefaultRunLoopMode` 和 `NSEventTrackingRunLoopMode`
 - 如果视图滑动会切换到  UITrackingRunLoopMode,如果需要在多种 mode 下运行则需要手动设置 kCFRunLoopCommonModes;
   - kCFRunLoopDefaultMode：App的默认Mode，通常主线程是在这个Mode下运行
   - UITrackingRunLoopMode：界面跟踪 Mode，用于 ScrollView 追踪触摸滑动，保证界面滑动时不受其他 Mode 影响
   - UIInitializationRunLoopMode: 在刚启动 App 时第进入的第一个 Mode，启动完成后就不再使用，会切换到kCFRunLoopDefaultMode
-  - GSEventReceiveRunLoopMode: 接受系统事件的内部 Mode，通常用不
+  - GSEventReceiveRunLoopMode: 接受系统事件的内部 Mode，通常用不到
   - kCFRunLoopCommonModes: 这是一个占位用的Mode，作为标记kCFRunLoopDefaultMode和UITrackingRunLoopMode用，并不是一种真正的Mode
 
 #### 解释一下 `NSTimer`。
@@ -1891,7 +1989,10 @@ CADisplayLink` 是一个和屏幕刷新率一致的定时器（但实际实现�
 #### RunLoop的数据结构
 
 `NSRunLoop(Foundation)`是`CFRunLoop(CoreFoundation)`的封装，提供了面向对象的API
- RunLoop 相关的主要涉及五个类：
+
+使用runloop是为了让线程保持激活状态
+
+RunLoop 相关的主要涉及五个类：
 
 `CFRunLoop`：RunLoop对象
  `CFRunLoopMode`：运行模式
@@ -1991,6 +2092,12 @@ CADisplayLink` 是一个和屏幕刷新率一致的定时器（但实际实现�
 
 ####  Autoreleasepool所使用的数据结构是什么？AutoreleasePoolPage结构体了解么？
 
+- 自动释放池的主要底层数据结构是：__AtAutoreleasePool、AutoreleasePoolPage
+- 调用了autorelease的对象最终都是通过AutoreleasePoolPage对象来管理的
+- 源码分析
+  - clang重写@autoreleasepool
+  - objc4源码：NSObject.mm
+
 Autoreleasepool是由多个AutoreleasePoolPage以双向链表的形式连接起来的， Autoreleasepool的基本原理：在每个自动释放池创建的时候，会在当前的AutoreleasePoolPage中设置一个标记位，在此期间，当有对象调用autorelsease时，会把对象添加到AutoreleasePoolPage中，若当前页添加满了，会初始化一个新页，然后用双向量表链接起来，并把新初始化的这一页设置为hotPage,当自动释放池pop时，从最下面依次往上pop，调用每个对象的release方法，直到遇到标志位。 AutoreleasePoolPage结构如下
 
 ```c
@@ -2022,6 +2129,7 @@ class AutoreleasePoolPage {
 - 一个`AutoreleasePoolPage`的空间被占满时，会新建一个`AutoreleasePoolPage`对象，连接链表，后来的`autorelease`对象在新的`page`加入
 - 调用push方法会将一个POOL_BOUNDARY入栈，并且返回其存放的内存地址
 - 调用pop方法时传入一个POOL_BOUNDARY的内存地址，会从最后一个入栈的对象开始发送release消息，直到遇到这个POOL_BOUNDARY
+- id *next指向了下一个能存放autorelease对象地址的区域  
 
 #### 释放时机
 
@@ -2090,6 +2198,86 @@ for (int i= 0; i< 1000000; i++) {
 - static const char name；使用的时候使用  &name；不推荐
 - @selector
 - _cmd
+
+### 内存管理
+
+#### 定时器
+
+- CADisplayLink、NSTimer会对target产生强引用，如果target又对它们产生强引用，那么就会引发循环引用
+
+- NSTimer依赖于RunLoop，如果RunLoop的任务过于繁重，可能会导致NSTimer不准时
+
+- 解决方案
+
+  - 使用block
+
+    ```
+    __weak typeof(self) weakSelf = self;
+    self.timer = [NSTimer scheduledTimerWithTimeInterval:2.0 repoeast:YES block:^(NSTimer * timer){
+    [weakSelf test];
+    }]
+    ```
+
+  - 使用代理对象
+
+    ```
+    + (instancetype)proxyWithTarget:(id)target
+    {
+        // NSProxy对象不需要调用init，因为它本来就没有init方法
+        MJProxy *proxy = [MJProxy alloc];
+        proxy.target = target;
+        return proxy;
+    }
+    
+    - (NSMethodSignature *)methodSignatureForSelector:(SEL)sel
+    {
+        return [self.target methodSignatureForSelector:sel];
+    }
+    
+    - (void)forwardInvocation:(NSInvocation *)invocation
+    {
+        [invocation invokeWithTarget:self.target];
+    }
+    ```
+
+#### GCD定时器
+
+
+
+#### TaggedPointer
+
+- 从64bit开始，iOS引入了Tagged Pointer技术，用于优化NSNumber、NSDate、NSString等小对象的存储
+- 在没有使用Tagged Pointer之前， NSNumber等对象需要动态分配内存、维护引用计数等，NSNumber指针存储的是堆中NSNumber对象的地址值
+- 使用Tagged Pointer之后，NSNumber指针里面存储的数据变成了：Tag + Data，也就是将数据直接存储在了指针中
+- 当指针不够存储数据时，才会使用动态分配内存的方式来存储数据
+- objc_msgSend能识别Tagged Pointer，比如NSNumber的intValue方法，直接从指针提取数据，节省了以前的调用开销
+- 如何判断一个指针是否为Tagged Pointer？
+  - iOS平台，最高有效位是1（第64bit）
+  - Mac平台，最低有效位是1
+
+#### MRC&ARC
+
+- 在iOS中，使用引用计数来管理OC对象的内存
+- 一个新创建的OC对象引用计数默认是1，当引用计数减为0，OC对象就会销毁，释放其占用的内存空间
+- 调用retain会让OC对象的引用计数+1，调用release会让OC对象的引用计数-1
+- 内存管理的经验总结
+  - 当调用alloc、new、copy、mutableCopy方法返回了一个对象，在不需要这个对象时，要调用release或者autorelease来释放它
+  - 想拥有某个对象，就让它的引用计数+1；不想再拥有某个对象，就让它的引用计数-1
+
+- 可以通过以下私有函数来查看自动释放池的情况
+  - extern void _objc_autoreleasePoolPrint(void);
+
+#### copy
+
+![img](./reviewimgs/objc_copy_0.png)
+
+#### 引用计数的存储
+
+![img](./reviewimgs/objc_ref_0.png)
+
+#### weak指针原理
+
+#### autorelease原理
 
 ## 程序启动过程优化
 

@@ -333,8 +333,11 @@ Flutter API中**AnimatedBuilder**的示例包括: BottomSheet、ExpansionTile、
 
 
 
+### 布局规则
 
-
+首先，上层 widget 向下层 widget 传递约束条件；
+然后，下层 widget 向上层 widget 传递大小信息。
+最后，上层 widget 决定下层 widget 的位置。
 
 
 

@@ -196,7 +196,7 @@ class PriorityQueue {
     var array:[Int]
     //优先队列数据大小
     var size:Int
-
+    
     //初始化优先队列
     init() {
         //数组初始长度32
@@ -204,12 +204,12 @@ class PriorityQueue {
         //队列初始大小为0
         self.size = 0
     }
-
+    
     //MARK:队列扩容为原来的2倍
     func resize() {
         self.array += self.array
     }
-
+    
     //Mark:入队
     func  enQueue(_ key:Int) {
         //队列长度超出范围，扩容
@@ -221,7 +221,7 @@ class PriorityQueue {
         //上浮
         upAdjust()
     }
-
+    
     //Mark:出队
     func deQueue() -> Int {
         //获取堆顶元素
@@ -232,7 +232,7 @@ class PriorityQueue {
         downAdjust()
         return head
     }
-
+    
     //Mark:上浮操作
     func upAdjust() {
         var childIndex:Int = size - 1
@@ -248,7 +248,7 @@ class PriorityQueue {
         }
         array[childIndex] = temp
     }
-
+    
     //Mark:下沉操作
     func downAdjust() {
         // temp保存父节点值，用于最后的赋值
@@ -269,6 +269,6 @@ class PriorityQueue {
             parentIndex = childIndex
             childIndex = 2 * childIndex + 1
         }
-         array[parentIndex] = temp
+        array[parentIndex] = temp
     }
 }

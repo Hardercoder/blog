@@ -235,6 +235,8 @@ GCD多线程经常会使用 `dispatch_sync`和`dispatch_async`函数向指定队
 | 同步 | 没有开启新线程  串行执行任务 | 没有开启新线程 串行执行任务 | 没有开启新线程  串行执行任务 |
 | 异步 | 开启新线程  并行执行任务     | 开启新线程  串行执行任务    | 没有开启新线程  串行执行任务 |
 
+只要是同步函数或者是主队列，就不会开启线程，并且串行执行
+
 **使用sync函数往当前串行队列中添加任务，会卡住当前的串行队列（产生死锁）**
 
 #### 如何去理解GCD执行原理？
@@ -754,6 +756,10 @@ dispatch_async(serialQueue, ^{
 
 #### 多线程安全隐患的解决方案
 
+官方源码：https://github.com/apple/swift-corelibs-libdispatch
+
+GNUStep：http://www.gnustep.org/resources/downloads.php
+
 - 隐患造成原因：多个线程同时访问一个数据然后对数据进行操作
 
 - 解决方案：使用线程同步技术
@@ -830,17 +836,19 @@ dispatch_async(serialQueue, ^{
     - pthread_mutex 递归锁
 
       ```c
-      // 初始化锁的属性
+      // 递归锁：允许同一个线程对一把锁进行重复加锁
+      // 初始化属性
       pthread_mutexattr_t attr;
       pthread_mutexattr_init(&attr);
-      pthread_mutextattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-      //初始化锁
-      pthread_mutex_t mutex;
-      pthread_mutex_init(&mutex, &attr);
+      pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+      // 初始化锁
+      pthread_mutex_init(mutex, &attr);
+      // 销毁属性
+      pthread_mutexattr_destroy(&attr);
       ```
 
     - pthread_mutex条件
-
+  
       ```objc
       //初始化锁
       pthread_mutex_t mutex;
@@ -867,7 +875,7 @@ dispatch_async(serialQueue, ^{
     - 信号量的初始值，可以用来控制线程并发访问的最大数量
 
     - 信号量的初始值为1，代表同时只允许1条线程访问资源，保证线程同步
-
+  
       ```
       // 信号量的初始值
       int value = 1;
@@ -883,7 +891,7 @@ dispatch_async(serialQueue, ^{
   - dispatch_queue(DISPATCH_QUEUE_SERIAL)   串行队列
 
     - 直接使用GCD的串行队列，也是可以实现线程同步的
-
+  
       ```
       dispatch_queue_t queue = dispatch_queue_create("lock_queue", DISPATCH_QUEUE_SERIAL);
       dispatch_sync(queue, ^{});
@@ -906,11 +914,11 @@ dispatch_async(serialQueue, ^{
     - NSConditionLock是对NSCondition的进一步封装，可以设置具体的条件值
 
   - @synchronized          性能最差
-
+  
     - @synchronized是对mutex递归锁的封装
-    - 源码查看：objc4中的objc-sync.mm文件
+    - 源码查看：objc4中的`objc-sync.mm`文件
     - @synchronized(obj)内部会生成obj对应的递归锁，然后进行加锁、解锁操作
-
+  
 - 性能高低
 
   ```
@@ -938,7 +946,7 @@ dispatch_async(serialQueue, ^{
 
 #### atomic
 
-- atomic用于保证属性setter、getter的原子性操作，相当于在getter和setter内部加了线程同步的锁
+- atomic用于保证属性`setter、getter的原子性`操作，相当于在getter和setter内部加了线程同步的锁
 - 可以参考源码objc4的objc-accessors.mm
 - 它并不能保证使用属性的过程是线程安全的
 

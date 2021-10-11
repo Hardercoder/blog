@@ -4,10 +4,165 @@
 target 'Practice' do
   # Comment the next line if you don't want to use dynamic frameworks
   use_frameworks!
-
-  # Pods for Practice
-  pod 'Alamofire'
-#  pod 'Moya'
-  pod 'Kingfisher'
-
+  
+  # Pods for StudySwift
+  # 网络库
+  #  pod 'Alamofire'
+  # 对Alamofire的再次封装
+  pod 'Moya'
+  
+  # 加载图片库
+  #  pod 'Kingfisher'
+  # OC和Swift 图片加载库
+  # pod 'SDWebImage', '~> 5.0'
+  
+  # JSON解析库
+  pod 'SwiftyJSON'
+  
+  # 布局约束库
+  #  pod 'SnapKit'
+  # pod 'PureLayout'
+  
+  # 响应式框架
+  #  pod 'RxSwift', '6.2.0'
+  #  pod 'RxCocoa', '6.2.0'
+  # OC和Swift动态绑定库
+  # pod 'ReactiveCocoa', '~> 10.1'
+  
+  # 转场动画交互库
+  #  pod 'Hero'
+  
+  # 动画库
+  #  pod 'Spring'
+  
+  # 键盘处理库
+  #  pod 'IQKeyboardManagerSwift'
+  
+  # 生成颜色
+  #  pod 'ChameleonFramework/Swift'
+  
+  # 一款UI/UX 工具
+  #  pod 'Material'
+  
+  # 骨架占位图，非常nice
+  #  pod 'SkeletonView'
+  
+  # Swiftt超强扩展
+  pod 'SwifterSwift'
+  
+  # 可以折叠的cell
+  #  pod 'FoldingCell'
+  
+  # 各种形状的进度条
+  #  pod 'NVActivityIndicatorView'
+  
+  # 自定义的日历组件
+  #  pod 'FSCalendar'
+  
+  # 测试框架
+  #  pod 'Quick'
+  #  pod 'Nimble'
+  
+  # 字典转模型
+  #  pod 'ObjectMapper'
+  
+  # 消息弹框，和CWStatusNotification很像
+  # pod 'SwiftMessages'
+  
+  
+  # 加密算法
+  #  pod 'CryptoSwift'
+  
+  # 可动画的IB工具
+  #  pod 'IBAnimatable'
+  
+  # 资源管理和聚合工具
+  #  pod 'R.swift'
+  
+  # SQLite工具库
+  #  pod 'SQLite.swift'
+  
+  # 绚丽的Label
+  #  pod 'LTMorphingLabel'
+  
+  # 网络链接监控工具
+  #  pod 'ReachabilitySwift'
+  
+  # 分页展示工具
+  #  pod 'XLPagerTabStrip'
+  
+  # 钥匙链工具
+  #  pod 'KeychainAccess'
+  
+  # 侧边菜单
+  #  pod 'SideMenu'
+  
+  # 自定义动画库
+  #  pod 'lottie-ios'
+  # 画图表工具
+  #  pod 'Charts'
+  # 选择照片、视频等
+  #  pod 'ZLPhotoBrowser' # 微信样式
+  #  pod 'YPImagePicker' # Instagram样式
+  #  pod 'ImagePicker' # 纯工具
+  
+  
+  # 面向切面编程OC和Swift
+  # pod "Aspects"
+  
+  #
+  # pod 'RAMAnimatedTabBarController'
+  
+  
+  # 异步编程的库
+  # https://github.com/mxcl/PromiseKit
+  #  pod "PromiseKit", "~> 6.8"
+  
+  # 丰富的日期格式化工具
+  #  pod 'SwiftDate'
+  
+  
+  # 对Swift代码进行格式化
+  pod 'SwiftLint'
+  
+  # 各种资源集合
+  # https://github.com/vsouza/awesome-ios
+  # https://github.com/dkhamsing/open-source-ios-apps
+  # https://github.com/serhii-londar/open-source-mac-os-apps
+  # https://github.com/matteocrippa/awesome-swift
+  # https://github.com/ipader/SwiftGuide
+  # https://github.com/futurice/ios-good-practices
+  
+  
+  # 算法集合
+  # https://github.com/raywenderlich/swift-algorithm-club
+  
+  
+  # 开源完整App
+  # https://github.com/shadowsocks/ShadowsocksX-NG
+  # https://github.com/iina/iina
+  # https://github.com/mozilla-mobile/firefox-ios
+  # https://github.com/fullstackio/FlappySwift
+  # https://github.com/SwiftGen/SwiftGen
+  # https://github.com/Dimillian/MovieSwiftUI
+  # git@github.com:MonitorControl/MonitorControl.git
+  # https://github.com/signalapp/Signal-iOS
+  # git@github.com:daltoniam/Starscream.git
+  
+  # 服务端
+  # https://github.com/vapor/vapor
+  # https://github.com/PerfectlySoft/Perfect
+  
+  # 翻译书籍
+  # https://github.com/SwiftGGTeam/the-swift-programming-language-in-chinese
+  
+  # 版本管理库
+  # https://github.com/Carthage/Carthage
+  # https://github.com/CocoaPods/CocoaPods
+  
+  # 设计模式
+  # https://github.com/ochococo/Design-Patterns-In-Swift
+  
+  # 官方开源
+  # https://github.com/AudioKit/AudioKit
 end

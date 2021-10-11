@@ -7,10 +7,10 @@
 
 import Foundation
 class Leetcode {
-    private let swordOffer = Algorithm_swordOffer()
-    private let leetCode = Algorithm_leetcode()
+    private let swordOffer = Cyc2018_swordOffer()
+    private let leetCode = Cyc2018_leetcode()
     
-    func lc1734() {
+    func lc_1734() {
         // 1734. 解码异或后的排列
         // https://leetcode-cn.com/problems/decode-xored-permutation/
         func decode(_ encoded: [Int]) -> [Int] {
@@ -37,7 +37,7 @@ class Leetcode {
         }
         print(decode([3,1]))
     }
-    func lc1310() {
+    func lc_1310() {
         // 1310. 子数组异或查询
         // https://leetcode-cn.com/problems/xor-queries-of-a-subarray/
         func xorQueries(_ arr: [Int],
@@ -104,7 +104,7 @@ class Leetcode {
         print(swordOffer.hasAnyDuplicateIn(intArr: arr))
     }
     
-    func lc1() {
+    func lc_1() {
         // https://leetcode-cn.com/problems/two-sum/
         func twoSum(_ nums: [Int], _ target: Int) -> (Int,Int) {
             var map = [Int: Int]()
@@ -119,7 +119,7 @@ class Leetcode {
         }
         print(twoSum([2,7,11,15], 9))
     }
-    func lc169() {
+    func lc_169() {
         // 169. 多数元素
         // https://leetcode-cn.com/problems/majority-element/
         func majorityElement(_ nums: [Int]) -> Int {
@@ -157,7 +157,7 @@ class Leetcode {
         }
         print(majorityElement([2,2,1,1,1,2,2]))
     }
-    func lc229() {
+    func lc_229() {
         // 229. 求众数 II
         // https://leetcode-cn.com/problems/majority-element-ii/
         func majorityElement(_ nums: [Int]) -> [Int] {
@@ -239,7 +239,7 @@ class Leetcode {
         print(mine([1,1,1,3,3,2,2,2]))
     }
     
-    func lc1486() {
+    func lc_1486() {
         // 1486. 数组异或操作
         // https://leetcode-cn.com/problems/xor-operation-in-an-array/
         /**
@@ -275,7 +275,7 @@ class Leetcode {
         }
         print(mine(4,3))
     }
-    func lc1720() {
+    func lc_1720() {
         // 1720. 解码异或后的数组
         // https://leetcode-cn.com/problems/decode-xored-array/
         func decode(_ encoded: [Int], _ first: Int) -> [Int] {
@@ -300,7 +300,7 @@ class Leetcode {
         print(mine([6,2,7,3],4))
     }
     
-    func lc1556() {
+    func lc_1556() {
         // 1556. 千位分隔数
         // https://leetcode-cn.com/problems/thousand-separator/
         func thousandSeparator(_ n: Int) -> String {
@@ -338,7 +338,7 @@ class Leetcode {
         print(mine(12034056789))
     }
     
-    func lc2() {
+    func lc_2() {
         // 2. 两数相加
         // https://leetcode-cn.com/problems/add-two-numbers/
         func addTwoNumbers(_ l1: ListNode?, _ l2: ListNode?) -> ListNode? {
@@ -369,7 +369,7 @@ class Leetcode {
         
     }
     
-    func lc7() {
+    func lc_7() {
         // 7. 整数反转
         // https://leetcode-cn.com/problems/reverse-integer/
         func reverse(_ x: Int) -> Int {
@@ -394,7 +394,7 @@ class Leetcode {
         print(reverse(Int.max))
     }
     
-    func lc3() {
+    func lc_3() {
         // 3. 无重复字符的最长子串
         // https://leetcode-cn.com/problems/longest-substring-without-repeating-characters/
         func lengthOfLongestSubstring(_ s: String) -> Int {
@@ -416,7 +416,7 @@ class Leetcode {
         print(lengthOfLongestSubstring("abcabcbb"))
     }
     
-    func lc9() {
+    func lc_9() {
         // 9. 回文数
         // https://leetcode-cn.com/problems/palindrome-number/
         func isPalindrome(_ x: Int) -> Bool {
@@ -669,7 +669,7 @@ class Leetcode {
             print(queue.deleteHead(), terminator: " ")
         }
         print("")
-        let a = Algorithm_swordOffer.twoStackForQueue()
+        let a = Cyc2018_swordOffer.twoStackForQueue()
         _ = ss.map{
             a.push($0)
         }
@@ -798,8 +798,8 @@ class Leetcode {
                 }
                 // 否则根据下标j与k的大小关系来决定继续切分左段还是右段
                 return j > k ?
-                    quickSearch(&nums, lo, j - 1, k) :
-                    quickSearch(&nums, j + 1, hi, k)
+                quickSearch(&nums, lo, j - 1, k) :
+                quickSearch(&nums, j + 1, hi, k)
             }
             
             var mArr = arr
@@ -835,7 +835,7 @@ class Leetcode {
         }
     }
     
-    func lc13() {
+    func lc_13() {
         // 13. 罗马数字转整数
         // https://leetcode-cn.com/problems/roman-to-integer/
         func romanToInt(_ s: String) -> Int {
@@ -899,7 +899,7 @@ class Leetcode {
         print(mine("MCMXCIV"))
     }
     
-    func lc6() {
+    func lc_6() {
         // 6. Z 字形变换
         // https://leetcode-cn.com/problems/zigzag-conversion/
         func convert(_ s: String, _ numRows: Int) -> String {
@@ -956,7 +956,7 @@ class Leetcode {
         print(convert(s, numRows))
     }
     
-    func lc21() {
+    func lc_21() {
         // 21. 合并两个有序链表
         // https://leetcode-cn.com/problems/merge-two-sorted-lists/
         func mergeTwoLists(_ l1: ListNode?,
@@ -964,7 +964,7 @@ class Leetcode {
             return swordOffer.merge(l1, l2)
         }
     }
-    func lc26() {
+    func lc_26() {
         // 26. 删除有序数组中的重复项
         // https://leetcode-cn.com/problems/remove-duplicates-from-sorted-array/
         func removeDuplicates(_ nums: inout [Int]) -> Int {
@@ -995,7 +995,7 @@ class Leetcode {
         print(mine(&nums))
     }
     
-    func lc14() {
+    func lc_14() {
         // 14. 最长公共前缀
         // https://leetcode-cn.com/problems/longest-common-prefix/
         func longestCommonPrefix(_ strs: [String]) -> String {
@@ -1243,7 +1243,7 @@ class Leetcode {
         //            }
     }
     
-    func lc380() {
+    func lc_380() {
         // 380. O(1) 时间插入、删除和获取随机元素
         // https://leetcode-cn.com/problems/insert-delete-getrandom-o1/
         class RandomizedSet {
@@ -1270,7 +1270,7 @@ class Leetcode {
         }
     }
     
-    func lc5() {
+    func lc_5() {
         // 5. 最长回文子串 https://leetcode-cn.com/problems/longest-palindromic-substring/
         func longestPalindrome(_ s: String) -> String {
             func preprocess(_ s: String) -> String {
@@ -1386,7 +1386,7 @@ class Leetcode {
         }
     }
     
-    func lc83() {
+    func lc_83() {
         // 83. 删除排序链表中的重复元素
         // 删除链表中重复的结点
         // https://leetcode-cn.com/problems/remove-duplicates-from-sorted-list/
@@ -1405,7 +1405,7 @@ class Leetcode {
         _ = swordOffer.deleteDuplication(nil)
     }
     
-    func lc141() {
+    func lc_141() {
         // 141. 环形链表
         // https://leetcode-cn.com/problems/linked-list-cycle/
         func hasCycle(_ head: ListNode?) -> Bool {
@@ -1495,7 +1495,7 @@ class Leetcode {
         }
     }
     
-    func lc138() {
+    func lc_138() {
         // 138. 复制带随机指针的链表，复杂链表的复制
         // https://leetcode-cn.com/problems/copy-list-with-random-pointer/
         class Solution {
@@ -1532,14 +1532,14 @@ class Leetcode {
             }
         }
     }
-    func lc160() {
+    func lc_160() {
         // 160. 相交链表,两个链表的第一个公共结点
         // https://leetcode-cn.com/problems/intersection-of-two-linked-lists/
         func getIntersectionNode(_ headA: ListNode?, _ headB: ListNode?) -> ListNode? {
             return swordOffer.findFirstCommonNode(headA, headB)
         }
     }
-    func lc105() {
+    func lc_105() {
         // 105. 从前序与中序遍历序列构造二叉树
         // 重建二叉树
         // https://leetcode-cn.com/problems/construct-binary-tree-from-preorder-and-inorder-traversal/
@@ -1548,7 +1548,7 @@ class Leetcode {
         }
     }
     
-    func lc692() {
+    func lc_692() {
         // 692. 前K个高频单词
         // https://leetcode-cn.com/problems/top-k-frequent-words/
         func topKFrequent(_ words: [String], _ k: Int) -> [String] {
@@ -1662,7 +1662,7 @@ class Leetcode {
         print(mine(words,k))
     }
     
-    func lc1738() {
+    func lc_1738() {
         // 1738. 找出第 K 大的异或坐标值
         // https://leetcode-cn.com/problems/find-kth-largest-xor-coordinate-value/
         func kthLargestValue(_ matrix: [[Int]], _ k: Int) -> Int {
@@ -1725,7 +1725,7 @@ class Leetcode {
         print(kthLargestValue(matrix,k))
     }
     
-    func lc36() {
+    func lc_36() {
         // 36. 有效的数独
         // https://leetcode-cn.com/problems/valid-sudoku/
         func isValidSudoku(_ board: [[Character]]) -> Bool {
@@ -1754,7 +1754,7 @@ class Leetcode {
         }
     }
     
-    func lc993() {
+    func lc_993() {
         // 993. 二叉树的堂兄弟节点
         // https://leetcode-cn.com/problems/cousins-in-binary-tree/
         func isCousins(_ root: TreeNode?, _ x: Int, _ y: Int) -> Bool {
@@ -1864,7 +1864,7 @@ class Leetcode {
         print(isCousins(t1 ,5 ,4))
     }
     
-    func lc27() {
+    func lc_27() {
         // 27. 移除元素
         // https://leetcode-cn.com/problems/remove-element/
         func removeElement(_ nums: inout [Int], _ val: Int) -> Int {
@@ -1894,7 +1894,7 @@ class Leetcode {
         let lett = mine(&nums, val)
         print(nums[..<lett])
     }
-    func lc150() {
+    func lc_150() {
         // 150. 逆波兰表达式求值
         // https://leetcode-cn.com/problems/evaluate-reverse-polish-notation/
         func evalRPN(_ tokens: [String]) -> Int {
@@ -1929,7 +1929,7 @@ class Leetcode {
         }
     }
     
-    func lc1035() {
+    func lc_1035() {
         // 1035. 不相交的线
         // https://leetcode-cn.com/problems/uncrossed-lines/
         func maxUncrossedLines(_ nums1: [Int], _ nums2: [Int]) -> Int {
@@ -1955,7 +1955,7 @@ class Leetcode {
             return swordOffer.hasSubtree(A, B)
         }
     }
-    func lc226() {
+    func lc_226() {
         // 226. 翻转二叉树
         // https://leetcode-cn.com/problems/invert-binary-tree/
         // 二叉树的镜像
@@ -1971,7 +1971,7 @@ class Leetcode {
         }
     }
     
-    func lc101() {
+    func lc_101() {
         // 对称的二叉树
         // https://leetcode-cn.com/problems/dui-cheng-de-er-cha-shu-lcof/
         // 101. 对称二叉树
@@ -2095,7 +2095,7 @@ class Leetcode {
         }
     }
     
-    func lc104() {
+    func lc_104() {
         // 剑指 Offer 55 - I. 二叉树的深度
         // https://leetcode-cn.com/problems/er-cha-shu-de-shen-du-lcof/
         // 104. 二叉树的最大深度
@@ -2135,7 +2135,7 @@ class Leetcode {
         }
     }
     
-    func lc810() {
+    func lc_810() {
         // 810. 黑板异或游戏
         // https://leetcode-cn.com/problems/chalkboard-xor-game/
         func xorGame(_ nums: [Int]) -> Bool {
@@ -2149,7 +2149,7 @@ class Leetcode {
             return xor == 0
         }
     }
-    func lc113() {
+    func lc_113() {
         // 剑指 Offer 34. 二叉树中和为某一值的路径
         // https://leetcode-cn.com/problems/er-cha-shu-zhong-he-wei-mou-yi-zhi-de-lu-jing-lcof/
         // 113. 路径总和 II
@@ -2177,7 +2177,7 @@ class Leetcode {
             return ret
         }
     }
-    func lc426() {
+    func lc_426() {
         // 二叉搜索树与双向链表
         // https://leetcode-cn.com/problems/er-cha-sou-suo-shu-yu-shuang-xiang-lian-biao-lcof/
         //
@@ -2217,7 +2217,7 @@ class Leetcode {
         }
     }
     
-    func lc297() {
+    func lc_297() {
         // 剑指 Offer 37. 序列化二叉树
         // https://leetcode-cn.com/problems/xu-lie-hua-er-cha-shu-lcof/
         // 297. 二叉树的序列化与反序列化
@@ -2274,7 +2274,7 @@ class Leetcode {
         }
     }
     
-    func lc110() {
+    func lc_110() {
         // 平衡二叉树
         // https://leetcode-cn.com/problems/ping-heng-er-cha-shu-lcof/
         // 110. 平衡二叉树
@@ -2298,7 +2298,7 @@ class Leetcode {
             return recur(root) != -1
         }
     }
-    func lc235() {
+    func lc_235() {
         // 剑指 Offer 68 - I. 二叉搜索树的最近公共祖先
         // 235. 二叉搜索树的最近公共祖先 https://leetcode-cn.com/problems/er-cha-sou-suo-shu-de-zui-jin-gong-gong-zu-xian-lcof/
         //
@@ -2308,7 +2308,7 @@ class Leetcode {
         }
     }
     
-    func lc236() {
+    func lc_236() {
         // 剑指 Offer 68 - II. 二叉树的最近公共祖先
         // https://leetcode-cn.com/problems/er-cha-shu-de-zui-jin-gong-gong-zu-xian-lcof/
         // 236. 二叉树的最近公共祖先
@@ -2318,7 +2318,7 @@ class Leetcode {
         }
     }
     
-    func lc8() {
+    func lc_8() {
         //  把字符串转换成整数
         // https://leetcode-cn.com/problems/ba-zi-fu-chuan-zhuan-huan-cheng-zheng-shu-lcof/
         // 8. 字符串转换整数 (atoi)
@@ -2354,6 +2354,21 @@ class Leetcode {
                 }
                 res = res * 10 +  val
             }
+            return res
+        }
+    }
+    
+    func lc_17() {
+        // 消失的数字
+        // https://leetcode-cn.com/problems/missing-number-lcci/
+        func missingNumber(_ nums: [Int]) -> Int {
+            var res: Int = 0
+            for i in 0..<nums.count {
+                res ^= i
+                res ^= nums[i]
+            }
+            res ^= nums.count
+            
             return res
         }
     }

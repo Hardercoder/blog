@@ -9,11 +9,11 @@
 /* Begin PBXBuildFile section */
 		6AC5C3BE264BFE650061C4AC /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC5C3BD264BFE650061C4AC /* main.swift */; };
 		6AC5C3CB264C04210061C4AC /* OtherExercise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC5C3CA264C04210061C4AC /* OtherExercise.swift */; };
-		6AC5C3CC264C05230061C4AC /* Algorithm_swordOffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC5C3C7264C03240061C4AC /* Algorithm_swordOffer.swift */; };
+		6AC5C3CC264C05230061C4AC /* Cyc2018_swordOffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC5C3C7264C03240061C4AC /* Cyc2018_swordOffer.swift */; };
 		6AC5C3CD264C05230061C4AC /* DefStructures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC5C3C6264C03240061C4AC /* DefStructures.swift */; };
 		6AC5C3CE264C05230061C4AC /* Algorithm_Mine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC5C3C8264C03240061C4AC /* Algorithm_Mine.swift */; };
 		6AC5C3CF264C05230061C4AC /* Leetcode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC5C3C9264C03420061C4AC /* Leetcode.swift */; };
-		6AC5C3D0264C05230061C4AC /* Algorithm_leetcode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC5C3C5264C03240061C4AC /* Algorithm_leetcode.swift */; };
+		6AC5C3D0264C05230061C4AC /* Cyc2018_leetcode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC5C3C5264C03240061C4AC /* Cyc2018_leetcode.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -31,9 +31,9 @@
 /* Begin PBXFileReference section */
 		6AC5C3BA264BFE650061C4AC /* CommandLine */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = CommandLine; sourceTree = BUILT_PRODUCTS_DIR; };
 		6AC5C3BD264BFE650061C4AC /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
-		6AC5C3C5264C03240061C4AC /* Algorithm_leetcode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Algorithm_leetcode.swift; sourceTree = "<group>"; };
+		6AC5C3C5264C03240061C4AC /* Cyc2018_leetcode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cyc2018_leetcode.swift; sourceTree = "<group>"; };
 		6AC5C3C6264C03240061C4AC /* DefStructures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefStructures.swift; sourceTree = "<group>"; };
-		6AC5C3C7264C03240061C4AC /* Algorithm_swordOffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Algorithm_swordOffer.swift; sourceTree = "<group>"; };
+		6AC5C3C7264C03240061C4AC /* Cyc2018_swordOffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cyc2018_swordOffer.swift; sourceTree = "<group>"; };
 		6AC5C3C8264C03240061C4AC /* Algorithm_Mine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Algorithm_Mine.swift; sourceTree = "<group>"; };
 		6AC5C3C9264C03420061C4AC /* Leetcode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Leetcode.swift; sourceTree = "<group>"; };
 		6AC5C3CA264C04210061C4AC /* OtherExercise.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OtherExercise.swift; sourceTree = "<group>"; };
@@ -69,9 +69,9 @@
 		6AC5C3BC264BFE650061C4AC /* CommandLine */ = {
 			isa = PBXGroup;
 			children = (
-				6AC5C3C5264C03240061C4AC /* Algorithm_leetcode.swift */,
+				6AC5C3C5264C03240061C4AC /* Cyc2018_leetcode.swift */,
 				6AC5C3C6264C03240061C4AC /* DefStructures.swift */,
-				6AC5C3C7264C03240061C4AC /* Algorithm_swordOffer.swift */,
+				6AC5C3C7264C03240061C4AC /* Cyc2018_swordOffer.swift */,
 				6AC5C3C8264C03240061C4AC /* Algorithm_Mine.swift */,
 				6AC5C3C9264C03420061C4AC /* Leetcode.swift */,
 				6AC5C3BD264BFE650061C4AC /* main.swift */,
@@ -137,13 +137,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6AC5C3CC264C05230061C4AC /* Algorithm_swordOffer.swift in Sources */,
+				6AC5C3CC264C05230061C4AC /* Cyc2018_swordOffer.swift in Sources */,
 				6AC5C3CD264C05230061C4AC /* DefStructures.swift in Sources */,
 				6AC5C3CE264C05230061C4AC /* Algorithm_Mine.swift in Sources */,
 				6AC5C3CB264C04210061C4AC /* OtherExercise.swift in Sources */,
 				6AC5C3CF264C05230061C4AC /* Leetcode.swift in Sources */,
 				6AC5C3BE264BFE650061C4AC /* main.swift in Sources */,
-				6AC5C3D0264C05230061C4AC /* Algorithm_leetcode.swift in Sources */,
+				6AC5C3D0264C05230061C4AC /* Cyc2018_leetcode.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

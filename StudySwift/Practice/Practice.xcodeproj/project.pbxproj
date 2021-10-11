@@ -3,11 +3,13 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		4724F1FBDA221CA35BBE66C8 /* Pods_Practice.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 120D669B1017FB071B5CCD85 /* Pods_Practice.framework */; };
+		6A458B3D267F1C9700A82815 /* MJPermenantThread.m in Sources */ = {isa = PBXBuildFile; fileRef = 6A458B3C267F1C9700A82815 /* MJPermenantThread.m */; };
+		6A458B43267F1DBE00A82815 /* MJPermenantThread1.m in Sources */ = {isa = PBXBuildFile; fileRef = 6A458B42267F1DBE00A82815 /* MJPermenantThread1.m */; };
 		6AC5C30E264A22C00061C4AC /* PracticeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC5C30D264A22C00061C4AC /* PracticeApp.swift */; };
 		6AC5C310264A22C00061C4AC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC5C30F264A22C00061C4AC /* ContentView.swift */; };
 		6AC5C312264A22C10061C4AC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6AC5C311264A22C10061C4AC /* Assets.xcassets */; };
@@ -21,22 +23,20 @@
 		6AC5C378264A26840061C4AC /* NSRunLoop+Hook.m in Sources */ = {isa = PBXBuildFile; fileRef = 6AC5C361264A26840061C4AC /* NSRunLoop+Hook.m */; };
 		6AC5C379264A26840061C4AC /* MyExpriceObj.m in Sources */ = {isa = PBXBuildFile; fileRef = 6AC5C366264A26840061C4AC /* MyExpriceObj.m */; };
 		6AC5C37A264A26840061C4AC /* NSObject+DLIntrospection.m in Sources */ = {isa = PBXBuildFile; fileRef = 6AC5C367264A26840061C4AC /* NSObject+DLIntrospection.m */; };
-		6AC5C37B264A26840061C4AC /* Algorithm_leetcode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC5C369264A26840061C4AC /* Algorithm_leetcode.swift */; };
-		6AC5C37C264A26840061C4AC /* DefStructures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC5C36A264A26840061C4AC /* DefStructures.swift */; };
-		6AC5C37D264A26840061C4AC /* Algorithm_swordOffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC5C36B264A26840061C4AC /* Algorithm_swordOffer.swift */; };
 		6AC5C37E264A26840061C4AC /* ThreadQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 6AC5C36E264A26840061C4AC /* ThreadQueue.m */; };
 		6AC5C37F264A26840061C4AC /* CatonMonitor.m in Sources */ = {isa = PBXBuildFile; fileRef = 6AC5C371264A26840061C4AC /* CatonMonitor.m */; };
-		6AC5C381264A27730061C4AC /* Algorithm_Mine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC5C380264A27730061C4AC /* Algorithm_Mine.swift */; };
-		6AC5C3A7264A8A880061C4AC /* NetPractice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC5C3A6264A8A880061C4AC /* NetPractice.swift */; };
-		6AC5C3AA264AA0460061C4AC /* Moya in Frameworks */ = {isa = PBXBuildFile; productRef = 6AC5C3A9264AA0460061C4AC /* Moya */; };
-		6AC5C3AC264AA0460061C4AC /* ReactiveMoya in Frameworks */ = {isa = PBXBuildFile; productRef = 6AC5C3AB264AA0460061C4AC /* ReactiveMoya */; };
-		6AC5C3AE264AA0460061C4AC /* RxMoya in Frameworks */ = {isa = PBXBuildFile; productRef = 6AC5C3AD264AA0460061C4AC /* RxMoya */; };
 		6AC5C3B0264AA05A0061C4AC /* Other.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC5C3AF264AA05A0061C4AC /* Other.swift */; };
+		6AE4E65C267F6EA90086A096 /* MJProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 6AE4E65A267F6EA90086A096 /* MJProxy.m */; };
+		6AE4E65F267F6F9B0086A096 /* MJTimer.m in Sources */ = {isa = PBXBuildFile; fileRef = 6AE4E65E267F6F9B0086A096 /* MJTimer.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		120D669B1017FB071B5CCD85 /* Pods_Practice.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Practice.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		53C8778AE0376416ABA36C43 /* Pods-Practice.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Practice.debug.xcconfig"; path = "Target Support Files/Pods-Practice/Pods-Practice.debug.xcconfig"; sourceTree = "<group>"; };
+		6A458B3B267F1C9700A82815 /* MJPermenantThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MJPermenantThread.h; sourceTree = "<group>"; };
+		6A458B3C267F1C9700A82815 /* MJPermenantThread.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MJPermenantThread.m; sourceTree = "<group>"; };
+		6A458B41267F1DBE00A82815 /* MJPermenantThread1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MJPermenantThread1.h; sourceTree = "<group>"; };
+		6A458B42267F1DBE00A82815 /* MJPermenantThread1.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MJPermenantThread1.m; sourceTree = "<group>"; };
 		6AC5C30A264A22C00061C4AC /* Practice.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Practice.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6AC5C30D264A22C00061C4AC /* PracticeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeApp.swift; sourceTree = "<group>"; };
 		6AC5C30F264A22C00061C4AC /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -61,16 +61,15 @@
 		6AC5C365264A26840061C4AC /* MyExpriceObj.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MyExpriceObj.h; sourceTree = "<group>"; };
 		6AC5C366264A26840061C4AC /* MyExpriceObj.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MyExpriceObj.m; sourceTree = "<group>"; };
 		6AC5C367264A26840061C4AC /* NSObject+DLIntrospection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+DLIntrospection.m"; sourceTree = "<group>"; };
-		6AC5C369264A26840061C4AC /* Algorithm_leetcode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Algorithm_leetcode.swift; sourceTree = "<group>"; };
-		6AC5C36A264A26840061C4AC /* DefStructures.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefStructures.swift; sourceTree = "<group>"; };
-		6AC5C36B264A26840061C4AC /* Algorithm_swordOffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Algorithm_swordOffer.swift; sourceTree = "<group>"; };
 		6AC5C36D264A26840061C4AC /* ThreadQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ThreadQueue.h; sourceTree = "<group>"; };
 		6AC5C36E264A26840061C4AC /* ThreadQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ThreadQueue.m; sourceTree = "<group>"; };
 		6AC5C370264A26840061C4AC /* CatonMonitor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CatonMonitor.h; sourceTree = "<group>"; };
 		6AC5C371264A26840061C4AC /* CatonMonitor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CatonMonitor.m; sourceTree = "<group>"; };
-		6AC5C380264A27730061C4AC /* Algorithm_Mine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Algorithm_Mine.swift; sourceTree = "<group>"; };
-		6AC5C3A6264A8A880061C4AC /* NetPractice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetPractice.swift; sourceTree = "<group>"; };
 		6AC5C3AF264AA05A0061C4AC /* Other.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Other.swift; sourceTree = "<group>"; };
+		6AE4E65A267F6EA90086A096 /* MJProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MJProxy.m; sourceTree = "<group>"; };
+		6AE4E65B267F6EA90086A096 /* MJProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MJProxy.h; sourceTree = "<group>"; };
+		6AE4E65D267F6F9B0086A096 /* MJTimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MJTimer.h; sourceTree = "<group>"; };
+		6AE4E65E267F6F9B0086A096 /* MJTimer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MJTimer.m; sourceTree = "<group>"; };
 		B37DA5EC4579FEC576C3CDA0 /* Pods-Practice.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Practice.release.xcconfig"; path = "Target Support Files/Pods-Practice/Pods-Practice.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -79,10 +78,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6AC5C3AA264AA0460061C4AC /* Moya in Frameworks */,
 				4724F1FBDA221CA35BBE66C8 /* Pods_Practice.framework in Frameworks */,
-				6AC5C3AE264AA0460061C4AC /* RxMoya in Frameworks */,
-				6AC5C3AC264AA0460061C4AC /* ReactiveMoya in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -106,6 +102,17 @@
 			path = Pods;
 			sourceTree = "<group>";
 		};
+		6A458B3A267F1C7E00A82815 /* safethread */ = {
+			isa = PBXGroup;
+			children = (
+				6A458B41267F1DBE00A82815 /* MJPermenantThread1.h */,
+				6A458B42267F1DBE00A82815 /* MJPermenantThread1.m */,
+				6A458B3B267F1C9700A82815 /* MJPermenantThread.h */,
+				6A458B3C267F1C9700A82815 /* MJPermenantThread.m */,
+			);
+			path = safethread;
+			sourceTree = "<group>";
+		};
 		6AC5C301264A22C00061C4AC = {
 			isa = PBXGroup;
 			children = (
@@ -127,8 +134,8 @@
 		6AC5C30C264A22C00061C4AC /* Practice */ = {
 			isa = PBXGroup;
 			children = (
-				6AC5C3A5264A8A780061C4AC /* studynetwork */,
-				6AC5C368264A26840061C4AC /* algorithm */,
+				6AE4E659267F6E930086A096 /* safetimer */,
+				6A458B3A267F1C7E00A82815 /* safethread */,
 				6AC5C35A264A26840061C4AC /* backtrace_thread */,
 				6AC5C354264A26840061C4AC /* dealloc_weak */,
 				6AC5C34E264A26840061C4AC /* kvo_settermethod */,
@@ -231,17 +238,6 @@
 			path = runtime_debug;
 			sourceTree = "<group>";
 		};
-		6AC5C368264A26840061C4AC /* algorithm */ = {
-			isa = PBXGroup;
-			children = (
-				6AC5C369264A26840061C4AC /* Algorithm_leetcode.swift */,
-				6AC5C36A264A26840061C4AC /* DefStructures.swift */,
-				6AC5C36B264A26840061C4AC /* Algorithm_swordOffer.swift */,
-				6AC5C380264A27730061C4AC /* Algorithm_Mine.swift */,
-			);
-			path = algorithm;
-			sourceTree = "<group>";
-		};
 		6AC5C36C264A26840061C4AC /* thread_queue_(a)sync */ = {
 			isa = PBXGroup;
 			children = (
@@ -260,12 +256,15 @@
 			path = runloop_caton_detect;
 			sourceTree = "<group>";
 		};
-		6AC5C3A5264A8A780061C4AC /* studynetwork */ = {
+		6AE4E659267F6E930086A096 /* safetimer */ = {
 			isa = PBXGroup;
 			children = (
-				6AC5C3A6264A8A880061C4AC /* NetPractice.swift */,
+				6AE4E65D267F6F9B0086A096 /* MJTimer.h */,
+				6AE4E65E267F6F9B0086A096 /* MJTimer.m */,
+				6AE4E65B267F6EA90086A096 /* MJProxy.h */,
+				6AE4E65A267F6EA90086A096 /* MJProxy.m */,
 			);
-			path = studynetwork;
+			path = safetimer;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -287,9 +286,6 @@
 			);
 			name = Practice;
 			packageProductDependencies = (
-				6AC5C3A9264AA0460061C4AC /* Moya */,
-				6AC5C3AB264AA0460061C4AC /* ReactiveMoya */,
-				6AC5C3AD264AA0460061C4AC /* RxMoya */,
 			);
 			productName = Practice;
 			productReference = 6AC5C30A264A22C00061C4AC /* Practice.app */;
@@ -319,7 +315,6 @@
 			);
 			mainGroup = 6AC5C301264A22C00061C4AC;
 			packageReferences = (
-				6AC5C3A8264AA0460061C4AC /* XCRemoteSwiftPackageReference "Moya" */,
 			);
 			productRefGroup = 6AC5C30B264A22C00061C4AC /* Products */;
 			projectDirPath = "";
@@ -389,25 +384,24 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6AC5C3A7264A8A880061C4AC /* NetPractice.swift in Sources */,
+				6AE4E65C267F6EA90086A096 /* MJProxy.m in Sources */,
 				6AC5C378264A26840061C4AC /* NSRunLoop+Hook.m in Sources */,
-				6AC5C381264A27730061C4AC /* Algorithm_Mine.swift in Sources */,
 				6AC5C372264A26840061C4AC /* ZKaaa.m in Sources */,
 				6AC5C310264A22C00061C4AC /* ContentView.swift in Sources */,
 				6AC5C376264A26840061C4AC /* BSBacktraceLogger.m in Sources */,
-				6AC5C37D264A26840061C4AC /* Algorithm_swordOffer.swift in Sources */,
 				6AC5C374264A26840061C4AC /* TestWeak.m in Sources */,
 				6AC5C37F264A26840061C4AC /* CatonMonitor.m in Sources */,
+				6A458B43267F1DBE00A82815 /* MJPermenantThread1.m in Sources */,
 				6AC5C30E264A22C00061C4AC /* PracticeApp.swift in Sources */,
 				6AC5C37E264A26840061C4AC /* ThreadQueue.m in Sources */,
-				6AC5C37C264A26840061C4AC /* DefStructures.swift in Sources */,
-				6AC5C37B264A26840061C4AC /* Algorithm_leetcode.swift in Sources */,
+				6A458B3D267F1C9700A82815 /* MJPermenantThread.m in Sources */,
 				6AC5C37A264A26840061C4AC /* NSObject+DLIntrospection.m in Sources */,
 				6AC5C3B0264AA05A0061C4AC /* Other.swift in Sources */,
 				6AC5C379264A26840061C4AC /* MyExpriceObj.m in Sources */,
 				6AC5C373264A26840061C4AC /* TimerService.m in Sources */,
 				6AC5C375264A26840061C4AC /* ZKViewController+TestWeakPro.m in Sources */,
 				6AC5C377264A26840061C4AC /* MemoryAloc.m in Sources */,
+				6AE4E65F267F6F9B0086A096 /* MJTimer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -596,35 +590,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		6AC5C3A8264AA0460061C4AC /* XCRemoteSwiftPackageReference "Moya" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Moya/Moya.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 14.0.1;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		6AC5C3A9264AA0460061C4AC /* Moya */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 6AC5C3A8264AA0460061C4AC /* XCRemoteSwiftPackageReference "Moya" */;
-			productName = Moya;
-		};
-		6AC5C3AB264AA0460061C4AC /* ReactiveMoya */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 6AC5C3A8264AA0460061C4AC /* XCRemoteSwiftPackageReference "Moya" */;
-			productName = ReactiveMoya;
-		};
-		6AC5C3AD264AA0460061C4AC /* RxMoya */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 6AC5C3A8264AA0460061C4AC /* XCRemoteSwiftPackageReference "Moya" */;
-			productName = RxMoya;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 6AC5C302264A22C00061C4AC /* Project object */;
 }

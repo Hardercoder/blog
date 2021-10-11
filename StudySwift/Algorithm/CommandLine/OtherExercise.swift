@@ -11,7 +11,7 @@ func practiceStride() {
     for a in stride(from: 1, to: 20, by: 2) {
         print(a, terminator: " ")
     }
-
+    
     print("\nb: ",terminator: "")
     for b in stride(from: 0, through: 20, by: 2) {
         print(b, terminator: " ")
@@ -51,18 +51,18 @@ func practiceStrAppend() {
 func practiceStrIndx() {
     
     let str = "1234556"
-//    let starInd = str.startIndex
-//    let i = str.index(starInd, offsetBy: 4, limitedBy: str.endIndex)
+    //    let starInd = str.startIndex
+    //    let i = str.index(starInd, offsetBy: 4, limitedBy: str.endIndex)
     let j = str.index(str.startIndex, offsetBy: 7, limitedBy: str.endIndex)
-//    print(i)
-//    print(j)
+    //    print(i)
+    //    print(j)
     if j != nil && j != str.endIndex {
         print("sadasf")
     }
 }
 
 func practiceFor() {
-   let str = [1,2,3,5,6,7]
+    let str = [1,2,3,5,6,7]
     for i in str {
         print("外层 ", i)
         for j in str.dropFirst() {
